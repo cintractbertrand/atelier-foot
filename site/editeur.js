@@ -5,7 +5,7 @@
 const NAVY='#1b3a73',RED='#d63a2a',GOLD='#e8b923',PLOT='#d9a406',OFF=[9,6],V=45;
 const DEFS='<defs>'+[['ap','#222'],['ad',PLOT],['ar',RED],['ag','#999']].map(([id,c])=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`).join('')+'</defs>';
 const blank=()=>{const m={v:3,w:30,h:20,items:[],temps:[]};const f=field(m);m.fr=[f.x,f.y,f.w,f.h];return m};
-let M=blank(),tool='sel',sel=null,drag=null,tmp=null,hist=[],redo=[],editingId=null,mode='d',cur=0;
+let M=blank(),tool=null,sel=null,drag=null,tmp=null,hist=[],redo=[],editingId=null,mode='d',cur=0;
 const $e=id=>document.getElementById(id);
 const esc2=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const R=v=>Math.round(v*10)/10,cl=o=>JSON.parse(JSON.stringify(o)),dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -86,7 +86,7 @@ function render0(m,o={}){
  S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
  if(before)S.mob.forEach(i=>{if(dist(before.pos[i],st.pos[i])>2)b+=`<g transform="translate(${R(before.pos[i][0])} ${R(before.pos[i][1])})" opacity=".3" style="pointer-events:none">${shape(I[i])}</g>`});
  const draw1=(it,i)=>{const p=P(i);let inner=shape(it);if(TM&&(it.t=='p'||it.t=='ball')){const mo=motion(S,TM,i,o.speed);if(mo)inner=`<g>${inner}${mo}</g>`}
-  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&sel===i?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${ed&&it.t=='ball'?'<circle r="8" fill="transparent"/>':''}${inner}</g>`};
+  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&sel===i?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${di(i)?`<circle r="${it.t=='ball'?7:14}" fill="transparent"/>`:''}${inner}</g>`};
  [...EQUIP,'p','ball'].forEach(t=>I.forEach((it,i)=>{if(it.t==t)b+=draw1(it,i)}));
  if(ed=='m'&&nT)Object.keys(S.segs[k]).forEach(s=>{const g=S.segs[k][s];if(g.kind=='suivi')return;const h=g.c||[(g.from[0]+g.to[0])/2,(g.from[1]+g.to[1])/2];b+=`<circle data-h="${s}" cx="${R(h[0])}" cy="${R(h[1])}" r="5" fill="#fff" stroke="#e8731a" stroke-width="2" style="cursor:move"><title>Tirer pour courber, double-clic pour redresser</title></circle>`});
  const lab=(x,y,t,r)=>{const tr=r?` transform="rotate(-90 ${x} ${y})"`:'';return `<rect x="${x-17}" y="${y-8}" width="34" height="13" rx="3" fill="#fff"${tr}/><text x="${x}" y="${y+3}" font-size="10" font-weight="700" fill="${NAVY}" text-anchor="middle" font-family="sans-serif"${tr}>${t}</text>`};
@@ -110,21 +110,22 @@ function bind(){
  s.onpointerdown=ev=>{const [x,y]=pt(ev),h=ev.target.closest('[data-h]'),el=ev.target.closest('[data-i]'),i=el?+el.dataset.i:null;s.setPointerCapture(ev.pointerId);
   if(mode=='m'){
    if(h){snap();drag={k:'curve',i:+h.dataset.h};return}
-   if(i==null)return;if(!M.temps.length){M.temps.push({moves:{}});cur=0}
+   if(i==null){if(sel!=null){sel=null;draw()}return}if(!M.temps.length){M.temps.push({moves:{}});cur=0}
    snap();sel=i;drag={k:'mv',i,x0:x,y0:y,moved:false};return}
-  if(tool=='sel'){sel=i;if(i!=null){snap();const it=M.items[i];if(it.t=='ball'&&isP(M,it.o)){const p=M.items[it.o];it.x=p.x+OFF[0];it.y=p.y+OFF[1]}drag={k:'d',i,x,y,o:cl(it)}}draw();return}
-  if(tool=='gomme'){if(i!=null){snap();removeItem(i);draw()}return}
+  if(tool=='ball'&&i!=null&&M.items[i].t=='p'){snap();const p=M.items[i];M.items.push({t:'ball',x:p.x+OFF[0],y:p.y+OFF[1],o:i});sel=M.items.length-1;draw();return}
+  if(i!=null){sel=i;const it=M.items[i],o=cl(it);if(it.t=='ball'&&isP(M,it.o)){const q=M.items[it.o];o.x=q.x+OFF[0];o.y=q.y+OFF[1]}drag={k:'d',i,x,y,o,s:false};draw();return}
+  if(!tool){sel=null;draw();return}
   if(tool=='zone'){tmp={x1:x,y1:y,x2:x,y2:y};return}
   snap();
   if(tool.startsWith('p_')){const c=tool[2];M.items.push({t:'p',c,l:nextLabel(c),x,y})}
   else if(tool=='txt'){const t=prompt('Texte :');if(!t){hist.pop();return}M.items.push({t:'txt',s:t,x,y})}
-  else if(tool=='ball'){const P={};M.items.forEach((it,j)=>P[j]=[it.x,it.y]);const o=nearP(P,x,y,18);M.items.push(o!=null?{t:'ball',x,y,o}:{t:'ball',x,y})}
+  else if(tool=='ball')M.items.push({t:'ball',x,y});
   else M.items.push({t:tool,x,y});
-  sel=M.items.length-1;draw()};
+  sel=M.items.length-1;if(ONCE.includes(tool))setTool(null);draw()};
  s.onpointermove=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='curve'){const T=M.temps[cur],q=T&&T.moves[drag.i];if(q){q.c=[x,y];draw()}else{const S=simulate(M),g=S.segs[cur]&&S.segs[cur][drag.i];if(g&&g.kind=='conduite'){}}return}
   if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};T.moves[drag.i]={x,y,...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
-  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(it.t=='ball'&&it.o!=null&&Math.hypot(dx,dy)>4)delete it.o;it.x=o.x+dx;it.y=o.y+dy;draw();return}
+  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;draw();return}
   if(tmp){tmp.x2=x;tmp.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',`<rect id="prev" x="${Math.min(tmp.x1,tmp.x2)}" y="${Math.min(tmp.y1,tmp.y2)}" width="${Math.abs(tmp.x2-tmp.x1)}" height="${Math.abs(tmp.y2-tmp.y1)}" fill="none" stroke="${NAVY}" stroke-dasharray="6 4"/>`)}};
  s.onpointerup=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='mv'){const i=drag.i,T=M.temps[cur];
@@ -134,56 +135,72 @@ function bind(){
      else if(Math.hypot(x-start.pos[i][0],y-start.pos[i][1])<6)delete T.moves[i]}
     else if(Math.hypot(x-start.pos[i][0],y-start.pos[i][1])<6)delete T.moves[i]}
    drag=null;draw();return}
-  if(drag&&drag.k=='d'){const it=M.items[drag.i];if(it.t=='ball'&&it.o==null){const P={};M.items.forEach((q,j)=>P[j]=[q.x,q.y]);const o=nearP(P,it.x,it.y,16);if(o!=null)it.o=o}}
+  if(drag&&drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='ball'&&it.o==null){const P={};M.items.forEach((q,j)=>P[j]=[q.x,q.y]);const o=nearP(P,it.x,it.y,16);if(o!=null)it.o=o}}
   drag=null;
   if(tmp){const t=tmp;tmp=null;if(Math.hypot(t.x2-t.x1,t.y2-t.y1)>6){snap();M.items.push({t:'zone',x:Math.min(t.x1,t.x2),y:Math.min(t.y1,t.y2),w:Math.abs(t.x2-t.x1),h:Math.abs(t.y2-t.y1)});sel=M.items.length-1}}
   draw()};
  s.ondblclick=ev=>{const h=ev.target.closest('[data-h]');if(h&&mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[+h.dataset.h];if(q&&q.c){snap();delete q.c;draw()}return}
   const el=ev.target.closest('[data-i]');if(!el||mode!='d')return;const it=M.items[+el.dataset.i];if(it.t=='p'){const l=prompt('Nom du joueur :',it.l);if(l!=null){snap();it.l=l.slice(0,3);draw()}}else if(it.t=='txt'){const l=prompt('Texte :',it.s);if(l!=null){snap();it.s=l;draw()}}};
 }
-const TOOLS=[['sel','Déplacer'],['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien/joker',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['mannequin','Mannequin',{t:'mannequin'}],['haie','Haie',{t:'haie'}],['cerceau','Cerceau',{t:'cerceau'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['txt','Texte'],['gomme','Gomme']];
-const ICO={sel:'<path d="M-4 -8L6 2L1 3L4 9L1 10L-2 4L-6 7z" fill="#333"/>',zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>',gomme:'<path d="M-6 -6L6 6M6 -6L-6 6" stroke="#d63a2a" stroke-width="2.5"/>'};
-const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':(t=='piquet'||t=='mannequin')?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?36:20}" height="20" style="vertical-align:middle">${s?shape(s):ICO[t]||''}</svg>`};
-const HINTS={sel:'Glisse un élément pour le placer. Un ballon lâché près d\'un joueur se lie à lui. Clique un élément pour ses réglages.',zone:'Glisse pour dessiner une zone.',gomme:'Clique sur un élément pour le supprimer.',ball:'Clique sur le terrain, ou sur un joueur pour lui donner le ballon.'};
-function setTool(t){tool=t;document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));ui()}
+const TOOLS=[['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['cerceau','Cerceau',{t:'cerceau'}],['haie','Haie',{t:'haie'}],['mannequin','Mannequin',{t:'mannequin'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['txt','Texte']];
+// Ces éléments se posent un par un ; les autres restent actifs pour en poser plusieurs à la suite.
+const ONCE=['but','echelle','txt','zone'];
+const ICO={zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>'};
+const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':(t=='piquet'||t=='mannequin')?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?40:24}" height="24">${s?shape(s):ICO[t]||''}</svg>`};
+function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
+ if(!tool)return sel!=null?'Glisse l\'élément pour le placer, ou règle-le ci-dessous.':'Choisis un élément ci-dessus, puis touche le terrain pour le poser. Glisse un élément pour le déplacer.';
+ if(tool=='ball')return'Touche un joueur pour lui donner le ballon, ou le terrain pour un ballon libre.';
+ if(tool=='zone')return'Glisse ton doigt sur le terrain pour tracer la zone.';
+ if(ONCE.includes(tool))return'Touche le terrain pour poser : '+nom.toLowerCase()+'.';
+ return'Touche le terrain à chaque endroit où poser un '+nom.toLowerCase()+'. Re-touche le bouton pour arrêter.'}
+function setTool(t){tool=t;document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
 function props(){
- if(mode!='d'||sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;let h='';
- const rot=`<button onclick="rotSel(-15)">↺ 15°</button><button onclick="rotSel(15)">↻ 15°</button><button onclick="rotSel(90)">↻ 90°</button>`;
- if(it.t=='p')h=`<b>Joueur</b> Nom <input value="${esc2(it.l)}" maxlength="3" style="width:56px" onchange="snap();M.items[${i}].l=this.value;draw()"> Couleur <select onchange="snap();M.items[${i}].c=this.value;draw()">${[['b','Bleu'],['r','Rouge'],['j','Jaune']].map(([v,l])=>`<option value="${v}"${it.c==v?' selected':''}>${l}</option>`).join('')}</select> <button onclick="dupSel()">Dupliquer</button>`;
- else if(it.t=='ball')h=`<b>Ballon</b> ${it.o!=null?`lié à ${esc2(M.items[it.o]&&M.items[it.o].l)} <button onclick="snap();delete M.items[${i}].o;M.items[${i}].y+=14;draw()">Libérer</button>`:'libre (glisse-le sur un joueur pour le lier)'}`;
+ if(sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;
+ if(mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[i];if(!q)return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <span class="vide0">ne bouge pas dans ce temps</span>`;
+  return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <button onclick="snap();delete M.temps[cur].moves[${i}];draw()">✕ Annuler ce mouvement</button>${q.c?` <button onclick="snap();delete M.temps[cur].moves[${i}].c;draw()">Redresser la flèche</button>`:''}`}
+ if(mode!='d')return'';let h='';
+ const rot=`<button onclick="rotSel(-90)">↺</button><button onclick="rotSel(-15)">↺ 15°</button><button onclick="rotSel(15)">↻ 15°</button><button onclick="rotSel(90)">↻</button>`;
+ if(it.t=='p')h=`<b>Joueur</b> <input value="${esc2(it.l)}" maxlength="3" style="width:60px" title="Nom (3 car.)" onchange="snap();M.items[${i}].l=this.value;draw()"> ${[['b','Bleu',NAVY],['r','Rouge',RED],['j','Jaune',GOLD]].map(([v,l,c])=>`<button class="pastille${it.c==v?' on':''}" style="background:${c}" title="${l}" onclick="snap();M.items[${i}].c='${v}';draw()"></button>`).join('')} <button onclick="dupSel()">+ Copier</button>`;
+ else if(it.t=='ball')h=`<b>Ballon</b> ${it.o!=null?`au pied de ${esc2(M.items[it.o]&&M.items[it.o].l)} <button onclick="snap();delete M.items[${i}].o;M.items[${i}].y+=14;draw()">Détacher</button>`:'libre : glisse-le sur un joueur pour le lui donner'}`;
  else if(it.t=='txt')h=`<b>Texte</b> <input value="${esc2(it.s)}" onchange="snap();M.items[${i}].s=this.value;draw()"> ${rot}`;
- else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''}`;
- return h+` <button onclick="snap();removeItem(${i});draw()">Supprimer</button>`}
+ else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`;
+ return h+` <button class="del" onclick="snap();removeItem(${i});draw()">🗑 Supprimer</button>`}
 function rotSel(d){if(sel==null)return;const it=M.items[sel];if(!ROTABLE.includes(it.t))return;snap();it.rot=((it.rot||0)+d+360)%360;draw()}
 function dupSel(){const it=M.items[sel];snap();M.items.push({...cl(it),x:it.x+24,l:it.t=='p'?nextLabel(it.c):it.l});sel=M.items.length-1;draw()}
 function tbar(){
- const n=M.temps.length;return (n?M.temps.map((T,j)=>`<button class="${j==cur?'on':''}" onclick="cur=${j};sel=null;draw()">Temps ${j+1}</button>`).join(''):'<span>Aucun temps : glisse un joueur ou le ballon pour créer le Temps 1.</span>')+
- ` <button onclick="snap();M.temps.splice(${n?cur+1:0},0,{moves:{}});cur=${n?cur+1:0};draw()">+ Nouveau temps</button>`+(n?` <button onclick="if(confirm('Supprimer le Temps ${cur+1} ?')){snap();M.temps.splice(cur,1);fixCur();draw()}">Supprimer ce temps</button>`:'')}
+ const n=M.temps.length;return (n?M.temps.map((T,j)=>`<button class="${j==cur?'on':''}" onclick="cur=${j};sel=null;draw()">Temps ${j+1}</button>`).join(''):'')+
+ ` <button onclick="snap();M.temps.splice(${n?cur+1:0},0,{moves:{}});cur=${n?cur+1:0};sel=null;draw()">+ Temps suivant</button>`+(n?` <button class="del" onclick="if(confirm('Supprimer le Temps ${cur+1} ?')){snap();M.temps.splice(cur,1);fixCur();draw()}">🗑</button>`:'')}
+const SUIV={d:['Suivant : faire bouger →','m'],m:['Suivant : voir l\'animation →','v'],v:['Enregistrer la fiche →','f']};
 function ui(){
- $e('tabD').classList.toggle('on',mode=='d');$e('tabM').classList.toggle('on',mode=='m');$e('tabV').classList.toggle('on',mode=='v');
- $e('edbar').classList.toggle('hide',mode=='v');$e('tools').classList.toggle('hide',mode!='d');$e('visbar').classList.toggle('hide',mode!='v');$e('tbar').classList.toggle('hide',mode!='m');
- $e('hint').textContent=mode=='d'?(HINTS[tool]||'Clique sur le terrain pour placer.'):mode=='m'?'Glisse un joueur ou le ballon à sa nouvelle place : la flèche se crée seule (course, conduite si le joueur a le ballon, passe si tu lâches le ballon sur un joueur, tir dans le but). Tout ce qui bouge dans un même temps bouge en même temps. Tire le rond orange pour courber.':'';
- $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'')}
-function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui()}
-function setMode(m){mode=m;tmp=null;drag=null;if(m!='d')sel=null;fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw()}
+ ['D','M','V'].forEach(k=>$e('tab'+k).classList.toggle('on',mode==k.toLowerCase()));
+ $e('tools').classList.toggle('hide',mode!='d');$e('visbar').classList.toggle('hide',mode!='v');$e('tbar').classList.toggle('hide',mode!='m');$e('opts').classList.toggle('hide',mode=='v');
+ $e('hint').textContent=mode=='d'?hintD():mode=='m'?(M.temps.length?'Temps '+(cur+1)+' : glisse joueurs et ballon à leur nouvelle place (ils bougent ensemble). Ballon sur un joueur = passe, dans le but = tir. Rond orange = courber.':'Glisse un joueur ou le ballon vers sa nouvelle place : la flèche se dessine toute seule.'):'Vérifie que l\'animation raconte bien l\'exercice.';
+ $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'');
+ const f=editingId&&E.find(x=>x.id==editingId);$e('edtitre').textContent=f?'Modification : '+f.titre:'Nouveau schéma';
+ $e('suiv').textContent=SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
+function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui();brouillon()}
+function setMode(m){mode=m;tmp=null;drag=null;sel=null;if(m!='d'){tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'))}fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
+// Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
+function brouillon(){try{localStorage.setItem('brouillon_editeur',JSON.stringify({M,editingId}))}catch(e){}}
 let dimSnap=false;
 function majDim(){const w=Math.max(1,+$e('dw').value||0),h=Math.max(1,+$e('dh').value||0);if(!+$e('dw').value||!+$e('dh').value)return;
  if(!dimSnap){snap();dimSnap=true}const of=field(M);M.w=w;M.h=h;remap(M,of,field(M));draw()}
 // ---------- fiches perso ----------
 function chargePerso(){try{return JSON.parse(localStorage.getItem('mesfiches')||'[]')}catch(e){return[]}}
 function savePerso(a){try{localStorage.setItem('mesfiches',JSON.stringify(a))}catch(e){alert('Enregistrement local impossible : exporte la fiche en fichier.')}}
+const CATS=['U7','U9','U11','U13','U15','U18','Seniors'];
 function ouvrirDlg(){const f=editingId?E.find(x=>x.id==editingId):null;const g=id=>$e(id);
- g('f_titre').value=f?.titre||'';g('f_theme').value=f?.theme||'échauffement';g('f_cats').value=(f?.categories||['U11','U13']).join(', ');g('f_niveau').value=f?.niveau||'débutant';
+ g('f_titre').value=f?.titre||'';g('f_theme').value=f?.theme||'échauffement';const cs=f?.categories||[];g('f_cats').innerHTML=[...new Set([...CATS,...cs])].map(c=>`<label class="chip"><input type="checkbox" value="${esc2(c)}"${cs.includes(c)?' checked':''}> ${esc2(c)}</label>`).join('');g('f_niveau').value=f?.niveau||'débutant';
  g('f_duree').value=f?.duree_min||15;g('f_jmin').value=f?.joueurs.min||6;g('f_jmax').value=f?.joueurs.max||12;
  const k=compte(M);g('f_mat').value=Object.entries(k.mat).map(([n,q])=>q+' '+nomMat(n,q)).join(', ')||(f?f.materiel.map(m=>m.quantite+' '+m.nom).join(', '):'');if(!f){g('f_jmin').value=k.joueurs||6;g('f_jmax').value=k.joueurs||12}g('f_obj').value=f?.objectif||'';g('f_org').value=f?.organisation||'';g('f_dero').value=f?.deroulement||'';
  g('f_cons').value=(f?.consignes||[]).join('\n');g('f_var').value=(f?.variantes||[]).map(v=>v.nom+' : '+v.change).join('\n');$e('dlg').showModal()}
 function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):null;
- const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:g('f_cats').split(',').map(x=>x.trim()).filter(Boolean),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
+ const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:[...document.querySelectorAll('#f_cats input:checked')].map(x=>x.value),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
   materiel:g('f_mat').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d+)\s+(.*)$/);return m?{nom:m[2],quantite:+m[1]}:{nom:x,quantite:1}}),
   objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());return{nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''}}),
   schema_modele:cl(M)};delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
- const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);$e('dlg').close();editingId=fiche.id;majE();show('b')}
+ const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
 const hyd=e=>e.schema_modele?{...e,schema_svg:render(e.schema_modele,{animOn:true})}:e;
 const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
 function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id)),c=(window.CLUBF||[]).filter(x=>!ids.has(x.id)),cid=new Set(c.map(x=>x.id));
@@ -192,22 +209,23 @@ function modifierSchema(id){const f=E.find(x=>x.id==id);if(!f||!f.schema_modele)
 function exporterFiche(id){const f=E.find(x=>x.id==id),o={...f};['perso','club','auteur','maj'].forEach(k=>delete o[k]);if(o.schema_modele)delete o.schema_svg;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));a.download=f.id+'.json';a.click()}
 function supprimerPerso(id){if(confirm(aOrig(id)?'Rétablir la fiche d\'origine ?':'Supprimer cette fiche ?')){savePerso(chargePerso().filter(x=>x.id!=id));majE()}}
 function initEditeur(){
- $e('tools').innerHTML=TOOLS.map(([t,l,s])=>`<button data-t="${t}" title="${l}">${icon(t,s)} ${l}</button>`).join('');
- document.querySelectorAll('#tools button').forEach(b=>b.onclick=()=>setTool(b.dataset.t));
+ $e('tools').innerHTML=TOOLS.map(([t,l,s])=>`<button data-t="${t}" title="${l}">${icon(t,s)}<span>${l}</span></button>`).join('');
+ document.querySelectorAll('#tools button').forEach(b=>b.onclick=()=>setTool(tool==b.dataset.t?null:b.dataset.t));
  $e('dw').oninput=$e('dh').oninput=majDim;$e('dw').onblur=$e('dh').onblur=()=>{dimSnap=false};
  $e('undo').onclick=undo;$e('redo').onclick=redoF;
  $e('clear').onclick=()=>{if(confirm('Tout effacer ?')){snap();M.items=[];M.temps=[];sel=null;cur=0;draw()}};
- $e('tabD').onclick=()=>setMode('d');$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
+ $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?ouvrirDlg():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
  $e('vpause').onclick=()=>{const s=$e('cvbox').querySelector('svg'),b=$e('vpause');if(b.dataset.p){s.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{s.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}};
  $e('vrestart').onclick=()=>{$e('vpause').textContent='⏸ Pause';delete $e('vpause').dataset.p;draw()};
  $e('vspeed').onchange=()=>draw();
  $e('dlsvg').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([render(M,{animOn:true})],{type:'image/svg+xml'}));a.download='schema.svg';a.click()};
  $e('save').onclick=ouvrirDlg;$e('fdlg').onsubmit=enregistrer;$e('cancel').onclick=()=>$e('dlg').close();
- $e('nouveau').onclick=()=>{editingId=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
+ $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;editingId=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
  document.addEventListener('keydown',ev=>{if($e('editeur').classList.contains('hide')||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='z'){ev.preventDefault();ev.shiftKey?redoF():undo();return}
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='y'){ev.preventDefault();redoF();return}
   if(mode=='d'&&sel!=null&&(ev.key=='Delete'||ev.key=='Backspace')){ev.preventDefault();snap();removeItem(sel);draw()}
   if(mode=='d'&&sel!=null&&(ev.key=='r'||ev.key=='R'))rotSel(ev.shiftKey?-90:90)});
- setTool('sel');setMode('d');majE()}
+ try{const b=JSON.parse(localStorage.getItem('brouillon_editeur')||'null');if(b&&b.M){M=norm(b.M);editingId=b.editingId||null;$e('dw').value=M.w;$e('dh').value=M.h}}catch(e){}
+ setMode('d');majE()}
 initEditeur();
