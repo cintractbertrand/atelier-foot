@@ -20,7 +20,7 @@ const clubCode=()=>(lsG('codeclub')||prompt('Code club :')||'').trim();
 async function partager(id){const f=E.find(x=>x.id==id);if(!f)return;const code=clubCode();if(!code)return;
  let nom=lsG('nomeduc');if(!nom){nom=(prompt('Ton nom, affiché sur la fiche :')||'').trim().slice(0,40);lsS('nomeduc',nom)}
  const o={...f};['perso','club','auteur','maj','schema_svg'].forEach(k=>delete o[k]);
- if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:nom}))return;
+ if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||nom}))return;
  savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
 async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est seulement masquée et reste récupérable.'))return;const code=clubCode();if(!code)return;
  if(!await clubRpc('retirer_fiche',{code,fid:id}))return;lsS('codeclub',code);await clubCharger()}
