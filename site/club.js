@@ -25,10 +25,13 @@ async function partager(id){const f=E.find(x=>x.id==id);if(!f)return;const code=
 async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est seulement masquée et reste récupérable.'))return;const code=clubCode();if(!code)return;
  if(!await clubRpc('retirer_fiche',{code,fid:id}))return;lsS('codeclub',code);await clubCharger()}
 function boutonsClub(e){if(!clubOn())return'';return e.perso?`<button class="add" onclick="partager('${e.id}')">Partager au club</button>`:e.club?`<button onclick="retirer('${e.id}')">Retirer du club</button>`:''}
-function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!window.EXERCICES.length||document.getElementById('cenvoi'))return;
- const b=document.createElement('button');b.id='cenvoi';b.textContent='Envoyer les fiches du PC au club';b.onclick=envoyerLocales;s.appendChild(document.createTextNode(' '));s.appendChild(b)}
-async function envoyerLocales(){const code=clubCode();if(!code)return;let ok=0;const L=window.EXERCICES;
- for(const f of L){clubEtat('Envoi… '+ok+'/'+L.length);const o={...f};['perso','club','auteur','maj','schema_svg'].forEach(k=>delete o[k]);
-  if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||'ESGA'}))return;ok++}
- lsS('codeclub',code);await clubCharger();alert(ok+' fiches envoyées au club.')}
+function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!clubOn()||document.getElementById('cenvoi'))return;
+ const l=document.createElement('label');l.id='cenvoi';l.className='fo';l.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l.textContent='Importer des fiches (.json) ';
+ const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l)}
+async function importerFichiers(fs){fs=[...fs];if(!fs.length)return;const code=clubCode();if(!code)return;let n=0;
+ for(const fi of fs){let d;try{d=JSON.parse(await fi.text())}catch(e){alert('Fichier illisible : '+fi.name);return}
+  for(const f of Array.isArray(d)?d:[d]){const o={...f};['perso','club','auteur','maj','schema_svg'].forEach(k=>delete o[k]);
+   if(!o.id||!o.titre){alert('Fiche invalide dans '+fi.name);return}
+   if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||lsG('nomeduc')||'ESGA'}))return;n++;clubEtat('Import… '+n+' fiche(s)')}}
+ lsS('codeclub',code);await clubCharger();alert(n+' fiche(s) importée(s) au club.')}
 clubCharger();

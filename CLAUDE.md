@@ -21,7 +21,7 @@ Petit site web pour préparer des séances d'entraînement de foot à partir d'u
 - Chaque consigne d'agent est autonome : fichiers concernés, format attendu, critère de fin.
 
 ## Site
-- Site statique, sans serveur ni comptes : s'ouvre directement en local (`site/index.html`).
+- Site statique, sans serveur : le site en ligne (GitHub Pages) est la référence, plus de site local (décision de Bertrand, 11/11/2026). Le PC garde les PDF, brouillons et fiches JSON ; on les importe dans le site avec le bouton « Importer des fiches (.json) » (code club demandé).
 - Publié sur GitHub (dépôt public `cintractbertrand/atelier-foot`) avec GitHub Pages, à la demande de Bertrand (11/11/2026). Garder le code statique et simple.
 - Fiches partagées entre éducateurs : base Supabase (choix de Bertrand, 11/11/2026). Lecture libre, écriture avec un code club stocké chiffré ; « Retirer » masque sans effacer. Config dans `site/club.js`, script dans `chantiers/base_partagee/supabase.sql`. Sans config, le site reste 100 % local.
 - Lisible sur téléphone au bord du terrain, imprimable sur une page A4.
