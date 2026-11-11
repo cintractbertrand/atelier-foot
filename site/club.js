@@ -39,7 +39,7 @@ async function importerFichiers(fs){fs=[...fs];if(!fs.length)return;const code=c
  for(const fi of fs){let d;try{d=JSON.parse(await fi.text())}catch(e){alert('Fichier illisible : '+fi.name);return}
   for(const f of Array.isArray(d)?d:[d]){const o=propre(f);
    if(!o.id||!o.titre){alert('Fiche invalide dans '+fi.name);return}
-   if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||'ESGA'}))return;n++;clubEtat('Import… '+n+' fiche(s)')}}
+   if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||'Commun'}))return;n++;clubEtat('Import… '+n+' fiche(s)')}}
  lsS('codeclub',code);await clubCharger();alert(n+' fiche(s) importée(s) au club.')}
 clubCharger();
 // ---- Séances du club (liste, enregistrement, consultation sur téléphone) ----
