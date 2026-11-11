@@ -54,26 +54,24 @@ function simulate(m){
 function qpts(a,c,b,n=24){const o=[];for(let k=0;k<=n;k++){const t=k/n,u=1-t;o.push(c?[u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]]:[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}return o}
 function plen(p){let l=0;for(let k=1;k<p.length;k++)l+=dist(p[k],p[k-1]);return l}
 const segLen=g=>plen(qpts(g.a,g.c,g.b,16)),vel=g=>(g.kind=='passe'||g.kind=='tir')?V*1.6:V;
-function timing(S){const durs=S.segs.map(sg=>Math.max(1,...Object.values(sg).map(g=>segLen(g)/vel(g))));let t=0;const starts=durs.map(d=>{const s=t;t+=d+.3;return s});return{starts,durs,T:S.segs.length?t+1.6:0}}
+function timing(S){const durs=S.segs.map(sg=>Math.max(1,...Object.values(sg).map(g=>segLen(g)/vel(g))));let t=0;const starts=durs.map(d=>{const s=t;t+=d+.3;return s});return{starts,T:S.segs.length?t+1.6:0}}
 function motion(S,TM,i,speed){
- const p0=S.states[0].pos[i];let d='M0 0',cum=0,keys=[[0,0]],spl=[],last=p0;const EASE={passe:'.1 .6 .4 1',tir:'.1 .6 .4 1',conduite:'.35 0 .65 1'},LIN='0 0 1 1';
+ const p0=S.states[0].pos[i];let d='M0 0',cum=0,keys=[[0,0]],last=p0;
  S.segs.forEach((sg,k)=>{const g=sg[i];if(!g)return;const t0=TM.starts[k],L=segLen(g);
-  if(keys[keys.length-1][0]<t0-1e-6){keys.push([t0,cum]);spl.push(LIN)}
-  const rx=v=>R(v[0]-p0[0])+' '+R(v[1]-p0[1]);d+=g.c?` Q${rx(g.c)} ${rx(g.b)}`:` L${rx(g.b)}`;cum+=L;keys.push([t0+Math.max(.2,L/vel(g)),cum]);spl.push(EASE[g.kind]||'.45 0 .55 1');last=g.b});
+  if(keys[keys.length-1][0]<t0-1e-6)keys.push([t0,cum]);
+  const rx=v=>R(v[0]-p0[0])+' '+R(v[1]-p0[1]);d+=g.c?` Q${rx(g.c)} ${rx(g.b)}`:` L${rx(g.b)}`;cum+=L;keys.push([t0+Math.max(.2,L/vel(g)),cum]);last=g.b});
  if(cum<1)return'';
- if(TM.T-1>keys[keys.length-1][0]){keys.push([TM.T-1,cum]);spl.push(LIN)}d+=' L0 0';cum+=dist(last,p0);keys.push([TM.T,cum]);spl.push('.45 0 .55 1');
- return `<animateMotion dur="${(TM.T/(speed||1)).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keySplines="${spl.join(';')}" keyTimes="${keys.map(k=>(k[0]/TM.T).toFixed(4)).join(';')}" keyPoints="${keys.map(k=>(k[1]/cum).toFixed(4)).join(';')}" path="${d}"/>`}
+ keys.push([TM.T-1,cum]);d+=' L0 0';cum+=dist(last,p0);keys.push([TM.T,cum]);
+ return `<animateMotion dur="${(TM.T/(speed||1)).toFixed(2)}s" repeatCount="indefinite" calcMode="linear" keyTimes="${keys.map(k=>(k[0]/TM.T).toFixed(4)).join(';')}" keyPoints="${keys.map(k=>(k[1]/cum).toFixed(4)).join(';')}" path="${d}"/>`}
 // ---------- flèches ----------
 function trim(p,r,end){const q=end?p.slice().reverse():p.slice(),o=q[0];while(q.length>2&&dist(q[0],o)<r)q.shift();return end?q.reverse():q}
 function wavy(p){const o=[],L=plen(p);let s=0;for(let k=1;k<p.length;k++){const a=p[k-1],b=p[k],l=dist(a,b)||1,nx=-(b[1]-a[1])/l,ny=(b[0]-a[0])/l;for(let u=0;u<l;u+=2){const amp=3*Math.min(1,(L-s-u)/12);const w=amp*Math.sin((s+u)/3);o.push([a[0]+(b[0]-a[0])*u/l+nx*w,a[1]+(b[1]-a[1])*u/l+ny*w])}s+=l}o.push(p[p.length-1]);return o}
-function arrow(g,n,op,an){
+function arrow(g,n,op){
  let p=qpts(g.from,g.c,g.to,30);if(g.fromP)p=trim(p,13,false);if(g.toP)p=trim(p,13,true);if(plen(p)<6)return'';
  if(g.kind=='conduite')p=wavy(p);
  const st={course:`stroke="${PLOT}" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ad)"`,conduite:`stroke="#222" stroke-width="1.6" marker-end="url(#ap)"`,passe:`stroke="#222" stroke-width="2" marker-end="url(#ap)"`,tir:`stroke="${RED}" stroke-width="3" marker-end="url(#ar)"`}[g.kind];
  let s=`<polyline points="${p.map(q=>R(q[0])+','+R(q[1])).join(' ')}" fill="none" ${st}${op<1?` opacity="${op}"`:''}/>`;
  if(n&&plen(p)>22){const m=p[Math.floor(p.length*.4)];s+=`<g${op<1?` opacity="${op}"`:''}><circle cx="${R(m[0])}" cy="${R(m[1])}" r="5" fill="#fff" stroke="${NAVY}"/><text x="${R(m[0])}" y="${R(m[1]+2.5)}" font-size="7" font-weight="700" text-anchor="middle" fill="${NAVY}" font-family="sans-serif">${n}</text></g>`}
-if(an){const T=an.T,c=t=>Math.min(T,Math.max(0,t)),s0=an.s,e0=an.s+an.d,ts=[0,s0,s0+.25,e0,e0+.5,T].map(c);for(let q=1;q<ts.length;q++)ts[q]=Math.max(ts[q],ts[q-1]);
-  s=`<g opacity=".3"><animate attributeName="opacity" dur="${(T/an.sp).toFixed(2)}s" repeatCount="indefinite" keyTimes="${ts.map(t=>R(t/T*1e4)/1e4).join(';')}" values=".3;.3;1;1;.3;.3"/>${s}</g>`}
  return s}
 // ---------- rendu ----------
 function render0(m,o={}){
@@ -83,7 +81,7 @@ function render0(m,o={}){
  let b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="${NAVY}"/><rect x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" fill="#f4f8fd" stroke="${NAVY}" stroke-width="1.5"/>`;
  const di=i=>ed=='d'||(ed=='m'&&(I[i].t=='p'||I[i].t=='ball'))?` data-i="${i}" style="cursor:grab"`:'';
  I.forEach((it,i)=>{if(it.t=='zone')b+=`<rect${ed=='d'?` data-i="${i}" style="cursor:grab"`:''} x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="${ed?'#1b3a7310':'none'}" stroke="${NAVY}" stroke-dasharray="6 4"/>`});
- S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
+ S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op)})});
  if(before)S.mob.forEach(i=>{if(dist(before.pos[i],st.pos[i])>2)b+=`<g transform="translate(${R(before.pos[i][0])} ${R(before.pos[i][1])})" opacity=".3" style="pointer-events:none">${shape(I[i])}</g>`});
  const draw1=(it,i)=>{const p=P(i);let inner=shape(it);if(TM&&(it.t=='p'||it.t=='ball')){const mo=motion(S,TM,i,o.speed);if(mo)inner=`<g>${inner}${mo}</g>`}
   return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&sel===i?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${ed&&it.t=='ball'?'<circle r="8" fill="transparent"/>':''}${inner}</g>`};
