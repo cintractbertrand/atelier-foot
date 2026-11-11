@@ -175,11 +175,11 @@ function ouvrirDlg(){const f=editingId?E.find(x=>x.id==editingId):null;const g=i
  const k=compte(M);g('f_mat').value=Object.entries(k.mat).map(([n,q])=>q+' '+nomMat(n,q)).join(', ')||(f?f.materiel.map(m=>m.quantite+' '+m.nom).join(', '):'');if(!f){g('f_jmin').value=k.joueurs||6;g('f_jmax').value=k.joueurs||12}g('f_obj').value=f?.objectif||'';g('f_org').value=f?.organisation||'';g('f_dero').value=f?.deroulement||'';
  g('f_cons').value=(f?.consignes||[]).join('\n');g('f_var').value=(f?.variantes||[]).map(v=>v.nom+' : '+v.change).join('\n');$e('dlg').showModal()}
 function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):null;
- const fiche={id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:g('f_cats').split(',').map(x=>x.trim()).filter(Boolean),public:['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
+ const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:g('f_cats').split(',').map(x=>x.trim()).filter(Boolean),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
   materiel:g('f_mat').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d+)\s+(.*)$/);return m?{nom:m[2],quantite:+m[1]}:{nom:x,quantite:1}}),
   objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());return{nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''}}),
-  schema_modele:cl(M)};
+  schema_modele:cl(M)};delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
  const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);$e('dlg').close();editingId=fiche.id;majE();show('b')}
 const hyd=e=>e.schema_modele?{...e,schema_svg:render(e.schema_modele,{animOn:true})}:e;
 const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
