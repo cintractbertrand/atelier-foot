@@ -74,5 +74,5 @@ async function importerSeances(fs){fs=[...fs];if(!fs.length)return;const code=cl
  for(const fi of fs){let d;try{d=JSON.parse(await fi.text())}catch(e){alert('Fichier illisible : '+fi.name);return}
   const m=(d.nom||'').match(/(\d{2})\/(\d{2})\/(\d{4})/)||fi.name.match(/_(\d{2})(\d{2})(\d{4})\.json$/);
   const dt=m?m[3]+'-'+m[2]+'-'+m[1]:null,id='imp-'+fi.name.replace(/\.json$/i,'').toLowerCase().replace(/[^a-z0-9_-]/g,'');
-  if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:d.nom||fi.name,exercices:d.exercices||[]},auteur:d.auteur||lsG('nomeduc')||'Nico',datej:dt}))return;n++}
+  if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:d.nom||fi.name,exercices:d.exercices||[]},auteur:d.auteur||'Nico',datej:dt}))return;n++}
  lsS('codeclub',code);await seancesCharger();alert(n+' séance(s) importée(s).')}
