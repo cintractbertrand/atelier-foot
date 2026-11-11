@@ -42,3 +42,31 @@ async function importerFichiers(fs){fs=[...fs];if(!fs.length)return;const code=c
    if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||lsG('nomeduc')||'ESGA'}))return;n++;clubEtat('Import… '+n+' fiche(s)')}}
  lsS('codeclub',code);await clubCharger();alert(n+' fiche(s) importée(s) au club.')}
 clubCharger();
+// ---- Séances du club (liste, enregistrement, consultation sur téléphone) ----
+window.SEANCES=[];
+const dateFr=d=>d?d.split('-').reverse().join('/'):'';
+async function seancesCharger(){if(!clubOn())return;const code=lsG('codeclub');if(!code){seancesAff('Saisis d\'abord le code club (onglet Base).');return}
+ seancesAff('Chargement des séances…');
+ try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_seances',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
+  if(!r.ok)throw new Error(r.status);SEANCES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:x.auteur||'',date:x.date_seance||'',maj:x.maj}));seancesAff()}
+ catch(e){seancesAff('Séances indisponibles pour le moment (le script SQL séances est-il lancé ? connexion ?)')}}
+function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;
+ const sa=document.getElementById('sa'),cur=sa.value,au=[...new Set(SEANCES.map(x=>x.auteur).filter(Boolean))].sort();
+ sa.innerHTML='<option value="">Tous les entraîneurs</option>'+au.map(a=>`<option${a==cur?' selected':''}>${esc(a)}</option>`).join('');sa.onchange=()=>seancesAff();document.getElementById('sq').oninput=()=>seancesAff();
+ const q=document.getElementById('sq').value.toLowerCase(),a=sa.value;
+ const r=SEANCES.filter(x=>(!a||x.auteur==a)&&(!q||(x.nom||'').toLowerCase().includes(q))).sort((x,y)=>(y.date||'').localeCompare(x.date||''));
+ L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+(r.length?r.map(x=>{const n=(x.exercices||[]),d=n.reduce((t,e)=>t+ +e.duree,0);
+  return `<div class="sitem"><h3>${esc(x.nom||'Séance')}</h3><small>${dateFr(x.date)}${x.auteur?' · '+esc(x.auteur):''} · ${n.length} exercice${n.length>1?'s':''} · ${d} min</small>
+  <div class="actions"><button class="add" onclick="ouvrirSeance('${esc(x.id)}',1)">📱 Consulter</button><button onclick="ouvrirSeance('${esc(x.id)}',0)">Modifier</button><button onclick="retirerSeance('${esc(x.id)}')">Retirer</button></div></div>`}).join(''):(msg?'':'<p class="vide">Aucune séance enregistrée.</p>'))}
+function ouvrirSeance(id,terrain){const x=SEANCES.find(s=>s.id==id);if(!x)return;
+ S=(x.exercices||[]).map(e=>({...e}));nom.value=x.nom||'';dat.value=x.date||'';lsS('nomseance',nom.value);lsS('dateseance',dat.value);lsS('seanceid',x.id);TERRAIN=!!terrain;save();show('s')}
+async function enregistrerSeance(){if(!S.length){alert('La séance est vide.');return}if(!nom.value.trim()){alert('Donne un nom à la séance.');nom.focus();return}
+ if(!dat.value){alert('Choisis la date de la séance.');dat.focus();return}
+ const code=clubCode();if(!code)return;let au=lsG('nomeduc');if(!au){au=(prompt('Ton nom, affiché sur la séance :')||'').trim().slice(0,40);lsS('nomeduc',au)}
+ const id=lsG('seanceid')||('s'+Date.now().toString(36));
+ if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:nom.value.trim(),exercices:S},auteur:au,datej:dat.value}))return;
+ lsS('codeclub',code);lsS('seanceid',id);await seancesCharger();alert('Séance enregistrée : visible par tous les éducateurs, sur téléphone.')}
+async function retirerSeance(id){if(!confirm('Retirer cette séance du club ? Elle est seulement masquée.'))return;const code=clubCode();if(!code)return;
+ if(!await clubRpc('retirer_seance',{code,sid:id}))return;if(lsG('seanceid')==id)lsS('seanceid','');await seancesCharger()}
+document.getElementById('sv').onclick=enregistrerSeance;
+if(clubOn())seancesCharger();else document.getElementById('sv').classList.add('hide');
