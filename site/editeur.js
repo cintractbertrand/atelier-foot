@@ -247,7 +247,7 @@ function enregistrerV(ev){ev.preventDefault();const f=E.find(x=>x.id==varEdit.pi
  const a=chargePerso().filter(x=>x.id!=o.id);a.push(o);savePerso(a);$e('dlgv').close();majE();show('b');
  setTimeout(()=>alert('Variante « '+v.nom+' » enregistrée : elle s\'affiche à côté de « '+o.titre+' ».'+(window.boutonsClub?' Pour la partager, utilise « Partager au club » sur la fiche.':'')),50)}
 const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
-function nettoie(f){if(f.theme=='passe')f.theme='technique';if(Array.isArray(f.categories))f.categories=[...new Set(f.categories.map(c=>/^seniors?$/i.test(c)?'Seniors':c))];return f}
+function nettoie(f){if(f.theme=='passe')f.theme='technique';if(Array.isArray(f.categories))f.categories=[...new Set(f.categories.map(c=>/^seniors?$/i.test(c)?'Seniors':/^U[79]$/.test(c)?'U7-U9':c))];return f}
 function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id)),c=(window.CLUBF||[]).filter(x=>!ids.has(x.id)),cid=new Set(c.map(x=>x.id));
  E=window.EXERCICES.filter(x=>!ids.has(x.id)&&!cid.has(x.id)).map(hyd).concat(c.map(hyd),p.map(hyd)).map(nettoie);majFiltres();base();if(typeof seance=='function')seance()}
 function modifierSchema(id){const f=E.find(x=>x.id==id);if(!f||!f.schema_modele)return;editingId=id;varEdit=null;M=norm(f.schema_modele);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d')}
