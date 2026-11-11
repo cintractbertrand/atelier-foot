@@ -5,7 +5,7 @@ const CLUB_URL='https://bkebcwjkorqdpckcqtwq.supabase.co',CLUB_CLE='sb_publishab
 window.CLUBF=[];
 const clubOn=()=>!!(CLUB_URL&&CLUB_CLE);
 function clubH(){const h={apikey:CLUB_CLE,'Content-Type':'application/json'};if(!CLUB_CLE.startsWith('sb_'))h.Authorization='Bearer '+CLUB_CLE;return h}
-const clubEtat=(t,btn)=>{const s=document.getElementById('clubetat');if(!s)return;s.textContent=t+' ';if(btn){const b=document.createElement('button');b.textContent='Saisir le code club';b.onclick=()=>{const c=(prompt('Code club :')||'').trim();if(c){lsS('codeclub',c);clubCharger()}};s.appendChild(b)}};
+const clubEtat=(t,btn)=>{const s=document.getElementById('clubetat');if(!s)return;s.textContent=t+' ';boutonEnvoi();if(btn){const b=document.createElement('button');b.textContent='Saisir le code club';b.onclick=()=>{const c=(prompt('Code club :')||'').trim();if(c){lsS('codeclub',c);clubCharger()}};s.appendChild(b)}};
 const lsG=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}},lsS=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 async function clubCharger(){if(!clubOn())return;
  const code=lsG('codeclub')||(window.EXERCICES.length?'':clubCode());if(!code){clubEtat('Fiches du club verrouillées.',1);boutonEnvoi();return}
