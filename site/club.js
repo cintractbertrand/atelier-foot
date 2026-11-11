@@ -30,7 +30,7 @@ function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!clubO
  const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l);
  const l2=document.createElement('label');l2.className='fo';l2.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l2.textContent='Envoyer un dossier de fiches ';
  const i2=document.createElement('input');i2.type='file';i2.setAttribute('webkitdirectory','');i2.style.display='none';i2.onchange=()=>importerFichiers([...i2.files].filter(f=>/\.json$/i.test(f.name)));l2.appendChild(i2);s.appendChild(l2);
- const r=document.createElement('button');r.id='cretire';r.className='fo';r.style.marginLeft='8px';r.textContent='Retirer les fiches affichées';r.onclick=retirerAffichees;s.appendChild(r)}
+}
 async function retirerAffichees(){const L=(window.AFF||[]).filter(e=>e.club);if(!L.length){alert('Aucune fiche du club affichée.');return}
  if(!confirm('Retirer '+L.length+' fiche(s) du club ? Elles sont seulement masquées et récupérables.'))return;const code=clubCode();if(!code)return;let n=0;
  for(const e of L){clubEtat('Retrait… '+n+'/'+L.length);if(!await clubRpc('retirer_fiche',{code,fid:e.id}))return;n++}
