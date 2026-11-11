@@ -172,7 +172,7 @@ function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#
  Durée <input type="number" min="1" value="${s.duree}" style="width:70px" onchange="S[${i}].duree=this.value;seance()"> min
  <select onchange="S[${i}].variante=this.value;const x=e.variantes.find(y=>y.nom==this.value);if(x&&x.duree)S[${i}].duree=x.duree;seance()"><option value="">Variante…</option>${e.variantes.map(x=>`<option ${s.variante==x.nom?'selected':''}>${esc(x.nom)}</option>`).join('')}</select>
  <button onclick="S.splice(${i},1);seance()">Retirer</button></div>${s.variante?`<p><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</div>`}).join(''):'<div class="vide">Séance vide : ajoute des exercices depuis la base.</div>'}
-function anim(b){const v=b.parentNode.querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
+function anim(b){const v=b.closest('figure,.sch').querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
 function mv(i,d){const j=i+d;if(j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];seance()}
 function show(s){$('#editeur').classList.toggle('hide',s!='e');ne.className=s=='e'?'on':'';$('#base').classList.toggle('hide',s!='b');$('#seance').classList.toggle('hide',s!='s');$('#seances').classList.toggle('hide',s!='l');nl.className=s=='l'?'on':'';nb.className=s=='b'?'on':'';ns.className=s=='s'?'on':'';if(s=='s')seance();if(s=='l'&&window.seancesCharger)seancesAff()}
 ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;TM={};seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
