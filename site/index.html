@@ -77,6 +77,12 @@ dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4p
   <button onclick="tourner()" title="Tourne tout le schéma d'un quart de tour, mouvements compris">↻ Tourner le schéma</button><button onclick="miroir()" title="Inverse la gauche et la droite, mouvements compris">⇋ Miroir</button><button id="nouveau">Nouveau schéma</button><button id="clear">Tout effacer</button><button id="dlsvg">Télécharger l'image</button>
  </div>
 </section>
+<dialog id="dlgc"><div class="form">
+ <h3>Enregistrer <span id="c_titre"></span></h3>
+ <button id="c_rempl" class="add big"></button>
+ <button id="c_var" class="big">⧉ Enregistrer comme nouvelle variante</button>
+ <button class="big" onclick="dlgc.close()">Annuler</button>
+</div></dialog>
 <dialog id="dlgv"><form id="fdlgv" method="dialog" class="form">
  <h3>Variante de « <span id="v_parent"></span> »</h3>
  <label>Nom de la variante <input id="v_nom" maxlength="40" required placeholder="ex. 2 touches maximum"></label>
@@ -183,4 +189,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script src="editeur.js?v=15"></script><script src="club.js?v=14"></script></body></html>
+<script src="editeur.js?v=16"></script><script src="club.js?v=14"></script></body></html>
