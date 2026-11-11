@@ -202,7 +202,7 @@ function ui(){
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
  $e('fond').value=M.fond||'';$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
 function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui();brouillon()}
-function setMode(m){mode=m;tmp=null;drag=null;sel=null;if(m!='d'){tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'))}fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
+function setMode(m){mode=m;tmp=null;drag=null;sel=null;tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'));fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
 // Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
 function brouillon(){try{localStorage.setItem('brouillon_editeur',JSON.stringify({M,editingId,varEdit}))}catch(e){}}
 let dimSnap=false;
@@ -212,6 +212,13 @@ function majDim(){const w=Math.max(1,+$e('dw').value||0),h=Math.max(1,+$e('dh').
 function chargePerso(){try{return JSON.parse(localStorage.getItem('mesfiches')||'[]')}catch(e){return[]}}
 function savePerso(a){try{localStorage.setItem('mesfiches',JSON.stringify(a))}catch(e){alert('Enregistrement local impossible : exporte la fiche en fichier.')}}
 const CATS=['U7','U9','U11','U13','U15','U18','Seniors'];
+// Enregistrer une fiche ou une variante déjà existante : on choisit de la remplacer ou d'en faire une nouvelle variante.
+function enregistrerChoix(){const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&varEdit.idx!=null&&E.find(x=>x.id==varEdit.pid);
+ if(!f&&!pv)return ouvrirDlg();const v=pv&&pv.variantes[varEdit.idx];
+ $e('c_titre').textContent=f?'« '+f.titre+' »':'la variante « '+(v&&v.nom)+' »';$e('c_rempl').textContent=f?'Remplacer la fiche (même nom)':'Remplacer cette variante';
+ $e('c_rempl').onclick=()=>{$e('dlgc').close();ouvrirDlg()};
+ $e('c_var').onclick=()=>{$e('dlgc').close();varEdit={pid:f?f.id:varEdit.pid,idx:null};editingId=null;ui();brouillon();ouvrirDlg()};
+ $e('dlgc').showModal()}
 function ouvrirDlg(){if(varEdit)return ouvrirDlgV();const f=editingId?E.find(x=>x.id==editingId):null;const g=id=>$e(id);
  g('f_titre').value=f?.titre||'';g('f_theme').value=f?.theme||'échauffement';const cs=f?.categories||[];g('f_cats').innerHTML=[...new Set([...CATS,...cs])].map(c=>`<label class="chip"><input type="checkbox" value="${esc2(c)}"${cs.includes(c)?' checked':''}> ${esc2(c)}</label>`).join('');g('f_niveau').value=f?.niveau||'débutant';
  g('f_duree').value=f?.duree_min||15;g('f_jmin').value=f?.joueurs.min||6;g('f_jmax').value=f?.joueurs.max||12;
@@ -251,12 +258,12 @@ function initEditeur(){
  $e('dw').oninput=$e('dh').oninput=majDim;$e('fond').onchange=ev=>setFond(ev.target.value);$e('dw').onblur=$e('dh').onblur=()=>{dimSnap=false};
  $e('undo').onclick=undo;$e('redo').onclick=redoF;
  $e('clear').onclick=()=>{if(confirm('Tout effacer ?')){snap();M.items=[];M.temps=[];sel=null;cur=0;draw()}};
- $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?ouvrirDlg():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
+ $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?enregistrerChoix():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
  $e('vpause').onclick=()=>{const s=$e('cvbox').querySelector('svg'),b=$e('vpause');if(b.dataset.p){s.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{s.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}};
  $e('vrestart').onclick=()=>{$e('vpause').textContent='⏸ Pause';delete $e('vpause').dataset.p;draw()};
  $e('vspeed').onchange=()=>draw();
  $e('dlsvg').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([render(M,{animOn:true})],{type:'image/svg+xml'}));a.download='schema.svg';a.click()};
- $e('save').onclick=ouvrirDlg;$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
+ $e('save').onclick=enregistrerChoix;$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
  $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;editingId=null;varEdit=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
  document.addEventListener('keydown',ev=>{if($e('editeur').classList.contains('hide')||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='z'){ev.preventDefault();ev.shiftKey?redoF():undo();return}
