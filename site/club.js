@@ -57,6 +57,7 @@ function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;
  const r=SEANCES.filter(x=>(!a||x.auteur==a)&&(!q||(x.nom||'').toLowerCase().includes(q))).sort((x,y)=>(y.date||'').localeCompare(x.date||''));
  L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+(r.length?r.map(x=>{const n=(x.exercices||[]),d=n.reduce((t,e)=>t+ +e.duree,0);
   return `<div class="sitem"><h3>${esc(x.nom||'Séance')}</h3><small>${dateFr(x.date)}${x.auteur?' · '+esc(x.auteur):''} · ${n.length} exercice${n.length>1?'s':''} · ${d} min</small>
+  <ol class="srec" style="margin:6px 0 4px;padding-left:20px;font-size:14px">${n.map(e=>{const f=(window.EXERCICES||[]).concat(window.CLUBF||[]).find(y=>y.id==e.id);return `<li>${esc(f?f.titre:e.id)} <small style="color:#888">${f?'('+esc(f.theme)+') · ':''}${e.duree} min${e.variante?' · '+esc(e.variante):''}</small></li>`}).join('')}</ol>
   <div class="actions"><button class="add" onclick="ouvrirSeance('${esc(x.id)}',1)">📱 Consulter</button><button onclick="ouvrirSeance('${esc(x.id)}',0)">Modifier</button><button onclick="cloner('${esc(x.id)}')">⧉ Cloner</button><button onclick="retirerSeance('${esc(x.id)}')">Retirer</button></div></div>`}).join(''):(msg?'':'<p class="vide">Aucune séance enregistrée.</p>'))}
 function cloner(id){ouvrirSeance(id,0,1)}
 function ouvrirSeance(id,terrain,clone){const x=SEANCES.find(s=>s.id==id);if(!x)return;
