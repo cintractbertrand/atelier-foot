@@ -26,7 +26,7 @@ details summary{cursor:pointer;color:var(--o);margin-top:8px}
 .tot{background:#fff;border-radius:8px;padding:10px;margin-bottom:12px;font-weight:600}
 .vide{color:var(--g);text-align:center;padding:30px}
 .hide{display:none}#props:empty{display:none}#props{background:#fff;border-radius:8px;padding:8px}#tools button{display:inline-flex;align-items:center;gap:4px}#tools button.on svg *{filter:brightness(1.2)}#tbar span{color:var(--g)}.layout{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start}#side{position:sticky;top:70px;max-height:calc(100vh - 80px);overflow-y:auto;background:#fff;border-radius:8px;padding:10px;box-shadow:0 1px 3px #0002}#side input{width:100%;margin-bottom:8px}#side summary{cursor:pointer;font-weight:700;color:var(--o);padding:6px 0;text-transform:uppercase;font-size:13px}.fo{display:flex;justify-content:space-between;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px}.fo:hover{background:#eef3fa}.fo.on{background:var(--o);color:#fff}.fo small{opacity:.6}@media(max-width:700px){.layout{grid-template-columns:1fr}#side{position:static;max-height:260px}}.form{display:flex;flex-direction:column;gap:8px;min-width:min(520px,85vw)}.form label{display:flex;flex-direction:column;font-size:13px;color:var(--g)}.form textarea,.form input,.form select{font:inherit;color:#222}#tabD.on,#tabM.on,#tabV.on,#tbar button.on,#tools button.on{background:var(--o);color:#fff}.pl{margin-top:4px;font-size:13px}.sch{max-width:420px;margin:8px 0}.sch svg{width:100%;height:auto;display:block}
-.tstep{background:#fff;border-radius:8px;margin-bottom:10px;box-shadow:0 1px 3px #0002}.tstep>summary{font-size:18px;font-weight:700;color:var(--o);padding:14px;list-style:none;display:flex;gap:10px;align-items:center}.tstep>summary::-webkit-details-marker{display:none}.tstep .fiche{box-shadow:none;margin:0;border-left:0}.tstep .fiche h3{display:none}.tstep>summary .d{margin-left:auto;background:var(--or);border-radius:14px;padding:2px 12px}.sitem{background:#fff;border-left:6px solid var(--or);border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}.sitem h3{margin:0 0 4px;color:var(--o)}.sitem small{color:var(--g)}.terrain .noprint>*:not(#mt){display:none!important}.terrain #sl .noprint{display:none!important}.terrain .tot{position:sticky;top:60px;z-index:5}@media(max-width:700px){main{padding:8px}.layout{display:block}#side{position:static;max-height:none}}
+.tstep{background:#fff;border-radius:8px;margin-bottom:10px;box-shadow:0 1px 3px #0002}.tstep>summary{font-size:18px;font-weight:700;color:var(--o);padding:14px;list-style:none;display:flex;gap:10px;align-items:center}.tstep>summary::-webkit-details-marker{display:none}.tstep .fiche{box-shadow:none;margin:0;border-left:0}.tstep .fiche h3{display:none}.tstep>summary .d{margin-left:auto;background:var(--or);border-radius:14px;padding:2px 12px}.sitem{background:#fff;border-left:6px solid var(--or);border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}.sitem h3{margin:0 0 4px;color:var(--o)}.sitem small{color:var(--g)}.timer{display:flex;gap:8px;align-items:center;padding:0 14px 10px}.timer b{font-size:32px;font-variant-numeric:tabular-nums;color:var(--o);margin-right:auto}.timer button{font-size:18px;padding:10px 16px}.timer.fin{background:#c0392b;color:#fff;border-radius:8px;margin:0 8px 8px;padding:10px}.timer.fin b{color:#fff}.terrain .noprint>*:not(#mt){display:none!important}.terrain #sl .noprint{display:none!important}.terrain .tot{position:sticky;top:60px;z-index:5}@media(max-width:700px){main{padding:8px}.layout{display:block}#side{position:static;max-height:none}}
 @media print{header,.filtres,.actions,.noprint{display:none!important}body{background:#fff}.fiche{box-shadow:none;break-inside:avoid;border:1px solid #999}@page{size:A4;margin:12mm}}
 </style></head><body>
 <header><h1>⚽ Atelier Foot · ESGA</h1>
@@ -121,7 +121,22 @@ function base(){const q=$('#q').value.toLowerCase();
  window.AFF=r;$('#liste').innerHTML=r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>'}
 function ajouter(id){const e=E.find(x=>x.id==id);S.push({id,duree:e.duree_min,variante:''});save();seance();}
 const noFiche=id=>`<div class="fiche"><h3>Fiche introuvable (${esc(id)})</h3><p>Elle n'est pas (ou plus) dans la base du club.</p></div>`;
-let TERRAIN=false;
+let TERRAIN=false,TM={},TMI=null;
+const tmRest=(i,d)=>{const t=TM[i];if(!t)return d*60;return t.run?Math.max(0,Math.ceil((t.end-Date.now())/1000)):t.rest};
+const tmTxt=(i,d)=>{const r=tmRest(i,d);return TM[i]?(r<=0?'Terminé':Math.floor(r/60)+':'+String(r%60).padStart(2,'0')):d+"'"};
+function tmHtml(i,d){const t=TM[i],r=tmRest(i,d),fin=t&&r<=0;return `<div class="timer${fin?' fin':''}" id="tm${i}"><b>${fin?'Terminé !':Math.floor(r/60)+':'+String(r%60).padStart(2,'0')}</b><button onclick="tmGo(${i})">${t&&t.run?'⏸ Pause':fin?'↻ Relancer':'▶ Démarrer'}</button><button onclick="tmRaz(${i})">↺</button></div>`}
+function tmGo(i){const d=+S[i].duree,t=TM[i];tmAudio();
+ if(t&&t.run){t.rest=tmRest(i,d);t.run=false}else{const r=tmRest(i,d);TM[i]={run:true,end:Date.now()+(r<=0?d*60:r)*1000,rest:0,bip:false}}
+ tmRender(i);if(!TMI)TMI=setInterval(tmTick,500);try{if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}}
+function tmRaz(i){delete TM[i];tmRender(i)}
+function tmRender(i){const el=document.getElementById('tm'+i);if(el)el.outerHTML=tmHtml(i,+S[i].duree);const d=document.getElementById('td'+i);if(d)d.textContent=tmTxt(i,+S[i].duree)}
+function tmTick(){let run=false;Object.keys(TM).forEach(i=>{const t=TM[i];if(!t.run)return;const r=tmRest(i,+S[i].duree);
+  if(r<=0&&!t.bip){t.bip=true;t.run=false;t.rest=0;tmBip();tmRender(i)}else{run=true;const b=document.querySelector('#tm'+i+' b'),d=document.getElementById('td'+i),x=tmTxt(i,+S[i].duree);if(b)b.textContent=x;if(d)d.textContent=x}});
+ if(!run){clearInterval(TMI);TMI=null}}
+let AC=null;
+function tmAudio(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume()}catch(e){}}
+function tmBip(){try{navigator.vibrate&&navigator.vibrate([500,200,500,200,500,200,500])}catch(e){}
+ try{tmAudio();if(!AC)return;const t0=AC.currentTime;for(let k=0;k<8;k++)[880,1175].forEach((f,j)=>{const t=t0+k*.7+j*.25,o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.25)})}catch(e){}}
 function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#nom').value;$('#dat').value=localStorage.getItem('dateseance')||$('#dat').value;
  $('#seance').classList.toggle('terrain',TERRAIN);$('#mt').textContent=TERRAIN?'✏️ Mode édition':'📱 Mode terrain';
  const tot=S.reduce((a,s)=>a+ +s.duree,0),mat={};
@@ -129,7 +144,7 @@ function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#
  $('#tot').innerHTML=`Durée totale : ${tot} min<br>Joueurs (schéma le plus grand) : ${jmax||'—'}<br>Matériel à prévoir : ${Object.entries(mat).map(([k,v])=>v+' '+esc(nomMat(k,v))).join(', ')||'—'}`;
  $('#sl').innerHTML=S.length?S.map((s,i)=>{const e=E.find(x=>x.id==s.id);
  if(!e)return noFiche(s.id);
- if(TERRAIN)return `<details class="tstep"${i==0?' open':''}><summary>${i+1} · ${esc(e.titre)}<span class="d">${s.duree}'</span></summary>${fiche(e,{duree:s.duree,variante:s.variante||null})}${s.variante?`<p style="padding:0 12px 12px"><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</details>`;
+ if(TERRAIN)return `<details class="tstep"${i==0?' open':''}><summary>${i+1} · ${esc(e.titre)}<span class="d" id="td${i}">${tmTxt(i,s.duree)}</span></summary>${tmHtml(i,s.duree)}${fiche(e,{duree:s.duree,variante:s.variante||null})}${s.variante?`<p style="padding:0 12px 12px"><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</details>`;
  return fiche(e,{duree:s.duree})+`<div class="actions noprint"><button onclick="mv(${i},-1)">▲</button><button onclick="mv(${i},1)">▼</button>
  Durée <input type="number" min="1" value="${s.duree}" style="width:70px" onchange="S[${i}].duree=this.value;seance()"> min
  <select onchange="S[${i}].variante=this.value;seance()"><option value="">Variante…</option>${e.variantes.map(x=>`<option ${s.variante==x.nom?'selected':''}>${esc(x.nom)}</option>`).join('')}</select>
@@ -137,7 +152,7 @@ function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#
 function anim(b){const v=b.parentNode.querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
 function mv(i,d){const j=i+d;if(j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];seance()}
 function show(s){$('#editeur').classList.toggle('hide',s!='e');ne.className=s=='e'?'on':'';$('#base').classList.toggle('hide',s!='b');$('#seance').classList.toggle('hide',s!='s');$('#seances').classList.toggle('hide',s!='l');nl.className=s=='l'?'on':'';nb.className=s=='b'?'on':'';ns.className=s=='s'?'on':'';if(s=='s')seance();if(s=='l'&&window.seancesCharger)seancesAff()}
-ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
+ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;TM={};seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
 
 nom.oninput=()=>{try{localStorage.setItem('nomseance',nom.value)}catch(e){}};dat.oninput=()=>{try{localStorage.setItem('dateseance',dat.value)}catch(e){}};
 raz.onclick=()=>{if(confirm('Vider la séance ?')){S=[];nom.value='';dat.value='';['nomseance','dateseance','seanceid'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});seance()}};
@@ -145,4 +160,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script src="editeur.js?v=12"></script><script src="club.js?v=11"></script></body></html>
+<script src="editeur.js?v=12"></script><script src="club.js?v=13"></script></body></html>
