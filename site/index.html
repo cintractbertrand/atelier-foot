@@ -36,6 +36,7 @@ details summary{cursor:pointer;color:var(--o);margin-top:8px}
 .opts{border-top:1px solid #d5deea;padding-top:8px;margin-top:12px;font-size:14px}.opts input{padding:5px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.chip{flex-direction:row!important;align-items:center;gap:4px;background:#fff;border:1px solid #ccc;border-radius:16px;padding:4px 10px;color:#222!important}
 dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4px 20px #0005}@media(max-width:700px){dialog{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:10px 10px 0 0}.form{min-width:0}.steps button{font-size:13px}}
+.schs{display:flex;gap:10px;margin:8px 0;max-width:420px}.schs.multi{max-width:none;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.schs .sch{flex:1 0 300px;max-width:420px;margin:0;scroll-snap-align:start;background:#f7f9fc;border-radius:8px;padding:6px;border:2px solid transparent}.schs .sch.on{border-color:var(--or)}.schs figcaption{font-size:14px;color:var(--o);margin:0 0 4px}.schs figcaption:empty{display:none}.vt{background:#dce8f8;border-radius:10px;padding:0 8px;font-size:12px;color:var(--o)}.schs .actions{margin-top:4px}@media(max-width:700px){.schs .sch{flex-basis:85%}}
 @media print{header,.filtres,.actions,.noprint{display:none!important}body{background:#fff}.fiche{box-shadow:none;break-inside:avoid;border:1px solid #999}@page{size:A4;margin:12mm}}
 </style></head><body>
 <header><h1>⚽ Atelier Foot · ESGA</h1>
@@ -76,6 +77,14 @@ dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4p
   <button id="nouveau">Nouveau schéma</button><button id="clear">Tout effacer</button><button id="dlsvg">Télécharger l'image</button>
  </div>
 </section>
+<dialog id="dlgv"><form id="fdlgv" method="dialog" class="form">
+ <h3>Variante de « <span id="v_parent"></span> »</h3>
+ <label>Nom de la variante <input id="v_nom" maxlength="40" required placeholder="ex. 2 touches maximum"></label>
+ <label>Ce qui change <textarea id="v_change" rows="3" required placeholder="ex. Les joueurs ont 2 touches de balle au maximum."></textarea></label>
+ <label>Difficulté <span class="chips"><label class="chip"><input type="radio" name="v_diff" value="plus facile"> Plus facile</label><label class="chip"><input type="radio" name="v_diff" value="plus difficile"> Plus difficile</label><label class="chip"><input type="radio" name="v_diff" value="" checked> Autre</label></span></label>
+ <label>Durée si elle change (min) <input id="v_duree" type="number" min="1" placeholder="même durée"></label>
+ <div class="actions"><button type="submit" class="add">Enregistrer la variante</button><button type="button" onclick="dlgv.close()">Annuler</button></div>
+</form></dialog>
 <dialog id="dlg"><form id="fdlg" method="dialog" class="form">
  <h3>Fiche d'exercice</h3>
  <label>Titre (40 car.) <input id="f_titre" maxlength="40" required></label>
@@ -119,16 +128,21 @@ function setF(k,v){F[k]=F[k]==v?'':v;majFiltres();base()}
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function fiche(e,v){return `<div class="fiche"><h3><span class="min">${v&&v.duree||e.duree_min}'</span>${esc(e.titre)}</h3>
 <div class="tags">${e.club?`<span class="tclub">Club${e.auteur?' · '+esc(e.auteur):''}</span>`:(e.auteur?`<span class="tclub">${esc(e.auteur)}</span>`:'')}${e.perso?'<span class="tperso">Sur cet appareil</span>':''}<span>${esc(e.theme)}</span><span>${esc(e.niveau)}</span><span>${e.joueurs.min}–${e.joueurs.max} joueurs</span><span>${esc(e.surface)}</span>${e.categories.map(c=>`<span>${c}</span>`).join('')}</div>
-${e.schema_svg?`<div class="sch">${uniq2(e.schema_svg)}<button class="pl" onclick="anim(this)">⏸ Pause</button></div>`:""}${e.schema_modele?`<h4>Sur le schéma</h4><p><b>${compte(e.schema_modele).joueurs} joueurs</b> · ${txtMat(matListe(e))}</p>`:`<h4>Matériel</h4><p>${txtMat(e.materiel)}</p>`}
+${schemas(e,v)}${e.schema_modele?`<h4>Sur le schéma</h4><p><b>${compte(e.schema_modele).joueurs} joueurs</b> · ${txtMat(matListe(e))}</p>`:`<h4>Matériel</h4><p>${txtMat(e.materiel)}</p>`}
 <h4>Objectif</h4><p>${esc(e.objectif)}</p>
 <h4>Organisation</h4><p>${esc(e.organisation)}</p>
 <h4>Déroulement</h4><p>${esc(e.deroulement)}</p>
 <h4>Consignes</h4><ul>${e.consignes.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
-<details ${v&&v.variante!=null?'open':''}><summary>Variantes</summary><ul>${e.variantes.map(x=>`<li><b>${esc(x.nom)}</b> ${x.difficulte?'('+esc(x.difficulte)+') ':''}: ${esc(x.change)}</li>`).join('')}</ul></details>`}
+<details ${v&&v.variante!=null?'open':''}><summary>Variantes</summary><ul>${e.variantes.map(x=>`<li><b>${esc(x.nom)}</b> ${x.difficulte?'('+esc(x.difficulte)+') ':''}${x.duree?'· '+x.duree+' min ':''}: ${esc(x.change)}${x.schema_modele?' <small>(schéma)</small>':''}</li>`).join('')}</ul></details>`}
+// Schémas : en base, l'exercice et ses variantes côte à côte ; en séance, seulement la version choisie.
+function schemas(e,v){const vs=(e.variantes||[]).map((x,k)=>({...x,k})).filter(x=>x.schema_svg);
+ const fig=(svg,nom,tag,k)=>`<figure class="sch${v&&v.variante==nom&&k!=null?' on':''}">${nom?`<figcaption><b>${esc(nom)}</b>${tag?` <span class="vt">${esc(tag)}</span>`:''}</figcaption>`:''}${uniq2(svg)}<div class="actions noprint"><button class="pl" onclick="anim(this)">⏸ Pause</button>${!v&&k!=null?`<button class="pl add" onclick="ajouter('${e.id}',${k})">+ Séance</button>${e.schema_modele?`<button class="pl" onclick="modifierVariante('${e.id}',${k})">✎ Modifier</button>`:''}`:''}</div></figure>`;
+ if(v){const c=vs.find(x=>x.nom==v.variante);return c?`<div class="schs">${fig(c.schema_svg,'Variante : '+c.nom,c.difficulte,c.k)}</div>`:e.schema_svg?`<div class="schs">${fig(e.schema_svg,'Exercice de base','')}</div>`:''}
+ if(!e.schema_svg)return'';return `<div class="schs${vs.length?' multi':''}">${fig(e.schema_svg,vs.length?'Exercice de base':'',vs.length?'':'')}${vs.map(x=>fig(x.schema_svg,x.nom,x.difficulte,x.k)).join('')}</div>`}
 function base(){const q=$('#q').value.toLowerCase();
  const r=E.filter(e=>(!F.theme||e.theme==F.theme)&&(!F.cat||e.categories.includes(F.cat))&&(!F.duree||e.duree_min<=+F.duree)&&(!F.niveau||e.niveau==F.niveau)&&(!F.auteur||e.auteur==F.auteur)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
- window.AFF=r;$('#liste').innerHTML=r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>'}
-function ajouter(id){const e=E.find(x=>x.id==id);S.push({id,duree:e.duree_min,variante:''});save();seance();}
+ window.AFF=r;$('#liste').innerHTML=r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button><button onclick="nouvelleVariante('${e.id}')">⧉ Créer une variante</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>'}
+function ajouter(id,k){const e=E.find(x=>x.id==id),x=k!=null&&e.variantes[k];S.push({id,duree:x&&x.duree||e.duree_min,variante:x?x.nom:''});save();seance();const b=event&&event.target;if(b&&b.tagName=='BUTTON'){const t=b.textContent;b.textContent='✓ Ajouté';setTimeout(()=>b.textContent=t,1200)}}
 const noFiche=id=>`<div class="fiche"><h3>Fiche introuvable (${esc(id)})</h3><p>Elle n'est pas (ou plus) dans la base du club.</p></div>`;
 let TERRAIN=false,TM={},TMI=null;
 const tmRest=(i,d)=>{const t=TM[i];if(!t)return d*60;return t.run?Math.max(0,Math.ceil((t.end-Date.now())/1000)):t.rest};
@@ -154,9 +168,9 @@ function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#
  $('#sl').innerHTML=S.length?S.map((s,i)=>{const e=E.find(x=>x.id==s.id);
  if(!e)return noFiche(s.id);
  if(TERRAIN)return `<details class="tstep"${i==0?' open':''}><summary>${i+1} · ${esc(e.titre)}<span class="d" id="td${i}">${tmTxt(i,s.duree)}</span></summary>${tmHtml(i,s.duree)}${fiche(e,{duree:s.duree,variante:s.variante||null})}${s.variante?`<p style="padding:0 12px 12px"><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</details>`;
- return fiche(e,{duree:s.duree})+`<div class="actions noprint"><button onclick="mv(${i},-1)">▲</button><button onclick="mv(${i},1)">▼</button>
+ return fiche(e,{duree:s.duree,variante:s.variante||null})+`<div class="actions noprint"><button onclick="mv(${i},-1)">▲</button><button onclick="mv(${i},1)">▼</button>
  Durée <input type="number" min="1" value="${s.duree}" style="width:70px" onchange="S[${i}].duree=this.value;seance()"> min
- <select onchange="S[${i}].variante=this.value;seance()"><option value="">Variante…</option>${e.variantes.map(x=>`<option ${s.variante==x.nom?'selected':''}>${esc(x.nom)}</option>`).join('')}</select>
+ <select onchange="S[${i}].variante=this.value;const x=e.variantes.find(y=>y.nom==this.value);if(x&&x.duree)S[${i}].duree=x.duree;seance()"><option value="">Variante…</option>${e.variantes.map(x=>`<option ${s.variante==x.nom?'selected':''}>${esc(x.nom)}</option>`).join('')}</select>
  <button onclick="S.splice(${i},1);seance()">Retirer</button></div>${s.variante?`<p><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</div>`}).join(''):'<div class="vide">Séance vide : ajoute des exercices depuis la base.</div>'}
 function anim(b){const v=b.parentNode.querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
 function mv(i,d){const j=i+d;if(j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];seance()}
@@ -169,4 +183,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script src="editeur.js?v=13"></script><script src="club.js?v=13"></script></body></html>
+<script src="editeur.js?v=14"></script><script src="club.js?v=14"></script></body></html>
