@@ -19,8 +19,8 @@ function remap(m,of,nf){m.fr=[nf.x,nf.y,nf.w,nf.h];if(Math.abs(of.x-nf.x)+Math.a
  const sx=nf.w/of.w,sy=nf.h/of.h,X=x=>R(nf.x+(x-of.x)*sx),Y=y=>R(nf.y+(y-of.y)*sy);
  m.items.forEach(it=>{it.x=X(it.x);it.y=Y(it.y);if(it.t=='zone'){it.w=R(it.w*sx);it.h=R(it.h*sy)}});
  m.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{q.x=X(q.x);q.y=Y(q.y);if(q.c)q.c=[X(q.c[0]),Y(q.c[1])]}))}
-const EQUIP=['plot','but','haie','cerceau','piquet','echelle','txt'],ROTABLE=['but','plot','txt','haie','piquet','echelle'];
-const NOMS={p:'Joueur',ball:'Ballon',plot:'Plot',but:'But',haie:'Haie',cerceau:'Cerceau',piquet:'Piquet',echelle:'Échelle de rythme',txt:'Texte',zone:'Zone'};
+const EQUIP=['plot','but','haie','cerceau','piquet','mannequin','echelle','txt'],ROTABLE=['but','plot','txt','haie','piquet','echelle'];
+const NOMS={p:'Joueur',ball:'Ballon',plot:'Plot',but:'But',haie:'Haie',cerceau:'Cerceau',piquet:'Piquet',mannequin:'Mannequin',echelle:'Échelle de rythme',txt:'Texte',zone:'Zone'};
 function shape(it){
  if(it.t=='p'){const c=it.c=='r'?RED:it.c=='j'?GOLD:NAVY;return `<ellipse cy="9" rx="7" ry="2.2" fill="#0002"/><circle r="9.5" fill="${c}" stroke="#fff" stroke-width="1.6"/><circle r="9.5" fill="none" stroke="#0003" stroke-width=".6"/><text y="3.8" font-size="10.5" text-anchor="middle" fill="${it.c=='j'?NAVY:'#fff'}" font-family="sans-serif" font-weight="700">${esc2(it.l)}</text>`}
  if(it.t=='plot')return `<ellipse cy="4.2" rx="5" ry="1.4" fill="#0002"/><path d="M-1 -4.5h2L4 3.5h-8z" fill="${PLOT}" stroke="#9a7000" stroke-width=".5"/><rect x="-5" y="3" width="10" height="1.8" rx=".9" fill="#9a7000"/>`;
@@ -29,6 +29,7 @@ function shape(it){
  if(it.t=='haie')return `<rect x="-11" y="-3.5" width="2.4" height="7" rx="1" fill="#555"/><rect x="8.6" y="-3.5" width="2.4" height="7" rx="1" fill="#555"/><rect x="-10" y="-1.6" width="20" height="3.2" rx="1.6" fill="#e8731a" stroke="#a84f0e" stroke-width=".5"/>`;
  if(it.t=='cerceau')return `<circle r="8" fill="none" stroke="#0002" stroke-width="3" transform="translate(.8 1)"/><circle r="8" fill="none" stroke="#2fa84f" stroke-width="2.4"/>`;
  if(it.t=='piquet')return `<ellipse cy="2.5" rx="4" ry="1.4" fill="#0003"/><rect x="-1.6" y="-15" width="3.2" height="17" rx="1.6" fill="#fff" stroke="#333" stroke-width=".5"/>${[-13,-8,-3].map(y=>`<rect x="-1.6" y="${y}" width="3.2" height="2.6" fill="${RED}"/>`).join('')}`;
+ if(it.t=='mannequin')return `<ellipse cy="2.5" rx="6" ry="1.8" fill="#0003"/><path d="M-4.5 2 L-3.5 -9 Q0 -11 3.5 -9 L4.5 2 Z" fill="#5b6b82" stroke="#2b3646" stroke-width=".6"/><circle cy="-13" r="3.6" fill="#5b6b82" stroke="#2b3646" stroke-width=".6"/><rect x="-4" y="-6" width="8" height="1.8" fill="#fff" opacity=".8"/>`;
  if(it.t=='echelle')return `<line x1="-30" y1="-5" x2="30" y2="-5" stroke="#333" stroke-width="1.2"/><line x1="-30" y1="5" x2="30" y2="5" stroke="#333" stroke-width="1.2"/>${[-30,-22.5,-15,-7.5,0,7.5,15,22.5,30].map(x=>`<line x1="${x}" y1="-5" x2="${x}" y2="5" stroke="${GOLD}" stroke-width="2"/>`).join('')}`;
  if(it.t=='txt')return `<text font-size="10" text-anchor="middle" fill="#333" font-family="sans-serif">${esc2(it.s)}</text>`;
  return ''}
@@ -138,9 +139,9 @@ function bind(){
  s.ondblclick=ev=>{const h=ev.target.closest('[data-h]');if(h&&mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[+h.dataset.h];if(q&&q.c){snap();delete q.c;draw()}return}
   const el=ev.target.closest('[data-i]');if(!el||mode!='d')return;const it=M.items[+el.dataset.i];if(it.t=='p'){const l=prompt('Nom du joueur :',it.l);if(l!=null){snap();it.l=l.slice(0,3);draw()}}else if(it.t=='txt'){const l=prompt('Texte :',it.s);if(l!=null){snap();it.s=l;draw()}}};
 }
-const TOOLS=[['sel','Déplacer'],['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien/joker',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['haie','Haie',{t:'haie'}],['cerceau','Cerceau',{t:'cerceau'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['txt','Texte'],['gomme','Gomme']];
+const TOOLS=[['sel','Déplacer'],['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien/joker',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['mannequin','Mannequin',{t:'mannequin'}],['haie','Haie',{t:'haie'}],['cerceau','Cerceau',{t:'cerceau'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['txt','Texte'],['gomme','Gomme']];
 const ICO={sel:'<path d="M-4 -8L6 2L1 3L4 9L1 10L-2 4L-6 7z" fill="#333"/>',zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>',gomme:'<path d="M-6 -6L6 6M6 -6L-6 6" stroke="#d63a2a" stroke-width="2.5"/>'};
-const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':t=='piquet'?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?36:20}" height="20" style="vertical-align:middle">${s?shape(s):ICO[t]||''}</svg>`};
+const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':(t=='piquet'||t=='mannequin')?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?36:20}" height="20" style="vertical-align:middle">${s?shape(s):ICO[t]||''}</svg>`};
 const HINTS={sel:'Glisse un élément pour le placer. Un ballon lâché près d\'un joueur se lie à lui. Clique un élément pour ses réglages.',zone:'Glisse pour dessiner une zone.',gomme:'Clique sur un élément pour le supprimer.',ball:'Clique sur le terrain, ou sur un joueur pour lui donner le ballon.'};
 function setTool(t){tool=t;document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));ui()}
 function props(){
