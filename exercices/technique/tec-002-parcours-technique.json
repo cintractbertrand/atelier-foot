@@ -1,0 +1,200 @@
+{
+  "id": "tec-002",
+  "titre": "Parcours technique",
+  "theme": "technique",
+  "categories": [
+    "U11",
+    "U13",
+    "U15",
+    "U17"
+  ],
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "niveau": "confirmé",
+  "duree_min": 20,
+  "joueurs": {
+    "min": 5,
+    "max": 10
+  },
+  "surface": "25 x 20 m",
+  "materiel": [
+    {
+      "nom": "ballon",
+      "quantite": 2
+    },
+    {
+      "nom": "plot",
+      "quantite": 6
+    },
+    {
+      "nom": "mini-but",
+      "quantite": 1
+    }
+  ],
+  "objectif": "Enchaîner contrôles orientés, passes et tir.",
+  "organisation": "Postes A, B, C, D, E placés comme sur le dessin, un but derrière E. Plusieurs joueurs par poste si besoin.",
+  "deroulement": "A passe à B qui contrôle et passe à C, puis D, puis E, qui contrôle et tire. Après sa passe, chaque joueur va au poste suivant. Doubler les postes si nécessaire.",
+  "consignes": [
+    "Dosage et précision des passes.",
+    "Être sur ses appuis."
+  ],
+  "variantes": [
+    {
+      "nom": "Les deux pieds",
+      "change": "Contrôle et passe avec le pied faible.",
+      "difficulte": "plus difficile"
+    }
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 25,
+    "h": 20,
+    "items": [
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 72,
+        "y": 53
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 130,
+        "y": 92
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "C",
+        "x": 199,
+        "y": 139
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "D",
+        "x": 121,
+        "y": 155
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "E",
+        "x": 68,
+        "y": 116
+      },
+      {
+        "t": "plot",
+        "x": 64,
+        "y": 63
+      },
+      {
+        "t": "plot",
+        "x": 123,
+        "y": 102
+      },
+      {
+        "t": "plot",
+        "x": 191,
+        "y": 148
+      },
+      {
+        "t": "plot",
+        "x": 113,
+        "y": 164
+      },
+      {
+        "t": "plot",
+        "x": 60,
+        "y": 125
+      },
+      {
+        "t": "but",
+        "x": 238,
+        "y": 92,
+        "rot": 90
+      },
+      {
+        "t": "ball",
+        "x": 81,
+        "y": 59,
+        "o": 0
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "11": {
+            "x": 139,
+            "y": 98,
+            "o": 1
+          }
+        }
+      },
+      {
+        "moves": {
+          "11": {
+            "x": 208,
+            "y": 145,
+            "o": 2
+          },
+          "0": {
+            "x": 130,
+            "y": 92
+          }
+        }
+      },
+      {
+        "moves": {
+          "11": {
+            "x": 130,
+            "y": 161,
+            "o": 3
+          },
+          "1": {
+            "x": 199,
+            "y": 139
+          }
+        }
+      },
+      {
+        "moves": {
+          "11": {
+            "x": 77,
+            "y": 122,
+            "o": 4
+          },
+          "2": {
+            "x": 121,
+            "y": 155
+          }
+        }
+      },
+      {
+        "moves": {
+          "11": {
+            "x": 238,
+            "y": 92,
+            "o": null
+          },
+          "3": {
+            "x": 68,
+            "y": 116
+          }
+        }
+      },
+      {
+        "moves": {
+          "4": {
+            "x": 72,
+            "y": 53
+          }
+        }
+      }
+    ]
+  }
+}

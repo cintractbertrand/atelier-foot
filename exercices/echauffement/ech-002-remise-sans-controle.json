@@ -1,0 +1,202 @@
+{
+  "id": "ech-002",
+  "titre": "Remise sans contrôle",
+  "theme": "échauffement",
+  "categories": [
+    "U9",
+    "U11",
+    "U13",
+    "U15"
+  ],
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "niveau": "débutant",
+  "duree_min": 15,
+  "joueurs": {
+    "min": 6,
+    "max": 16
+  },
+  "surface": "20 x 20 m",
+  "materiel": [
+    {
+      "nom": "ballon",
+      "quantite": 8
+    },
+    {
+      "nom": "plot",
+      "quantite": 4
+    }
+  ],
+  "objectif": "Conduire, passer et remettre en une touche de balle.",
+  "organisation": "Moitié des joueurs avec un ballon, l'autre moitié sans, dans un carré.",
+  "deroulement": "Le porteur conduit puis passe à un joueur sans ballon, qui lui remet en une touche. Les joueurs sans ballon trottinent pour se rendre disponibles. On change les rôles régulièrement.",
+  "consignes": [
+    "Passes dosées et précises.",
+    "Les joueurs sans ballon bougent.",
+    "Remise en une touche, sans contrôle."
+  ],
+  "variantes": [
+    {
+      "nom": "Deuxième pied",
+      "change": "Passer et remettre avec le pied faible.",
+      "difficulte": "plus difficile"
+    }
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 20,
+    "h": 20,
+    "items": [
+      {
+        "t": "plot",
+        "x": 72,
+        "y": 22
+      },
+      {
+        "t": "plot",
+        "x": 228,
+        "y": 22
+      },
+      {
+        "t": "plot",
+        "x": 72,
+        "y": 178
+      },
+      {
+        "t": "plot",
+        "x": 228,
+        "y": 178
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 95,
+        "y": 61
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 150,
+        "y": 45
+      },
+      {
+        "t": "ball",
+        "x": 104,
+        "y": 67,
+        "o": 4
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 205,
+        "y": 77
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 197,
+        "y": 139
+      },
+      {
+        "t": "ball",
+        "x": 214,
+        "y": 83,
+        "o": 7
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 103,
+        "y": 147
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 150,
+        "y": 116
+      },
+      {
+        "t": "ball",
+        "x": 112,
+        "y": 153,
+        "o": 10
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "4": {
+            "x": 115,
+            "y": 56
+          },
+          "5": {
+            "x": 156,
+            "y": 53
+          },
+          "7": {
+            "x": 202,
+            "y": 98
+          },
+          "8": {
+            "x": 203,
+            "y": 147
+          },
+          "10": {
+            "x": 120,
+            "y": 136
+          },
+          "11": {
+            "x": 156,
+            "y": 123
+          }
+        }
+      },
+      {
+        "moves": {
+          "6": {
+            "x": 165,
+            "y": 59,
+            "o": 5
+          },
+          "9": {
+            "x": 212,
+            "y": 153,
+            "o": 8
+          },
+          "12": {
+            "x": 165,
+            "y": 129,
+            "o": 11
+          }
+        }
+      },
+      {
+        "moves": {
+          "6": {
+            "x": 124,
+            "y": 62,
+            "o": 4
+          },
+          "9": {
+            "x": 211,
+            "y": 104,
+            "o": 7
+          },
+          "12": {
+            "x": 129,
+            "y": 142,
+            "o": 10
+          }
+        }
+      }
+    ]
+  }
+}

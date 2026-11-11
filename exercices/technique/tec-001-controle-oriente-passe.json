@@ -1,0 +1,184 @@
+{
+  "id": "tec-001",
+  "titre": "Contrôle orienté et passe",
+  "theme": "technique",
+  "categories": [
+    "U9",
+    "U11",
+    "U13",
+    "U15"
+  ],
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "niveau": "débutant",
+  "duree_min": 15,
+  "joueurs": {
+    "min": 4,
+    "max": 12
+  },
+  "surface": "15 x 15 m",
+  "materiel": [
+    {
+      "nom": "ballon",
+      "quantite": 2
+    },
+    {
+      "nom": "plot",
+      "quantite": 8
+    }
+  ],
+  "objectif": "Contrôler le ballon en changeant de direction, puis passer précisément.",
+  "organisation": "Par groupes de 4 : 4 plots forment un carré, un joueur à chaque plot, 2 ballons dans le groupe.",
+  "deroulement": "Le joueur A passe à B. B contrôle en tournant à 90° vers C et lui passe. C fait de même vers D, et ainsi de suite. Après sa passe, chacun reste sur son plot. Changer de sens au signal de l'éducateur.",
+  "consignes": [
+    "Contrôler avec l'intérieur du pied, puis avec l'extérieur.",
+    "Passer à plat, au pied du partenaire.",
+    "Regarder le terrain avant la réception."
+  ],
+  "variantes": [
+    {
+      "nom": "Pied faible",
+      "change": "Contrôle et passe avec le pied faible uniquement.",
+      "difficulte": "plus difficile"
+    },
+    {
+      "nom": "Un seul ballon",
+      "change": "Un seul ballon par groupe, rythme plus lent.",
+      "difficulte": "plus facile",
+      "materiel": "1 ballon"
+    },
+    {
+      "nom": "Un plot en moins",
+      "change": "Passer en triangle : 3 joueurs, 3 plots.",
+      "difficulte": "plus facile",
+      "materiel": "6 plots"
+    }
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 15,
+    "h": 15,
+    "items": [
+      {
+        "t": "plot",
+        "x": 72,
+        "y": 22
+      },
+      {
+        "t": "plot",
+        "x": 228,
+        "y": 22
+      },
+      {
+        "t": "plot",
+        "x": 228,
+        "y": 178
+      },
+      {
+        "t": "plot",
+        "x": 72,
+        "y": 178
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 72,
+        "y": 22
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 228,
+        "y": 22
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "C",
+        "x": 228,
+        "y": 178
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "D",
+        "x": 72,
+        "y": 178
+      },
+      {
+        "t": "ball",
+        "x": 81,
+        "y": 28,
+        "o": 4
+      },
+      {
+        "t": "ball",
+        "x": 237,
+        "y": 184,
+        "o": 6
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "8": {
+            "x": 237,
+            "y": 28,
+            "o": 5
+          },
+          "9": {
+            "x": 81,
+            "y": 184,
+            "o": 7
+          }
+        }
+      },
+      {
+        "moves": {
+          "8": {
+            "x": 237,
+            "y": 184,
+            "o": 6
+          },
+          "9": {
+            "x": 81,
+            "y": 28,
+            "o": 4
+          }
+        }
+      },
+      {
+        "moves": {
+          "8": {
+            "x": 81,
+            "y": 184,
+            "o": 7
+          },
+          "9": {
+            "x": 237,
+            "y": 28,
+            "o": 5
+          }
+        }
+      },
+      {
+        "moves": {
+          "8": {
+            "x": 81,
+            "y": 28,
+            "o": 4
+          },
+          "9": {
+            "x": 237,
+            "y": 184,
+            "o": 6
+          }
+        }
+      }
+    ]
+  }
+}

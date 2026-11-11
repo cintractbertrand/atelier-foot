@@ -1,0 +1,183 @@
+{
+  "id": "ech-007",
+  "titre": "Grand jeu et gardiens",
+  "theme": "échauffement",
+  "categories": [
+    "U13",
+    "U15",
+    "U17",
+    "seniors"
+  ],
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "niveau": "confirmé",
+  "duree_min": 15,
+  "joueurs": {
+    "min": 12,
+    "max": 14
+  },
+  "surface": "60 x 40 m",
+  "materiel": [
+    {
+      "nom": "ballon",
+      "quantite": 1
+    },
+    {
+      "nom": "plot",
+      "quantite": 8
+    },
+    {
+      "nom": "chasuble (2 couleurs)",
+      "quantite": 12
+    }
+  ],
+  "objectif": "Jouer vers l'avant et relancer en profondeur avec le gardien.",
+  "organisation": "Terrain de 60 x 40 m avec une zone à chaque extrémité. 6 contre 6 (ou plus). Les gardiens sont dans la zone de l'équipe adverse.",
+  "deroulement": "Pour marquer, une équipe fait parvenir un ballon aérien au gardien dans la zone, sans qu'il le lâche. Jeu libre, avec un but sur six mètres relancé à la main.",
+  "consignes": [
+    "Jeu libre.",
+    "Relance du gardien à la main.",
+    "Pas de corner : relance du gardien."
+  ],
+  "variantes": [
+    {
+      "nom": "Passe longue",
+      "change": "Pour marquer, la passe doit être longue et aérienne.",
+      "difficulte": "plus difficile"
+    }
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 60,
+    "h": 40,
+    "items": [
+      {
+        "t": "zone",
+        "x": 33,
+        "y": 22,
+        "w": 234,
+        "h": 28
+      },
+      {
+        "t": "zone",
+        "x": 33,
+        "y": 150,
+        "w": 234,
+        "h": 28
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 103,
+        "y": 116
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 162,
+        "y": 100
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "C",
+        "x": 208,
+        "y": 119
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "1",
+        "x": 103,
+        "y": 84
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "2",
+        "x": 162,
+        "y": 72
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "3",
+        "x": 208,
+        "y": 88
+      },
+      {
+        "t": "p",
+        "c": "j",
+        "l": "G",
+        "x": 150,
+        "y": 34
+      },
+      {
+        "t": "p",
+        "c": "j",
+        "l": "G",
+        "x": 150,
+        "y": 166
+      },
+      {
+        "t": "ball",
+        "x": 112,
+        "y": 122,
+        "o": 2
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "3": {
+            "x": 150,
+            "y": 108
+          },
+          "10": {
+            "x": 159,
+            "y": 114,
+            "o": 3
+          },
+          "6": {
+            "x": 158,
+            "y": 83
+          },
+          "4": {
+            "x": 220,
+            "y": 77
+          }
+        }
+      },
+      {
+        "moves": {
+          "10": {
+            "x": 229,
+            "y": 83,
+            "o": 4
+          },
+          "7": {
+            "x": 212,
+            "y": 85
+          },
+          "6": {
+            "x": 177,
+            "y": 81
+          }
+        }
+      },
+      {
+        "moves": {
+          "10": {
+            "x": 159,
+            "y": 40,
+            "o": 8
+          }
+        }
+      }
+    ]
+  }
+}

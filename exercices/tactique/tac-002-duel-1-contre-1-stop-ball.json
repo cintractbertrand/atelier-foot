@@ -1,0 +1,291 @@
+{
+  "id": "tac-002",
+  "titre": "Duel 1 contre 1 stop-ball",
+  "theme": "tactique",
+  "categories": [
+    "U11",
+    "U13",
+    "U15",
+    "U17"
+  ],
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "niveau": "débutant",
+  "duree_min": 15,
+  "joueurs": {
+    "min": 8,
+    "max": 16
+  },
+  "surface": "4 terrains de 12 x 6 m",
+  "materiel": [
+    {
+      "nom": "ballon",
+      "quantite": 4
+    },
+    {
+      "nom": "plot",
+      "quantite": 16
+    }
+  ],
+  "objectif": "Dribbler son adversaire pour arrêter le ballon dans l'en-but.",
+  "organisation": "Plusieurs terrains de 12 x 6 m avec une zone de 2 m aux extrémités. Un duel 1 contre 1 sur chaque terrain, matchs de 1 min 30.",
+  "deroulement": "Pour marquer, le joueur doit arrêter le ballon dans l'en-but adverse. Le vainqueur monte d'un terrain et le perdant descend ; ceux des terrains aux extrémités ne changent pas de terrain.",
+  "consignes": [
+    "Utiliser les techniques de dribble et de débordement.",
+    "Protéger son ballon."
+  ],
+  "variantes": [
+    {
+      "nom": "Défenseur actif",
+      "change": "Le défenseur peut tacler seulement après 3 secondes.",
+      "difficulte": "plus facile"
+    }
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 12,
+    "h": 24,
+    "items": [
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 22,
+        "w": 78,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 22,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 176,
+        "y": 22,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 130,
+        "y": 42
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "D",
+        "x": 162,
+        "y": 42
+      },
+      {
+        "t": "ball",
+        "x": 139,
+        "y": 48,
+        "o": 3
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 61,
+        "w": 78,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 61,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 176,
+        "y": 61,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 130,
+        "y": 80
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "D",
+        "x": 162,
+        "y": 80
+      },
+      {
+        "t": "ball",
+        "x": 139,
+        "y": 86,
+        "o": 9
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 100,
+        "w": 78,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 100,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 176,
+        "y": 100,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 130,
+        "y": 120
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "D",
+        "x": 162,
+        "y": 120
+      },
+      {
+        "t": "ball",
+        "x": 139,
+        "y": 126,
+        "o": 15
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 139,
+        "w": 78,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 111,
+        "y": 139,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "zone",
+        "x": 176,
+        "y": 139,
+        "w": 13,
+        "h": 39
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 130,
+        "y": 158
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "D",
+        "x": 162,
+        "y": 158
+      },
+      {
+        "t": "ball",
+        "x": 139,
+        "y": 164,
+        "o": 21
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "3": {
+            "x": 148,
+            "y": 32
+          },
+          "4": {
+            "x": 158,
+            "y": 34
+          },
+          "9": {
+            "x": 148,
+            "y": 71
+          },
+          "10": {
+            "x": 158,
+            "y": 73
+          },
+          "15": {
+            "x": 148,
+            "y": 110
+          },
+          "16": {
+            "x": 158,
+            "y": 112
+          },
+          "21": {
+            "x": 148,
+            "y": 149
+          },
+          "22": {
+            "x": 158,
+            "y": 151
+          }
+        }
+      },
+      {
+        "moves": {
+          "3": {
+            "x": 181,
+            "y": 52
+          },
+          "4": {
+            "x": 167,
+            "y": 45
+          },
+          "9": {
+            "x": 181,
+            "y": 91
+          },
+          "10": {
+            "x": 167,
+            "y": 84
+          },
+          "15": {
+            "x": 181,
+            "y": 130
+          },
+          "16": {
+            "x": 167,
+            "y": 123
+          },
+          "21": {
+            "x": 181,
+            "y": 169
+          },
+          "22": {
+            "x": 167,
+            "y": 162
+          }
+        }
+      }
+    ]
+  }
+}
