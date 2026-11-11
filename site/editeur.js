@@ -182,10 +182,12 @@ function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lin
   schema_modele:cl(M)};
  const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);$e('dlg').close();editingId=fiche.id;majE();show('b')}
 const hyd=e=>e.schema_modele?{...e,schema_svg:render(e.schema_modele,{animOn:true})}:e;
-function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id));E=window.EXERCICES.filter(x=>!ids.has(x.id)).map(hyd).concat(p.map(hyd));majFiltres();base()}
+const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
+function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id)),c=(window.CLUBF||[]).filter(x=>!ids.has(x.id)),cid=new Set(c.map(x=>x.id));
+ E=window.EXERCICES.filter(x=>!ids.has(x.id)&&!cid.has(x.id)).map(hyd).concat(c.map(hyd),p.map(hyd));majFiltres();base();if(typeof seance=='function')seance()}
 function modifierSchema(id){const f=E.find(x=>x.id==id);if(!f||!f.schema_modele)return;editingId=id;M=norm(f.schema_modele);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d')}
-function exporterFiche(id){const f=E.find(x=>x.id==id),o={...f};delete o.perso;if(o.schema_modele)delete o.schema_svg;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));a.download=f.id+'.json';a.click()}
-function supprimerPerso(id){if(confirm(window.EXERCICES.some(x=>x.id==id)?'Rétablir la fiche d\'origine ?':'Supprimer cette fiche ?')){savePerso(chargePerso().filter(x=>x.id!=id));majE()}}
+function exporterFiche(id){const f=E.find(x=>x.id==id),o={...f};['perso','club','auteur','maj'].forEach(k=>delete o[k]);if(o.schema_modele)delete o.schema_svg;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));a.download=f.id+'.json';a.click()}
+function supprimerPerso(id){if(confirm(aOrig(id)?'Rétablir la fiche d\'origine ?':'Supprimer cette fiche ?')){savePerso(chargePerso().filter(x=>x.id!=id));majE()}}
 function initEditeur(){
  $e('tools').innerHTML=TOOLS.map(([t,l,s])=>`<button data-t="${t}" title="${l}">${icon(t,s)} ${l}</button>`).join('');
  document.querySelectorAll('#tools button').forEach(b=>b.onclick=()=>setTool(b.dataset.t));
