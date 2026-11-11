@@ -80,12 +80,30 @@ function arrow(g,n,op,an){
 if(an){const T=an.T,c=t=>Math.min(T,Math.max(0,t)),s0=an.s,e0=an.s+an.d,ts=[0,s0,s0+.25,e0,e0+.5,T].map(c);for(let q=1;q<ts.length;q++)ts[q]=Math.max(ts[q],ts[q-1]);
   s=`<g opacity=".3"><animate attributeName="opacity" dur="${(T/an.sp).toFixed(2)}s" repeatCount="indefinite" keyTimes="${ts.map(t=>R(t/T*1e4)/1e4).join(';')}" values=".3;.3;1;1;.3;.3"/>${s}</g>`}
  return s}
+// ---------- demi-terrain (cage en haut) ----------
+// Tracés en mètres : foot à 11 si le terrain fait au moins 55 m de large, sinon foot à 8. Ce qui dépasse est coupé.
+function demi(m,f){const k=f.w/m.w,ky=f.h/m.h,cx=m.w/2,o=m.w>=55?{sr:[40.3,16.5],sb:[18.3,5.5],pen:11,rc:9.15}:{sr:[26,13],sb:[12,5],pen:9,rc:6};
+ const X=x=>R(x*k),Y=y=>R(y*ky),rect=(w,h)=>`<rect x="${X(cx-w/2)}" y="0" width="${X(w)}" height="${Y(h)}"/>`;
+ return `<svg x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" overflow="hidden"><g fill="none" stroke="${NAVY}" stroke-width="1" opacity=".55">${rect(...o.sr)}${rect(...o.sb)}`+
+ `<path d="M${X(cx-o.rc*.8)} ${Y(o.sr[1])} A${X(o.rc)} ${Y(o.rc)} 0 0 0 ${X(cx+o.rc*.8)} ${Y(o.sr[1])}"/>`+
+ `<ellipse cx="${X(cx)}" cy="${Y(m.h)}" rx="${X(o.rc)}" ry="${Y(o.rc)}"/></g><circle cx="${X(cx)}" cy="${Y(o.pen)}" r="1.4" fill="${NAVY}" opacity=".55"/></svg>`}
+function setFond(v){snap();const of=field(M);M.fond=v||undefined;if(v=='demi'){if(M.w==30&&M.h==20){M.w=40;M.h=30}remap(M,of,field(M));const f=field(M);
+  if(!M.items.some(i=>i.t=='but'&&Math.abs(i.y-f.y)<15))M.items.push({t:'but',x:R(f.x+f.w/2),y:R(f.y)})}else remap(M,of,field(M));
+ $e('dw').value=M.w;$e('dh').value=M.h;draw()}
+// ---------- tourner / retourner tout le schéma (départ et mouvements) ----------
+function transfo(quart){const of=field(M),old={w:M.w,h:M.h};if(quart){M.w=old.h;M.h=old.w}const nf=field(M);
+ const P=(x,y)=>{const u=(x-of.x)/of.w,v=(y-of.y)/of.h,[a,b]=quart?[1-v,u]:[1-u,v];return[R(nf.x+a*nf.w),R(nf.y+b*nf.h)]};
+ M.items.forEach(it=>{if(it.t=='zone'){const p1=P(it.x,it.y),p2=P(it.x+it.w,it.y+it.h);it.x=Math.min(p1[0],p2[0]);it.y=Math.min(p1[1],p2[1]);it.w=R(Math.abs(p2[0]-p1[0]));it.h=R(Math.abs(p2[1]-p1[1]));return}
+  [it.x,it.y]=P(it.x,it.y);if(['but','haie','echelle'].includes(it.t))it.rot=(((it.rot||0)+(quart?90:(180-2*(it.rot||0))))%360+360)%360});
+ M.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{[q.x,q.y]=P(q.x,q.y);if(q.c)q.c=P(q.c[0],q.c[1])}));M.fr=[nf.x,nf.y,nf.w,nf.h]}
+function tourner(){if(M.fond=='demi'&&!confirm('La cage du demi-terrain doit rester en haut : le schéma repassera en terrain simple. Continuer ?'))return;snap();if(M.fond=='demi')delete M.fond;transfo(true);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;draw()}
+function miroir(){snap();transfo(false);sel=null;draw()}
 // ---------- rendu ----------
 function render0(m,o={}){
  m=norm(m);const S=simulate(m),I=m.items,f=field(m),ed=o.editor,nT=S.segs.length;
  const k=Math.min(cur,Math.max(0,nT-1)),st=ed=='m'?S.states[Math.min(k+1,nT)]:S.states[0],before=ed=='m'&&nT?S.states[k]:null;
  const TM=o.animOn?timing(S):null,P=i=>(I[i].t=='p'||I[i].t=='ball')?st.pos[i]:[I[i].x,I[i].y];
- let b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="${NAVY}"/><rect x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" fill="#f4f8fd" stroke="${NAVY}" stroke-width="1.5"/>`;
+ let b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="${NAVY}"/><rect x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" fill="#f4f8fd" stroke="${NAVY}" stroke-width="1.5"/>`+(m.fond=='demi'?demi(m,f):'');
  const di=i=>ed=='d'||(ed=='m'&&(I[i].t=='p'||I[i].t=='ball'))?` data-i="${i}" style="cursor:grab"`:'';
  I.forEach((it,i)=>{if(it.t=='zone')b+=`<rect${ed=='d'?` data-i="${i}" style="cursor:grab"`:''} x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="${ed?'#1b3a7310':'none'}" stroke="${NAVY}" stroke-dasharray="6 4"/>`});
  S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
@@ -182,7 +200,7 @@ function ui(){
  $e('hint').textContent=mode=='d'?hintD():mode=='m'?(M.temps.length?'Temps '+(cur+1)+' : glisse joueurs et ballon à leur nouvelle place (ils bougent ensemble). Ballon sur un joueur = passe, dans le but = tir. Rond orange = courber.':'Glisse un joueur ou le ballon vers sa nouvelle place : la flèche se dessine toute seule.'):'Vérifie que l\'animation raconte bien l\'exercice.';
  $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'');
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
- $e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
+ $e('fond').value=M.fond||'';$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
 function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui();brouillon()}
 function setMode(m){mode=m;tmp=null;drag=null;sel=null;if(m!='d'){tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'))}fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
 // Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
@@ -230,7 +248,7 @@ function supprimerPerso(id){if(confirm(aOrig(id)?'Rétablir la fiche d\'origine 
 function initEditeur(){
  $e('tools').innerHTML=TOOLS.map(([t,l,s])=>`<button data-t="${t}" title="${l}">${icon(t,s)}<span>${l}</span></button>`).join('');
  document.querySelectorAll('#tools button').forEach(b=>b.onclick=()=>setTool(tool==b.dataset.t?null:b.dataset.t));
- $e('dw').oninput=$e('dh').oninput=majDim;$e('dw').onblur=$e('dh').onblur=()=>{dimSnap=false};
+ $e('dw').oninput=$e('dh').oninput=majDim;$e('fond').onchange=ev=>setFond(ev.target.value);$e('dw').onblur=$e('dh').onblur=()=>{dimSnap=false};
  $e('undo').onclick=undo;$e('redo').onclick=redoF;
  $e('clear').onclick=()=>{if(confirm('Tout effacer ?')){snap();M.items=[];M.temps=[];sel=null;cur=0;draw()}};
  $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?ouvrirDlg():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
