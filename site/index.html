@@ -184,11 +184,14 @@ function anim(b){const v=b.closest('figure,.sch').querySelector('svg');if(b.data
 function mv(i,d){const j=i+d;if(j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];seance()}
 function show(s){$('#editeur').classList.toggle('hide',s!='e');ne.className=s=='e'?'on':'';$('#base').classList.toggle('hide',s!='b');$('#seance').classList.toggle('hide',s!='s');$('#seances').classList.toggle('hide',s!='l');nl.className=s=='l'?'on':'';nb.className=s=='b'?'on':'';ns.className=s=='s'?'on':'';if(s=='s')seance();if(s=='l'&&window.seancesCharger)seancesAff()}
 
-function faireSeance(){let d=document.getElementById('fsd');if(d)d.remove();d=document.createElement('dialog');d.id='fsd';d.style.cssText='max-width:560px;width:92vw;border:0;border-radius:10px;padding:16px';
- const pool=E.filter(e=>!F.cat||e.categories.includes(F.cat)),ths=ordreTheme(uniq(pool.map(e=>e.theme)));
- d.innerHTML='<h3 style="margin:0 0 4px">Faire une séance</h3><p style="margin:0 0 10px;color:#666;font-size:14px">'+(F.cat?'Catégorie '+esc(F.cat)+' · ':'')+'choisis une fiche par thème (laisse vide pour sauter un thème).</p>'+ths.map((t,i)=>'<label style="display:block;margin:8px 0"><b>'+esc(t)+'</b><select data-t="'+i+'" style="display:block;width:100%;padding:6px;margin-top:2px"><option value="">— aucune —</option>'+pool.filter(e=>e.theme==t).sort((x,y)=>x.titre.localeCompare(y.titre)).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.titre)+' ('+e.duree_min+' min)</option>').join('')+'</select></label>').join('')+'<div style="margin-top:12px;text-align:right"><button id="fsx">Annuler</button> <button class="add" id="fsok">Ajouter à la séance</button></div>';
- document.body.appendChild(d);d.querySelector('#fsx').onclick=()=>d.close();
- d.querySelector('#fsok').onclick=()=>{d.querySelectorAll('select').forEach(x=>{const e=x.value&&E.find(y=>y.id==x.value);if(e)S.push({id:e.id,duree:e.duree_min,variante:''})});save();d.close();show('s')};d.showModal()}
+function faireSeance(){let d=document.getElementById('fsd');if(d)d.remove();d=document.createElement('dialog');d.id='fsd';d.style.cssText='max-width:820px;width:96vw;max-height:92vh;overflow:auto;border:0;border-radius:10px;padding:16px;background:#f4f6fa';
+ const pool=E.filter(e=>!F.cat||e.categories.includes(F.cat)),ths=ordreTheme(uniq(pool.map(e=>e.theme))),cat=F.cat?'Catégorie '+esc(F.cat)+' · ':'';
+ document.body.appendChild(d);
+ d.innerHTML='<h3 style="margin:0 0 4px">Faire une séance · 1/2</h3><p style="margin:0 0 10px;color:#666;font-size:14px">'+cat+'Quels thèmes veux-tu dans la séance ?</p>'+ths.map((t,i)=>'<label style="display:block;margin:6px 0;font-size:16px"><input type="checkbox" value="'+i+'"> '+esc(t)+' <small style="color:#888">('+pool.filter(e=>e.theme==t).length+' fiches)</small></label>').join('')+'<div style="margin-top:12px;text-align:right"><button id="fsx">Annuler</button> <button class="add" id="fsok">Choisir les fiches →</button></div>';
+ d.querySelector('#fsx').onclick=()=>d.close();
+ d.querySelector('#fsok').onclick=()=>{const ch=[...d.querySelectorAll('input:checked')].map(x=>ths[+x.value]);if(!ch.length){alert('Coche au moins un thème.');return}
+  d.innerHTML='<div style="position:sticky;top:-16px;background:#f4f6fa;padding:8px 0;z-index:2"><b>Faire une séance · 2/2</b> — ajoute les fiches voulues <button id="fsb">← Thèmes</button> <button class="add" id="fsf">Terminer (voir la séance)</button></div>'+ch.map(t=>'<h2 style="margin:14px 0 4px">'+esc(t)+'</h2>'+pool.filter(e=>e.theme==t).map(e=>fiche(e)+'<div class="actions"><button class="add" onclick="ajouter(\''+e.id+'\')">+ Ajouter à la séance</button></div></div>').join('')).join('');
+  d.scrollTop=0;d.querySelector('#fsb').onclick=faireSeance;d.querySelector('#fsf').onclick=()=>{d.close();show('s')}};d.showModal()}
 nf.onclick=faireSeance;
 ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;TM={};seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
 
@@ -198,4 +201,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script src="editeur.js?v=17"></script><script src="club.js?v=15"></script></body></html>
+<script src="editeur.js?v=18"></script><script src="club.js?v=15"></script></body></html>
