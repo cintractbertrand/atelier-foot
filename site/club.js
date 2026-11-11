@@ -1,7 +1,7 @@
 // Base partagée des fiches du club (Supabase).
 // CLUB_URL et CLUB_CLE viennent de Supabase > Project Settings > API (clé « publishable » ou « anon » : publique par conception).
 // Laisser vide pour désactiver : le site marche alors comme avant, fiches gardées dans le navigateur.
-const CLUB_URL='',CLUB_CLE='';
+const CLUB_URL='https://bkebcwjkorqdpckcqtwq.supabase.co',CLUB_CLE='sb_publishable_x_SzQDiP3WP28PGi8Y1OPw_-eKd9HQq';
 window.CLUBF=[];
 const clubOn=()=>!!(CLUB_URL&&CLUB_CLE);
 function clubH(){const h={apikey:CLUB_CLE,'Content-Type':'application/json'};if(!CLUB_CLE.startsWith('sb_'))h.Authorization='Bearer '+CLUB_CLE;return h}
