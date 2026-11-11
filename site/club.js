@@ -27,7 +27,12 @@ async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est s
 function boutonsClub(e){if(!clubOn())return'';return e.perso?`<button class="add" onclick="partager('${e.id}')">Partager au club</button>`:e.club?`<button onclick="retirer('${e.id}')">Retirer du club</button>`:''}
 function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!clubOn()||document.getElementById('cenvoi'))return;
  const l=document.createElement('label');l.id='cenvoi';l.className='fo';l.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l.textContent='Importer des fiches (.json) ';
- const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l)}
+ const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l);
+ const r=document.createElement('button');r.id='cretire';r.className='fo';r.style.marginLeft='8px';r.textContent='Retirer les fiches affichées';r.onclick=retirerAffichees;s.appendChild(r)}
+async function retirerAffichees(){const L=(window.AFF||[]).filter(e=>e.club);if(!L.length){alert('Aucune fiche du club affichée.');return}
+ if(!confirm('Retirer '+L.length+' fiche(s) du club ? Elles sont seulement masquées et récupérables.'))return;const code=clubCode();if(!code)return;let n=0;
+ for(const e of L){clubEtat('Retrait… '+n+'/'+L.length);if(!await clubRpc('retirer_fiche',{code,fid:e.id}))return;n++}
+ lsS('codeclub',code);await clubCharger();alert(n+' fiche(s) retirée(s).')}
 async function importerFichiers(fs){fs=[...fs];if(!fs.length)return;const code=clubCode();if(!code)return;let n=0;
  for(const fi of fs){let d;try{d=JSON.parse(await fi.text())}catch(e){alert('Fichier illisible : '+fi.name);return}
   for(const f of Array.isArray(d)?d:[d]){const o={...f};['perso','club','auteur','maj','schema_svg'].forEach(k=>delete o[k]);

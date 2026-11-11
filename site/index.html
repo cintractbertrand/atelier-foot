@@ -112,7 +112,7 @@ ${e.schema_svg?`<div class="sch">${uniq2(e.schema_svg)}<button class="pl" onclic
 <details ${v&&v.variante!=null?'open':''}><summary>Variantes</summary><ul>${e.variantes.map(x=>`<li><b>${esc(x.nom)}</b> ${x.difficulte?'('+esc(x.difficulte)+') ':''}: ${esc(x.change)}</li>`).join('')}</ul></details>`}
 function base(){const q=$('#q').value.toLowerCase();
  const r=E.filter(e=>(!F.theme||e.theme==F.theme)&&(!F.cat||e.categories.includes(F.cat))&&(!F.duree||e.duree_min<=+F.duree)&&(!F.niveau||e.niveau==F.niveau)&&(!F.auteur||e.auteur==F.auteur)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
- $('#liste').innerHTML=r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>'}
+ window.AFF=r;$('#liste').innerHTML=r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>'}
 function ajouter(id){const e=E.find(x=>x.id==id);S.push({id,duree:e.duree_min,variante:''});save();seance();}
 function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#nom').value;
  const tot=S.reduce((a,s)=>a+ +s.duree,0),mat={};
@@ -134,4 +134,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script src="editeur.js?v=11"></script><script src="club.js?v=7"></script></body></html>
+<script src="editeur.js?v=11"></script><script src="club.js?v=8"></script></body></html>
