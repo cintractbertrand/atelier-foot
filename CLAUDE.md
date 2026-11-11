@@ -40,6 +40,7 @@ Une fiche = un fichier, avec un `id` qui ne change jamais.
 - matériel : liste avec quantités (ballons, plots, coupelles, chasubles, mini-buts…)
 - objectif, organisation, déroulement, consignes clés
 - variantes : chacune avec un nom, ce qui change, plus facile ou plus difficile, et sa durée ou son matériel s'ils diffèrent
+- mots_cles : liste de mots-clés (facultatif), cherchés par le site
 - schéma de terrain (SVG simple), facultatif
 
 ## Posture d'expert
