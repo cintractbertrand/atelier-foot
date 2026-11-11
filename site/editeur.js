@@ -54,17 +54,17 @@ function simulate(m){
 function qpts(a,c,b,n=24){const o=[];for(let k=0;k<=n;k++){const t=k/n,u=1-t;o.push(c?[u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]]:[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}return o}
 function plen(p){let l=0;for(let k=1;k<p.length;k++)l+=dist(p[k],p[k-1]);return l}
 const segLen=g=>plen(qpts(g.a,g.c,g.b,16)),vel=g=>(g.kind=='passe'||g.kind=='tir')?V*1.6:V;
-// Durée d'un mouvement dans un temps : le ballon porté suit exactement son joueur ; une passe vers un joueur qui court
-// arrive en même temps que lui (jamais avant).
+// Durée propre d'un mouvement ; le temps dure autant que le plus long, et tous les mouvements du temps
+// commencent et finissent ensemble (demande de Bertrand), avec le même rythme.
 function segDur(sg,i,n=0){const g=sg[i];if(!g)return 0;if(n>4)return segLen(g)/vel(g);
  if(g.kind=='suivi'&&sg[g.own])return segDur(sg,g.own,n+1);let d=segLen(g)/vel(g);
  if(g.rcv!=null&&sg[g.rcv])d=Math.max(d,segDur(sg,g.rcv,n+1));return d}
 function timing(S){const durs=S.segs.map(sg=>Math.max(1,...Object.keys(sg).map(i=>segDur(sg,+i))));let t=0;const starts=durs.map(d=>{const s=t;t+=d+.3;return s});return{starts,durs,T:S.segs.length?t+1.6:0}}
 function motion(S,TM,i,speed){
- const p0=S.states[0].pos[i];let d='M0 0',cum=0,keys=[[0,0]],spl=[],last=p0;const EASE={passe:'.1 .6 .4 1',tir:'.1 .6 .4 1',conduite:'.35 0 .65 1'},LIN='0 0 1 1';
+ const p0=S.states[0].pos[i];let d='M0 0',cum=0,keys=[[0,0]],spl=[],last=p0;const LIN='0 0 1 1';
  S.segs.forEach((sg,k)=>{const g=sg[i];if(!g)return;const t0=TM.starts[k],L=segLen(g);
   if(keys[keys.length-1][0]<t0-1e-6){keys.push([t0,cum]);spl.push(LIN)}
-  const rx=v=>R(v[0]-p0[0])+' '+R(v[1]-p0[1]);d+=g.c?` Q${rx(g.c)} ${rx(g.b)}`:` L${rx(g.b)}`;cum+=L;const kd=g.kind=='suivi'&&sg[g.own]?sg[g.own].kind:(g.rcv!=null&&sg[g.rcv]&&segDur(sg,i)>L/vel(g)+.05?sg[g.rcv].kind:g.kind);keys.push([t0+Math.max(.2,segDur(sg,i)),cum]);spl.push(EASE[kd]||'.45 0 .55 1');last=g.b});
+  const rx=v=>R(v[0]-p0[0])+' '+R(v[1]-p0[1]);d+=g.c?` Q${rx(g.c)} ${rx(g.b)}`:` L${rx(g.b)}`;cum+=L;keys.push([t0+TM.durs[k],cum]);spl.push('.45 0 .55 1');last=g.b});
  if(cum<1)return'';
  if(TM.T-1>keys[keys.length-1][0]){keys.push([TM.T-1,cum]);spl.push(LIN)}d+=' L0 0';cum+=dist(last,p0);keys.push([TM.T,cum]);spl.push('.45 0 .55 1');
  return `<animateMotion dur="${(TM.T/(speed||1)).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keySplines="${spl.join(';')}" keyTimes="${keys.map(k=>(k[0]/TM.T).toFixed(4)).join(';')}" keyPoints="${keys.map(k=>(k[1]/cum).toFixed(4)).join(';')}" path="${d}"/>`}
