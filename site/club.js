@@ -59,7 +59,7 @@ function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;
   return `<div class="sitem"><h3>${esc(x.nom||'Séance')}</h3><small>${dateFr(x.date)}${x.auteur?' · '+esc(x.auteur):''} · ${n.length} exercice${n.length>1?'s':''} · ${d} min</small>
   <div class="actions"><button class="add" onclick="ouvrirSeance('${esc(x.id)}',1)">📱 Consulter</button><button onclick="ouvrirSeance('${esc(x.id)}',0)">Modifier</button><button onclick="retirerSeance('${esc(x.id)}')">Retirer</button></div></div>`}).join(''):(msg?'':'<p class="vide">Aucune séance enregistrée.</p>'))}
 function ouvrirSeance(id,terrain){const x=SEANCES.find(s=>s.id==id);if(!x)return;
- S=(x.exercices||[]).map(e=>({...e}));nom.value=x.nom||'';dat.value=x.date||'';lsS('nomseance',nom.value);lsS('dateseance',dat.value);lsS('seanceid',x.id);TERRAIN=!!terrain;save();show('s')}
+ S=(x.exercices||[]).map(e=>({...e}));nom.value=x.nom||'';dat.value=x.date||'';lsS('nomseance',nom.value);lsS('dateseance',dat.value);lsS('seanceid',x.id);TERRAIN=!!terrain;TM={};save();show('s')}
 async function enregistrerSeance(){if(!S.length){alert('La séance est vide.');return}if(!nom.value.trim()){alert('Donne un nom à la séance.');nom.focus();return}
  if(!dat.value){alert('Choisis la date de la séance.');dat.focus();return}
  const code=clubCode();if(!code)return;let au=lsG('nomeduc');if(!au){au=(prompt('Ton nom, affiché sur la séance :')||'').trim().slice(0,40);lsS('nomeduc',au)}
