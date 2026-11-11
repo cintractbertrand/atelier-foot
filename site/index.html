@@ -127,7 +127,7 @@ const uniq=a=>[...new Set(a)].sort();
 let F={theme:'',cat:'',duree:'',niveau:'',auteur:''};
 function majFiltres(){
  const grp=(titre,cle,vals,fmt)=>`<details open><summary>${titre}</summary>${vals.map(v=>`<button class="fo${F[cle]==v?' on':''}" onclick="setF('${cle}','${v}')">${fmt?fmt(v):esc(v)} <small>${E.filter(e=>cle=='theme'?e.theme==v:cle=='cat'?e.categories.includes(v):cle=='niveau'?e.niveau==v:cle=='auteur'?e.auteur==v:e.duree_min<=+v).length}</small></button>`).join('')}</details>`;
- $('#side').innerHTML=`<input id="q" placeholder="Rechercher…" value="${esc(($('#q')||{}).value||'')}">`+grp('Thème','theme',uniq(E.map(e=>e.theme)))+grp('Catégorie','cat',uniq(E.flatMap(e=>e.categories)))+grp('Durée','duree',['10','15','20','30'],v=>'≤ '+v+' min')+grp('Niveau','niveau',uniq(E.map(e=>e.niveau)))+(uniq(E.map(e=>e.auteur).filter(Boolean)).length?grp('Entraîneur','auteur',uniq(E.map(e=>e.auteur).filter(Boolean))):'')+'<button class="fo" onclick="F={theme:\'\',cat:\'\',duree:\'\',niveau:\'\',auteur:\'\'};$(\'#q\').value=\'\';majFiltres();base()">↺ Tout afficher</button>';
+ $('#side').innerHTML=`<input id="q" placeholder="Rechercher…" value="${esc(($('#q')||{}).value||'')}">`+(uniq(E.map(e=>e.auteur).filter(Boolean)).length?grp('Entraîneur','auteur',uniq(E.map(e=>e.auteur).filter(Boolean))):'')+grp('Thème','theme',uniq(E.map(e=>e.theme)))+grp('Catégorie','cat',uniq(E.flatMap(e=>e.categories)))+grp('Durée','duree',['10','15','20','30'],v=>'≤ '+v+' min')+grp('Niveau','niveau',uniq(E.map(e=>e.niveau)))+'<button class="fo" onclick="F={theme:\'\',cat:\'\',duree:\'\',niveau:\'\',auteur:\'\'};$(\'#q\').value=\'\';majFiltres();base()">↺ Tout afficher</button>';
  $('#q').oninput=base}
 function setF(k,v){F[k]=F[k]==v?'':v;majFiltres();base()}
 
