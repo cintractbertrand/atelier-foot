@@ -1,3 +1,6 @@
 9_A_supprimer/
 __pycache__/
 *.pyc
+site/data.js
+exercices/
+chantiers/base_partagee/seed_fiches.sql
