@@ -151,7 +151,7 @@ function setF(k,v){F[k]=F[k]==v?'':v;majFiltres();base()}
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // Source d'une fiche : champ `source` (texte avec lien éventuel), sinon déduite de l'identifiant ou de l'entraîneur.
 function sourceInfo(e){const s=String(e.source||'').trim();
- if(s){const m=s.match(/https?:\/\/[^\s)]+/),url=m?m[0].replace(/[.,;]+$/,''):'',nom=s.split(/[,:(]/)[0].replace(/https?:\/\/\S+/,'').trim()||s;if(/^livre/i.test(nom))nom='Livre';return{nom,url,detail:s}}
+ if(s){let m=s.match(/https?:\/\/[^\s)]+/),url=m?m[0].replace(/[.,;]+$/,''):'',nom=s.split(/[,:(]/)[0].replace(/https?:\/\/\S+/,'').trim()||s;if(/^livre/i.test(nom))nom='Livre';return{nom,url,detail:s}}
  const p=((e.id||'').match(/^([a-z]+)-\d/)||[])[1];
  if(['ech','phy','tec','tac','mat'].includes(p))return{nom:'Livre',url:'',detail:'Livre d\'exercices (fiche reformulée)'};
  if(e.auteur&&e.auteur!='Commun')return{nom:'Coach '+e.auteur,url:'',detail:'Exercice du coach '+e.auteur};
