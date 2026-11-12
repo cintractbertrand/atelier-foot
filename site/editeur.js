@@ -181,7 +181,7 @@ const ONCE=['but','echelle','txt','zone','ligne'];
 const ICO={ligne:'<line x1="-9" y1="6" x2="9" y2="-6" stroke="#1b3a73" stroke-width="2" stroke-dasharray="3 2"/>',zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>'};
 const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':(t=='piquet'||t=='mannequin')?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?40:24}" height="24">${s?shape(s):ICO[t]||''}</svg>`};
 function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
- if(!tool)return sel!=null?'Glisse l\'élément pour le placer, ou règle-le ci-dessous.':'Choisis un élément ci-dessus, puis touche le terrain pour le poser. Glisse un élément pour le déplacer, ou entoure-en plusieurs avec ton doigt pour les bouger ensemble.';
+ if(!tool)return sel!=null?'Glisse l\'élément pour le placer, ou règle-le avec ses boutons.':'Choisis un élément ci-dessus, puis touche le terrain pour le poser. Glisse un élément pour le déplacer, ou entoure-en plusieurs avec ton doigt pour les bouger ensemble.';
  if(tool=='ball')return'Touche un joueur pour lui donner le ballon, ou le terrain pour un ballon libre.';
  if(tool=='zone')return'Glisse ton doigt sur le terrain pour tracer la zone.';
  if(tool=='ligne')return'Glisse ton doigt sur le terrain pour tracer une ligne (couloir, tiers…).';
