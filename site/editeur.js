@@ -92,14 +92,16 @@ function setFond(v){snap();const of=field(M);M.fond=v||undefined;if(v=='demi'){i
   if(!M.items.some(i=>i.t=='but'&&Math.abs(i.y-f.y)<15))M.items.push({t:'but',x:R(f.x+f.w/2),y:R(f.y)})}else remap(M,of,field(M));
  $e('dw').value=M.w;$e('dh').value=M.h;draw()}
 // ---------- tourner / retourner tout le schéma (départ et mouvements) ----------
-function transfo(quart){const of=field(M),old={w:M.w,h:M.h};if(quart){M.w=old.h;M.h=old.w}const nf=field(M);
- const P=(x,y)=>{const u=(x-of.x)/of.w,v=(y-of.y)/of.h,[a,b]=quart?[1-v,u]:[1-u,v];return[R(nf.x+a*nf.w),R(nf.y+b*nf.h)]};
- M.items.forEach(it=>{if(it.t=='zone'){const p1=P(it.x,it.y),p2=P(it.x+it.w,it.y+it.h);it.x=Math.min(p1[0],p2[0]);it.y=Math.min(p1[1],p2[1]);it.w=R(Math.abs(p2[0]-p1[0]));it.h=R(Math.abs(p2[1]-p1[1]));return}
+// fixe : les cages et le terrain restent en place, seuls joueurs, matériel et trajets tournent autour du centre (en mètres).
+function transfo(quart,fixe){const of=field(M),old={w:M.w,h:M.h};if(quart&&!fixe){M.w=old.h;M.h=old.w}const nf=field(M);
+ const P=fixe&&quart?(x,y)=>{const mx=(x-of.x)/of.w*M.w-M.w/2,my=(y-of.y)/of.h*M.h-M.h/2,cl2=(v,a)=>Math.min(a,Math.max(0,v));return[R(of.x+cl2(M.w/2-my,M.w)/M.w*of.w),R(of.y+cl2(M.h/2+mx,M.h)/M.h*of.h)]}
+  :(x,y)=>{const u=(x-of.x)/of.w,v=(y-of.y)/of.h,[a,b]=quart?[1-v,u]:[1-u,v];return[R(nf.x+a*nf.w),R(nf.y+b*nf.h)]};
+ M.items.forEach(it=>{if(fixe&&it.t=='but')return;if(it.t=='zone'){const p1=P(it.x,it.y),p2=P(it.x+it.w,it.y+it.h);it.x=Math.min(p1[0],p2[0]);it.y=Math.min(p1[1],p2[1]);it.w=R(Math.abs(p2[0]-p1[0]));it.h=R(Math.abs(p2[1]-p1[1]));return}
   if(it.t=='ligne'){const e=P(it.x+it.dx,it.y+it.dy),a=P(it.x,it.y);it.x=a[0];it.y=a[1];it.dx=R(e[0]-a[0]);it.dy=R(e[1]-a[1]);return}
   [it.x,it.y]=P(it.x,it.y);if(['but','haie','echelle'].includes(it.t))it.rot=(((it.rot||0)+(quart?90:(180-2*(it.rot||0))))%360+360)%360});
  M.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{[q.x,q.y]=P(q.x,q.y);if(q.c)q.c=P(q.c[0],q.c[1])}));M.fr=[nf.x,nf.y,nf.w,nf.h]}
-function tourner(){if(M.fond=='demi'&&!confirm('La cage du demi-terrain doit rester en haut : le schéma repassera en terrain simple. Continuer ?'))return;snap();if(M.fond=='demi')delete M.fond;transfo(true);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;draw()}
-function miroir(){snap();transfo(false);sel=null;draw()}
+function tourner(){snap();transfo(true,M.fond=='demi'||M.items.some(i=>i.t=='but'));$e('dw').value=M.w;$e('dh').value=M.h;sel=null;draw()}
+function miroir(){snap();transfo(false,M.fond=='demi'||M.items.some(i=>i.t=='but'));sel=null;draw()}
 // ---------- rendu ----------
 function render0(m,o={}){
  m=norm(m);const S=simulate(m),I=m.items,f=field(m),ed=o.editor,nT=S.segs.length;
