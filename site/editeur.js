@@ -363,7 +363,7 @@ function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lin
   auteur:nomAut(g('f_auteur')).slice(0,40),source:g('f_source'),objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());const o={...(ov||{}),nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''};delete o.schema_svg;return o}),
   schema_modele:texteSeul&&old?(old.schema_modele?cl(old.schema_modele):undefined):cl(M)};if(fiche.schema_modele===undefined)delete fiche.schema_modele;if(!fiche.source)delete fiche.source;if(!fiche.auteur)delete fiche.auteur;delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
- const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:draftId});draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
+ const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:draftId});draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');const auto=(typeof clubAuto=='function'&&clubAuto());if(auto)partager(fiche.id,true);setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée'+(auto?' et ajoutée au club.':' sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':''))),50)}
 const hyd=e=>{if(!e.schema_modele)return e;return{...e,schema_svg:render(e.schema_modele,{animOn:true}),variantes:(e.variantes||[]).map(v=>v.schema_modele?{...v,schema_svg:render(v.schema_modele,{animOn:true})}:v)}};
 // Copie d'une fiche sans ce qui est recalculé à l'affichage (schémas SVG) ni les infos du club.
 function propre(f,keep){const o=cl(f);['schema_svg','club','maj',...(keep?[]:['perso','auteur'])].forEach(k=>delete o[k]);(o.variantes||[]).forEach(v=>delete v.schema_svg);return o}
@@ -377,7 +377,7 @@ function enregistrerV(ev){ev.preventDefault();const f=E.find(x=>x.id==varEdit.pi
  const v={...(varEdit.idx!=null?o.variantes[varEdit.idx]:{}),nom:$e('v_nom').value.trim().slice(0,40),change:$e('v_change').value.trim(),difficulte:(document.querySelector('[name=v_diff]:checked')||{}).value||'',schema_modele:cl(M)};
  const d=+$e('v_duree').value;if(d&&d!=o.duree_min)v.duree=d;else delete v.duree;
  if(varEdit.idx!=null)o.variantes[varEdit.idx]=v;else{o.variantes.push(v);varEdit.idx=o.variantes.length-1}
- const a=chargePerso().filter(x=>x.id!=o.id);a.push(o);savePerso(a);$e('dlgv').close();majE();show('b');
+ const a=chargePerso().filter(x=>x.id!=o.id);a.push(o);savePerso(a);$e('dlgv').close();majE();show('b');if((typeof clubAuto=='function'&&clubAuto()))partager(o.id,true);
  setTimeout(()=>alert('Variante « '+v.nom+' » enregistrée : elle s\'affiche à côté de « '+o.titre+' ».'+(window.boutonsClub?' Pour la partager, utilise « Partager au club » sur la fiche.':'')),50)}
 const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
 const MKSTOP=new Set('de du des la le les un une et en au aux avec sans par pour sur sous dans contre ou son ses cette qui que vers entre puis apres après face'.split(' '));

@@ -17,11 +17,13 @@ async function clubCharger(){if(!clubOn())return;
 async function clubRpc(fn,body){const r=await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify(body)});
  if(r.ok)return true;const t=await r.text();if(t.includes('code club')){lsS('codeclub','');alert('Code club incorrect.')}else alert('Envoi impossible ('+r.status+'). Réessaie plus tard ou exporte la fiche.');return false}
 const clubCode=()=>(lsG('codeclub')||prompt('Code club :')||'').trim();
-async function partager(id){const f=E.find(x=>x.id==id);if(!f)return;const code=clubCode();if(!code)return;
- let nom=nomAut(lsG('nomeduc'));if(!nom){nom=(prompt('Ton nom, affiché sur la fiche :')||'').trim().slice(0,40);lsS('nomeduc',nom)}
+// Par défaut, toute fiche enregistrée est aussitôt ajoutée au club (si le code club est déjà mémorisé sur cet appareil).
+const clubAuto=()=>clubOn()&&!!lsG('codeclub');
+async function partager(id,auto){const f=E.find(x=>x.id==id);if(!f)return;const code=auto?lsG('codeclub'):clubCode();if(!code)return;
+ let nom=nomAut(lsG('nomeduc'));if(!nom&&auto)nom='Commun';if(!nom){nom=(prompt('Ton nom, affiché sur la fiche :')||'').trim().slice(0,40);lsS('nomeduc',nom)}
  const o=propre(f);
  if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||nom}))return;
- savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
+ savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();if(!auto)alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
 async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est seulement masquée et reste récupérable.'))return;const code=clubCode();if(!code)return;
  if(!await clubRpc('retirer_fiche',{code,fid:id}))return;lsS('codeclub',code);await clubCharger()}
 const THEMES=['échauffement','physique','technique','tactique','jeu réduit','tir','gardien','retour au calme'];
