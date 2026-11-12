@@ -248,11 +248,11 @@ function ui(){
 // ---------- mesures (idée GeoGebra) : distance en mètres pendant qu'on glisse ----------
 function metres(a,b){const f=field(M);return Math.hypot((b[0]-a[0])*M.w/f.w,(b[1]-a[1])*M.h/f.h)}
 function mesure(a,b){const s=$e('cv');if(!s||!a||!b)return;const d=metres(a,b);if(d<.5)return;const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,t=(Math.round(d*10)/10).toString().replace('.',',')+' m';
- s.insertAdjacentHTML('beforeend',`<g style="pointer-events:none"><line x1="${R(a[0])}" y1="${R(a[1])}" x2="${R(b[0])}" y2="${R(b[1])}" stroke="#e8731a" stroke-width="1" stroke-dasharray="2 2"/><rect x="${R(mx-13)}" y="${R(my-6)}" width="26" height="10" rx="3" fill="#e8731a"/><text x="${R(mx)}" y="${R(my+1.8)}" font-size="7" font-weight="700" text-anchor="middle" fill="#fff" font-family="sans-serif">${t}</text></g>`)}
+ s.insertAdjacentHTML('beforeend',`<g style="pointer-events:none"><line x1="${R(a[0])}" y1="${R(a[1])}" x2="${R(b[0])}" y2="${R(b[1])}" stroke="#e8731a" stroke-width=".5" stroke-dasharray="1.5 1.5"/><rect x="${R(mx-9)}" y="${R(my-3.8)}" width="18" height="6.5" rx="2" fill="#e8731a" opacity=".9"/><text x="${R(mx)}" y="${R(my+1.3)}" font-size="4.6" font-weight="700" text-anchor="middle" fill="#fff" font-family="sans-serif">${t}</text></g>`)}
 function mesureDrag(){
  if(drag.k=='mv'&&drag.moved){const T=M.temps[cur],q=T&&T.moves[drag.i];if(!q)return;const S=simulate({...M,temps:M.temps.slice(0,cur)}),a=S.states[S.states.length-1].pos[drag.i];mesure(a,[q.x,q.y]);return}
- if(drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='zone'||it.t=='ligne')return;const P=simulate(M).states[0].pos,me=(it.t=='p'||it.t=='ball')?P[drag.i]:[it.x,it.y];let best=null,bd=1e9;
-  M.items.forEach((o,j)=>{if(j==drag.i||o.t=='zone'||o.t=='ligne'||o.t=='txt'||(o.t=='ball'&&o.o!=null)||(it.t=='ball'&&j===it.o))return;const q=(o.t=='p'||o.t=='ball')?P[j]:[o.x,o.y],d=dist(q,me);if(d<bd){bd=d;best=q}});if(best)mesure(best,me)}}
+ if(drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='zone'||it.t=='ligne')return;const P=simulate(M).states[0].pos,me=(it.t=='p'||it.t=='ball')?P[drag.i]:[it.x,it.y];const pr=[];
+  M.items.forEach((o,j)=>{if(j==drag.i||o.t=='zone'||o.t=='ligne'||o.t=='txt'||(o.t=='ball'&&o.o!=null)||(it.t=='ball'&&j===it.o))return;const q=(o.t=='p'||o.t=='ball')?P[j]:[o.x,o.y];pr.push([dist(q,me),q])});pr.sort((a,b)=>a[0]-b[0]).slice(0,2).forEach(([,q])=>mesure(q,me))}}
 // ---------- dispositions de plots (idée GeoGebra : polygones réguliers) ----------
 function disposer(forme){const it=M.items[sel];if(!it)return;const n=Math.max(2,Math.min(12,+($e('disp_n')||{}).value||4)),L=Math.max(1,+($e('disp_m')||{}).value||10),f=field(M),kx=f.w/M.w,ky=f.h/M.h,pts=[];
  if(forme=='ligne')for(let k=1;k<n;k++)pts.push([k*L,0]);
