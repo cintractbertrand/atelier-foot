@@ -3,7 +3,11 @@ window.PERIODES=[];
 const SA_MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const SA_CATS=['U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U17','U18','Seniors'];
 // Grands thèmes de la saison (couleur fixe), d'après les phases du jeu et les progressions FFF.
-const GRANDS=[['Conduite et dribbles','#d6f0d9'],['Conservation et passes','#dce8f8'],['Jeu sans ballon / démarquage','#e3dcf6'],['Duels 1 contre 1','#fde0c8'],['Sortie de balle','#c9e8f2'],['Transitions','#fbe9b0'],['Pressing et défense collective','#f6d6e0'],['Finition et jeu devant le but','#ffd0a8'],['Coups de pied arrêtés','#e0e0c8'],['Physique et appuis','#e6e6e6'],['Gardien','#d4e8d0'],['Jeu libre et matchs','#f0e0f6']];
+const GRANDS=[['Conduite et dribbles','#d6f0d9','conduite|dribble'],['Conservation et passes','#dce8f8','conservation|possession|passe'],['Jeu sans ballon / démarquage','#e3dcf6','démarquage|appel|sans ballon|placement'],['Duels 1 contre 1','#fde0c8','1 contre 1|1c1|duel'],['Sortie de balle','#c9e8f2','sortie de balle|relance'],['Transitions','#fbe9b0','transition|contre-pressing|repli'],['Pressing et défense collective','#f6d6e0','pressing|défense|défendre'],['Finition et jeu devant le but','#ffd0a8','finition|tir|frappe'],['Coups de pied arrêtés','#e0e0c8','coup franc|corner|coup de pied arrêté|touche'],['Physique et appuis','#e6e6e6','physique|appuis|vitesse|coordination'],['Gardien','#d4e8d0','gardien'],['Jeu libre et matchs','#f0e0f6','match|jeu réduit|opposition']];
+// Filtre la Base sur un thème de la saison (mots-clés du grand thème, ou le nom du thème tel quel).
+function filtrerTheme(t,cat){const g=GRANDS.find(x=>x[0]==t),q=g?g[2]:t.toLowerCase();
+ F={theme:'',cat:cat||'',duree:'',niveau:'',auteur:'',source:'',liste:'',joueurs:'',sans:[]};
+ const qi=document.getElementById('q');if(qi)qi.value=q;majFiltres();base();show('b')}
 const THEMES_SAISON=GRANDS.map(g=>g[0]);
 let THEME_ACTIF='';
 const SA_COUL=['#dce8f8','#fbe9b0','#d6f0d9','#f6d6e0','#e3dcf6','#fde0c8'];
@@ -17,7 +21,7 @@ async function saisonCharger(msg){
  try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_periodes',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
   if(!r.ok)throw new Error(r.status);PERIODES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:x.auteur||''}));saisonAff(msg)}
  catch(e){saisonAff('Planning indisponible pour le moment (le script SQL « saison » est-il lancé ? connexion ?)')}}
-const CW=46,LH=30;
+const LH=30;
 const saD=s=>{const [y,m,d]=s.split('-');return new Date(+y,m-1,+d)};
 const saLundi=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
 const saAdd=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
@@ -27,50 +31,64 @@ async function periodeSauver(id,o){const pid=id||('p'+Date.now().toString(36)+Ma
  else{const l=saisonPourStock().filter(x=>x.id!=pid);l.push({...o,id:pid});lsS('periodes',JSON.stringify(l))}return true}
 function themesEnCours(){const e=document.getElementById('thencours');if(!e)return;const auj=saIso(new Date());
  const l=PERIODES.filter(p=>p.debut<=auj&&p.fin>=auj);
- e.innerHTML=l.length?'Thèmes en cours : '+l.map(p=>`<span style="background:${coulTheme(p.theme)};color:#1b3a73;border-radius:10px;padding:1px 9px;margin-right:4px;cursor:pointer" onclick="nsa.click()">${esc(p.theme)}${p.cat?' · '+esc(p.cat):''} <small>jusqu'au ${dateFr(p.fin).slice(0,5)}</small></span>`).join(''):'';}
+ e.innerHTML=l.map(p=>`<button onclick="filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')" title="Voir les exercices de ce thème (en cours jusqu'au ${dateFr(p.fin)})">🎯 ${esc(p.theme)}${p.cat?' · '+esc(p.cat):''}</button>`).join('')}
+let SA_G=null; // géométrie courante du calendrier
 function saisonAff(msg){themesEnCours();const L=document.getElementById('saisonc');if(!L)return;
  const an=SAISON_AN,cat=document.getElementById('scat').value;document.getElementById('san').textContent='Saison '+an+'-'+(an+1)+' (août → juin)';
  const d0=saLundi(new Date(an,7,1)),W=Math.floor((new Date(an+1,5,30)-d0)/6048e5)+1;
  const idx=s=>Math.floor((saD(s)-d0)/6048e5);
+ const wid=(L.clientWidth||1000)-4,nrows=wid<700?6:4,RW=Math.ceil(W/nrows),CW=Math.max(24,Math.floor(wid/RW));
  const per=PERIODES.filter(p=>idx(p.fin)>=0&&idx(p.debut)<W&&(!cat||!p.cat||p.cat==cat)).sort((x,y)=>x.debut.localeCompare(y.debut));
  const lanes=[];per.forEach(p=>{p._a=Math.max(0,idx(p.debut));p._b=Math.min(W-1,idx(p.fin));let l=lanes.findIndex(e=>e<p._a);if(l<0){l=lanes.length;lanes.push(-1)}lanes[l]=p._b;p._l=l});
- const nl=lanes.length+1,H=nl*LH+6;
- const grid='repeating-linear-gradient(90deg,#d5deea 0 1px,transparent 1px '+CW+'px)';
- let mh='',wh='',sh='';
- for(let i=0;i<W;i++){const d=saAdd(d0,i*7);wh+=`<div style="position:absolute;left:${i*CW}px;width:${CW}px;text-align:center;font-size:11px;color:#777">${d.getDate()}/${d.getMonth()+1}</div>`;
-  if(i==0||d.getMonth()!=saAdd(d0,(i-1)*7).getMonth()){const m=saAdd(d,6).getMonth();mh+=`<div style="position:absolute;left:${i*CW}px;font-weight:700;color:var(--o);padding-left:4px;border-left:2px solid var(--or)">${SA_MOIS[m]}</div>`}}
+ const H=Math.max(lanes.length+1,2)*LH+6;
  const sea=(window.SEANCES||[]).filter(s=>s.date&&idx(s.date)>=0&&idx(s.date)<W);
- for(let i=0;i<W;i++){const d=saAdd(d0,i*7),ss=sea.filter(s=>idx(s.date)==i);
-  sh+=`<div class="swk" style="position:absolute;left:${i*CW}px;width:${CW}px;top:0;bottom:0" onclick="saisonNouvelleSeance('${saIso(d)}')" title="Planifier une séance cette semaine">${ss.map(s=>`<div class="ssea" onclick="event.stopPropagation();ouvrirSeance('${esc(s.id)}',0)" title="${esc((s.nom||'Séance')+' · '+dateFr(s.date)+(s.auteur?' · '+s.auteur:''))}">${dateFr(s.date).slice(0,5)}</div>`).join('')}</div>`}
- const bars=per.map(p=>`<div class="pbar" data-id="${esc(p.id)}" style="left:${p._a*CW+1}px;width:${(p._b-p._a+1)*CW-2}px;top:${p._l*LH+3}px;background:${coulTheme(p.theme)}" title="${esc(p.theme+' · '+dateFr(p.debut)+' → '+dateFr(p.fin)+(p.cat?' · '+p.cat:'')+(p.note?' · '+p.note:''))}"><i class="gh gl"></i><span>${esc(p.theme)}${p.cat?' · '+esc(p.cat):''}</span><i class="gh gr"></i></div>`).join('');
- const W2=W*CW,mx=Math.max(0,...[...Array(W).keys()].map(i=>sea.filter(s=>idx(s.date)==i).length));
- L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+`<p class="hint noprint">Tire sur une ligne vide pour créer un thème, tire un thème pour le déplacer, tire ses bords pour l'allonger. Clique dessus pour le modifier. Clique une semaine du bas pour planifier une séance.</p>
- <div id="sscr" style="overflow-x:auto;background:#fff;border-radius:8px;padding:6px 0"><div style="position:relative;width:${W2}px">
- <div style="position:relative;height:22px">${mh}</div><div style="position:relative;height:18px">${wh}</div>
- <div id="slanes" style="position:relative;height:${H}px;background:${grid}">${bars}<div id="sghost" class="pbar hide" style="background:#e8b92399;top:0"></div></div>
- <div style="position:relative;height:${Math.max(60,mx*22+10)}px;background:${grid};border-top:2px solid var(--or)">${sh}</div></div></div>`;
- saisonDrag(d0,W,per)}
-function saisonDrag(d0,W,per){const lanes=document.getElementById('slanes'),g=document.getElementById('sghost');if(!lanes)return;
- const wk=e=>Math.max(0,Math.min(W-1,Math.floor((e.clientX-lanes.getBoundingClientRect().left)/CW)));
- const dIso=(i,fin)=>saIso(saAdd(d0,i*7+(fin?6:0)));
+ const grid='repeating-linear-gradient(90deg,#d5deea 0 1px,transparent 1px '+CW+'px)';
+ SA_G={d0,W,RW,CW,H,nrows,per};
+ let h='';
+ for(let r=0;r<nrows;r++){const r0=r*RW,r1=Math.min(W-1,r0+RW-1);if(r0>=W)break;
+  let mh='',wh='',sh='',mx=0;
+  for(let i=r0;i<=r1;i++){const d=saAdd(d0,i*7),x=(i-r0)*CW;wh+=`<div style="position:absolute;left:${x}px;width:${CW}px;text-align:center;font-size:10px;color:#777">${d.getDate()}/${d.getMonth()+1}</div>`;
+   if(i==r0||saAdd(d,6).getMonth()!=saAdd(d0,(i-1)*7+6).getMonth()){mh+=`<div style="position:absolute;left:${x}px;font-weight:700;font-size:13px;color:var(--o);padding-left:4px;border-left:2px solid var(--or)">${SA_MOIS[saAdd(d,6).getMonth()]}</div>`}
+   const ss=sea.filter(s=>idx(s.date)==i);mx=Math.max(mx,ss.length);
+   sh+=`<div class="swk" style="position:absolute;left:${x}px;width:${CW}px;top:0;bottom:0" onclick="saisonNouvelleSeance('${saIso(d)}')" title="Planifier une séance cette semaine">${ss.map(s=>`<div class="ssea" onclick="event.stopPropagation();ouvrirSeance('${esc(s.id)}',0)" title="${esc((s.nom||'Séance')+' · '+dateFr(s.date)+(s.auteur?' · '+s.auteur:''))}">${dateFr(s.date).slice(0,5)}</div>`).join('')}</div>`}
+  h+=`<div class="srow" style="width:${(r1-r0+1)*CW}px"><div style="position:relative;height:20px">${mh}</div><div style="position:relative;height:16px">${wh}</div>
+  <div class="slanes" data-r="${r}" style="position:relative;height:${H}px;background:${grid}"></div>
+  <div style="position:relative;height:${Math.max(30,mx*20+8)}px;background:${grid};border-top:2px solid var(--or)">${sh}</div></div>`}
+ L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+`<p class="hint noprint">Tire sur une ligne vide pour créer un thème (ou choisis d'abord un grand thème), tire un thème pour le déplacer, tire ses bords pour l'allonger. Clique dessus pour voir ses exercices dans la Base (✎ pour le modifier). Clique une semaine du bas pour planifier une séance.</p><div id="scal" style="background:#fff;border-radius:8px;padding:6px 2px">${h}</div>`;
+ per.forEach(p=>saSegs(p.id,p._a,p._b,p._l,p));
+ saisonDrag()}
+// Dessine (ou redessine) les morceaux d'un thème sur chaque ligne du calendrier.
+function saSegs(id,a,b,lane,p){const G=SA_G;document.querySelectorAll('.pbar[data-id="'+id+'"]').forEach(e=>e.remove());
+ const col=p.theme?coulTheme(p.theme):'#e8b92399';
+ document.querySelectorAll('.slanes').forEach(el=>{const r=+el.dataset.r,r0=r*G.RW,r1=Math.min(G.W-1,r0+G.RW-1);if(b<r0||a>r1)return;
+  const s=Math.max(a,r0),e=Math.min(b,r1),d=document.createElement('div');d.className='pbar';d.dataset.id=id;
+  d.style.cssText=`left:${(s-r0)*G.CW+1}px;width:${(e-s+1)*G.CW-2}px;top:${lane*LH+3}px;background:${col}`;
+  d.title=p.theme?p.theme+' · '+dateFr(p.debut)+' → '+dateFr(p.fin)+(p.cat?' · '+p.cat:'')+(p.note?' · '+p.note:''):'';
+  d.innerHTML=(s==a?'<i class="gh gl"></i><i class="ged" title="Modifier">✎</i>':'')+'<span>'+esc(p.theme||'')+(p.cat?' · '+esc(p.cat):'')+'</span>'+(e==b?'<i class="gh gr"></i>':'');
+  el.appendChild(d)})}
+function saisonDrag(){const cal=document.getElementById('scal');if(!cal)return;const G=SA_G,per=G.per;
+ const rows=()=>[...cal.querySelectorAll('.slanes')];
+ const pt=e=>{const rs=rows();let r=0;rs.forEach((el,i)=>{if(e.clientY>=el.getBoundingClientRect().top-30)r=i});const bb=rs[r].getBoundingClientRect(),r0=r*G.RW,r1=Math.min(G.W-1,r0+G.RW-1);
+  return {i:Math.max(r0,Math.min(r1,r0+Math.floor((e.clientX-bb.left)/G.CW))),lane:Math.max(0,Math.min(Math.floor((e.clientY-bb.top)/LH),Math.floor(G.H/LH)-1))}};
+ const dIso=(i,fin)=>saIso(saAdd(G.d0,i*7+(fin?6:0)));
  let m=null;
- const pos=(a,b)=>{g.style.left=a*CW+1+'px';g.style.width=(b-a+1)*CW-2+'px'};
- lanes.onpointerdown=e=>{if(e.button)return;const bar=e.target.closest('.pbar:not(#sghost)');const i=wk(e);
-  if(!bar){m={t:'new',a:i,b:i,mv:0};g.classList.remove('hide');g.style.top=Math.floor((e.clientY-lanes.getBoundingClientRect().top)/LH)*LH+3+'px';pos(i,i);lanes.setPointerCapture(e.pointerId);return}
+ cal.onpointerdown=e=>{if(e.button||!e.target.closest('.slanes'))return;const bar=e.target.closest('.pbar'),q=pt(e);
+  if(!bar){m={t:'new',a:q.i,b:q.i,lane:q.lane,mv:0};saSegs('__g',q.i,q.i,q.lane,{});cal.setPointerCapture(e.pointerId);return}
   const p=per.find(x=>x.id==bar.dataset.id);if(!p)return;const t=e.target.classList.contains('gl')?'l':e.target.classList.contains('gr')?'r':'m';
-  m={t,p,bar,i0:i,a:p._a,b:p._b,a0:p._a,b0:p._b,mv:0};lanes.setPointerCapture(e.pointerId);e.preventDefault()};
- lanes.onpointermove=e=>{if(!m)return;const i=wk(e);
-  if(m.t=='new'){m.b=i;pos(Math.min(m.a,m.b),Math.max(m.a,m.b));m.mv=1;return}
-  const dl=i-m.i0;if(dl)m.mv=1;let a=m.a0,b=m.b0;
-  if(m.t=='m'){a=m.a0+dl;b=m.b0+dl;if(a<0){b-=a;a=0}if(b>W-1){a-=b-(W-1);b=W-1}}
+  m={t,p,edit:e.target.classList.contains('ged'),i0:q.i,a:p._a,b:p._b,a0:p._a,b0:p._b,mv:0};cal.setPointerCapture(e.pointerId);e.preventDefault()};
+ cal.onpointermove=e=>{if(!m)return;const q=pt(e);
+  if(m.t=='new'){m.b=q.i;m.mv=1;saSegs('__g',Math.min(m.a,m.b),Math.max(m.a,m.b),m.lane,{});return}
+  const dl=q.i-m.i0;if(dl)m.mv=1;let a=m.a0,b=m.b0;
+  if(m.t=='m'){a=m.a0+dl;b=m.b0+dl;if(a<0){b-=a;a=0}if(b>G.W-1){a-=b-(G.W-1);b=G.W-1}}
   else if(m.t=='l')a=Math.min(m.b0,m.a0+dl);else b=Math.max(m.a0,m.b0+dl);
-  m.a=a;m.b=b;m.bar.style.left=a*CW+1+'px';m.bar.style.width=(b-a+1)*CW-2+'px'};
- lanes.onpointerup=async e=>{if(!m)return;const q=m;m=null;g.classList.add('hide');
+  m.a=a;m.b=b;saSegs(m.p.id,a,b,m.p._l,m.p)};
+ cal.onpointerup=async e=>{if(!m)return;const q=m;m=null;document.querySelectorAll('.pbar[data-id="__g"]').forEach(x=>x.remove());
   if(q.t=='new'){const a=Math.min(q.a,q.b),b=Math.max(q.a,q.b);if(THEME_ACTIF){const c=document.getElementById('scat').value;if(await periodeSauver('',{theme:THEME_ACTIF,cat:c,debut:dIso(a),fin:dIso(b,1),note:''}))saisonCharger();else saisonAff();return}periodeEditer('',dIso(a),dIso(b,1));return}
-  if(!q.mv){periodeEditer(q.p.id);return}
+  if(!q.mv){if(q.edit)periodeEditer(q.p.id);else filtrerTheme(q.p.theme,q.p.cat);return}
   const {_a,_b,_l,id,auteur,...o}=q.p;o.debut=dIso(q.a);o.fin=dIso(q.b,1);
   if(await periodeSauver(q.p.id,o))saisonCharger();else saisonAff()};
- lanes.onpointercancel=()=>{m=null;g.classList.add('hide');saisonAff()}}
+ cal.onpointercancel=()=>{m=null;saisonAff()}}
+window.addEventListener('resize',()=>{const s=document.getElementById('saison');if(s&&!s.classList.contains('hide'))saisonAff()});
 function saisonNouvelleSeance(mois){let d=document.getElementById('pld');if(d)d.remove();d=document.createElement('dialog');d.id='pld';d.style.cssText='max-width:420px;width:92vw;padding:16px';
  const auj=saIso(new Date()),def=auj.startsWith(mois)?auj:mois+'-01';
  d.innerHTML='<h3 style="margin:0 0 8px">Planifier une séance</h3><label>Date<br><input type="date" id="pd" value="'+def+'" style="width:100%"></label><br><br><label>Nom (catégorie, thème…)<br><input id="pn" placeholder="Ex. U11 – sortie de balle" style="width:100%"></label><div style="margin-top:12px;text-align:right"><button id="px">Annuler</button> <button class="add" id="po">Composer la séance</button></div>';
@@ -91,7 +109,7 @@ function periodeEditer(id,debut,fin){const p=PERIODES.find(x=>x.id==id)||{theme:
   d.close();saisonCharger()};d.showModal()}
 (function(){const sec=document.getElementById('saison');if(!sec)return;
  sec.innerHTML='<div class="filtres noprint"><button onclick="SAISON_AN--;saisonAff()">◀</button><b id="san" style="padding:7px"></b><button onclick="SAISON_AN++;saisonAff()">▶</button><select id="scat" onchange="saisonAff()"><option value="">Toutes catégories</option>'+SA_CATS.map(c=>'<option>'+c+'</option>').join('')+'</select><button class="add" onclick="periodeEditer(\'\')">+ Thème sur une période</button><button onclick="saisonCharger()">Actualiser</button><button onclick="window.print()">Imprimer</button></div><div id="spal" class="noprint"></div><div id="saisonc"></div>';
- const st=document.createElement('style');st.textContent='.pbar{position:absolute;height:26px;border-radius:6px;border:1px solid #0003;cursor:grab;display:flex;align-items:center;overflow:hidden;user-select:none;touch-action:none}.pbar span{flex:1;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:600;color:#1b3a73;pointer-events:none}.gh{width:9px;height:100%;cursor:ew-resize;background:#0002;flex:none}#slanes{touch-action:pan-y;cursor:crosshair}.swk{border-radius:4px;cursor:pointer}.swk:hover{background:#e8b92333}.ssea{background:var(--o);color:#fff;border-radius:4px;font-size:11px;margin:2px;padding:2px 3px;text-align:center}';document.head.appendChild(st);
+ const st=document.createElement('style');st.textContent='.pbar{position:absolute;height:26px;border-radius:6px;border:1px solid #0003;cursor:grab;display:flex;align-items:center;overflow:hidden;user-select:none;touch-action:none}.pbar span{flex:1;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:600;color:#1b3a73;pointer-events:none}.ged{padding:0 4px;font-style:normal;cursor:pointer;font-size:12px}.gh{width:8px;height:100%;cursor:ew-resize;background:#0002;flex:none}.slanes{touch-action:pan-y;cursor:crosshair}.srow{margin:0 0 12px}.swk{border-radius:4px;cursor:pointer}.swk:hover{background:#e8b92333}.ssea{background:var(--o);color:#fff;border-radius:4px;font-size:11px;margin:2px;padding:2px 3px;text-align:center}';document.head.appendChild(st);
  saisonPalette();document.getElementById('nsa').onclick=async()=>{show('a');saisonCharger();if(clubOn()&&lsG('codeclub')){await seancesCharger();saisonAff()}};
  if(clubOn()&&lsG('codeclub'))saisonCharger();})();
 

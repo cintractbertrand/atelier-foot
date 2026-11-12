@@ -9,7 +9,7 @@
 header{position:sticky;top:0;z-index:50;box-shadow:0 2px 6px #0003;background:var(--o);border-bottom:4px solid var(--or);color:#fff;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 header h1{font-size:18px;margin:0 auto 0 0}
 nav button{background:#fff3;color:#fff;border:0;padding:8px 14px;border-radius:6px;font-size:15px;margin-left:4px}
-nav button.on{background:#fff;color:var(--o);font-weight:700}
+#thencours{display:flex;gap:4px;flex-wrap:wrap}#thencours button{background:#fff3;color:#fff;border:0;padding:8px 14px;border-radius:6px;font-size:15px}nav button.on{background:#fff;color:var(--o);font-weight:700}
 main{max-width:1150px;margin:auto;padding:12px}
 .filtres{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 input,select,button{font:inherit;padding:7px;border:1px solid #ccc;border-radius:6px;background:#fff}
@@ -42,8 +42,8 @@ dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4p
 #cover{display:none}.disp{width:100%;font-size:13px;margin-top:4px}.disp button{min-height:32px!important;padding:4px 8px;margin:2px}.disp button.on,.disp button.ok{background:#1b3a73;color:#fff}
 @media print{#cover{display:block;break-after:page}#cover h2{margin:0 0 4px;color:#1b3a73;font-size:26px}#cover table{width:100%;border-collapse:collapse;margin:14px 0;font-size:15px}#cover td,#cover th{border-bottom:1px solid #bbb;padding:6px;text-align:left}#seance .tot{display:none}#sl .fiche{break-before:page}#sl>.fiche:first-child{break-before:auto}header,.filtres,.actions,.noprint{display:none!important}body{background:#fff}.fiche{box-shadow:none;break-inside:avoid;border:1px solid #999}@page{size:A4;margin:12mm}}
 </style></head><body>
-<header><h1>⚽ Atelier Foot</h1>
-<nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl">Séances</button><button id="nsa">Saison</button><button id="ns">Séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav><div id="thencours" class="noprint" style="width:100%;font-size:14px"></div></header>
+<header><h1>⚽ Atelier Foot</h1><div id="thencours" class="noprint"></div>
+<nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl">Séances</button><button id="nsa">Saison</button><button id="ns">Séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
 <main>
 <section id="base">
  <div class="layout"><aside id="side"></aside><div>
@@ -175,7 +175,7 @@ function schemas(e,v){const vs=(e.variantes||[]).map((x,k)=>({...x,k})).filter(x
  const fig=(svg,nom,tag,k)=>`<figure class="sch${v&&v.variante==nom&&k!=null?' on':''}">${nom?`<figcaption><b>${esc(nom)}</b>${tag?` <span class="vt">${esc(tag)}</span>`:''}</figcaption>`:''}${uniq2(svg)}<div class="actions noprint"><button class="pl" onclick="anim(this)">⏸ Pause</button><button class="pl" onclick="pngFiche(this,'${esc(e.titre).replace(/'/g,'')}')">Image PNG</button>${!v&&k!=null?`<button class="pl add" onclick="ajouter('${e.id}',${k})">+ Séance</button>${e.schema_modele?`<button class="pl" onclick="modifierVariante('${e.id}',${k})">✎ Modifier</button>`:''}`:''}</div></figure>`;
  if(v){const c=vs.find(x=>x.nom==v.variante);return c?`<div class="schs">${fig(c.schema_svg,'Variante : '+c.nom,c.difficulte,c.k)}</div>`:e.schema_svg?`<div class="schs">${fig(e.schema_svg,'Exercice de base','')}</div>`:''}
  if(!e.schema_svg)return'';return `<div class="schs${vs.length?' multi':''}">${fig(e.schema_svg,vs.length?'Exercice de base':'',vs.length?'':'')}${vs.map(x=>fig(x.schema_svg,x.nom,x.difficulte,x.k)).join('')}</div>`}
-function ok(e,f){const q=(($('#q')||{}).value||'').toLowerCase();return(!f.theme||e.theme==f.theme)&&(!f.cat||e.categories.includes(f.cat))&&(!f.duree||dB(e)==+f.duree)&&(!f.niveau||e.niveau==f.niveau)&&(!f.auteur||e.auteur==f.auteur)&&(!f.source||(sourceInfo(e)||{}).nom==f.source)&&(!f.liste||(f.liste=='fav'?FAV.has(e.id):REC.includes(e.id)))&&(!f.joueurs||(e.joueurs&&e.joueurs.min<=+f.joueurs&&+f.joueurs<=e.joueurs.max))&&!(f.sans||[]).some(k=>besoin(e,k))&&(!q||JSON.stringify(e).toLowerCase().includes(q))}
+function ok(e,f){const q=(($('#q')||{}).value||'').toLowerCase();return(!f.theme||e.theme==f.theme)&&(!f.cat||e.categories.includes(f.cat))&&(!f.duree||dB(e)==+f.duree)&&(!f.niveau||e.niveau==f.niveau)&&(!f.auteur||e.auteur==f.auteur)&&(!f.source||(sourceInfo(e)||{}).nom==f.source)&&(!f.liste||(f.liste=='fav'?FAV.has(e.id):REC.includes(e.id)))&&(!f.joueurs||(e.joueurs&&e.joueurs.min<=+f.joueurs&&+f.joueurs<=e.joueurs.max))&&!(f.sans||[]).some(k=>besoin(e,k))&&(!q||(()=>{const j=JSON.stringify(e).toLowerCase();return q.split('|').some(w=>w&&j.includes(w))})())}
 function base(){const q=$('#q').value.toLowerCase();
  const r=E.filter(e=>ok(e,F));
  window.AFF=r;$('#liste').innerHTML='<p class="nbex" style="margin:0 0 8px;font-weight:700;color:var(--o)">'+r.length+' exercice'+(r.length>1?'s':'')+'</p>'+(r.length?r.map(e=>fiche(e)+`<div class="actions"><button class="add" onclick="ajouter('${e.id}')">+ Ajouter à la séance</button><button onclick="favTog('${e.id}')" title="Favori">${FAV.has(e.id)?'★ Favori':'☆ Favori'}</button>${e.schema_modele?`<button onclick="modifierSchema('${e.id}')">Modifier</button><button onclick="nouvelleVariante('${e.id}')">⧉ Créer une variante</button>`:''}<button onclick="exporterFiche('${e.id}')">Exporter (JSON)</button>${e.perso?`<button onclick="supprimerPerso('${e.id}')">${aOrig(e.id)?'Rétablir l\'original':'Supprimer'}</button>`:''}${window.boutonsClub?boutonsClub(e):''}</div></div>`).join(''):'<div class="vide">Aucun exercice.</div>')}
@@ -252,4 +252,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=40"></script><script src="club.js?v=21"></script><script src="saison.js?v=4"></script></body></html>
+<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=40"></script><script src="club.js?v=21"></script><script src="saison.js?v=6"></script></body></html>
