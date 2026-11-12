@@ -333,12 +333,23 @@ let draftId=null;
 const CH=['f_titre','f_theme','f_niveau','f_duree','f_jmin','f_jmax','f_mat','f_obj','f_org','f_dero','f_cons','f_var'];
 function brouillonsLis(){try{return JSON.parse(localStorage.getItem('brouillons_fiches')||'[]')}catch(e){return[]}}
 function brouillonsSauve(a){try{localStorage.setItem('brouillons_fiches',JSON.stringify(a));return true}catch(e){alert('Enregistrement impossible sur cet appareil.');return false}}
+// Appel silencieux : si le script SQL des brouillons n'est pas lancé, les brouillons restent locaux.
+const brRpc=async(fn,body)=>{try{return(await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify(body)})).ok}catch(e){return false}};
+const clubBr=()=>typeof clubOn=='function'&&clubOn()&&!!lsG('codeclub');
 function brouillonEnreg(avecChamps){const ch={};if(avecChamps){CH.forEach(k=>ch[k]=$e(k).value);ch.cats=[...document.querySelectorAll('#f_cats input:checked')].map(x=>x.value)}
- const a=brouillonsLis(),id=draftId||'br-'+Date.now().toString(36),o={id,titre:(avecChamps&&ch.f_titre.trim())||'Sans titre',date:new Date().toISOString(),M:cl(M),editingId,varEdit,champs:avecChamps?ch:null},i=a.findIndex(x=>x.id==id);
- i>=0?a[i]=o:a.push(o);if(!brouillonsSauve(a))return false;draftId=id;return true}
-function brouillonsAff(){const a=brouillonsLis().sort((x,y)=>y.date.localeCompare(x.date));$e('b_liste').innerHTML=a.length?a.map(b=>`<div class="actions"><b>${esc2(b.titre)}</b> <small>${new Date(b.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small><button onclick="brouillonReprendre('${b.id}')">Reprendre</button><button onclick="brouillonSupp('${b.id}')">Supprimer</button></div>`).join(''):'<p>Aucun brouillon.</p>';$e('dlgb').showModal()}
-function brouillonSupp(id){if(!confirm('Supprimer ce brouillon ?'))return;brouillonsSauve(brouillonsLis().filter(x=>x.id!=id));if(draftId==id)draftId=null;brouillonsAff()}
-function brouillonReprendre(id){const b=brouillonsLis().find(x=>x.id==id);if(!b)return;$e('dlgb').close();draftId=id;M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d');
+ const a=brouillonsLis(),id=draftId||'br-'+Date.now().toString(36),o={id,titre:(avecChamps&&ch.f_titre.trim())||'Sans titre',date:new Date().toISOString(),M:cl(M),editingId,varEdit,champs:avecChamps?ch:null,auteur:lsG('nomeduc')||''},i=a.findIndex(x=>x.id==id);
+ i>=0?a[i]=o:a.push(o);if(!brouillonsSauve(a))return false;draftId=id;
+ if(clubBr())brRpc('publier_brouillon',{code:lsG('codeclub'),bid:id,brouillon:o,auteur:o.auteur});return true}
+// Liste : brouillons de l'appareil + brouillons partagés du club (base du club, comme les fiches).
+async function brouillonsClub(){if(!clubBr())return[];try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_brouillons',{method:'POST',headers:clubH(),body:JSON.stringify({code:lsG('codeclub')})});if(!r.ok)return[];return(await r.json()).map(x=>({...x.data,id:x.id,auteur:x.auteur||x.data.auteur||'',date:x.maj||x.data.date}))}catch(e){return[]}}
+let BRC=[];
+async function brouillonsAff(){$e('b_liste').innerHTML='<p>Chargement…</p>';$e('dlgb').showModal();BRC=await brouillonsClub();
+ const m=new Map();brouillonsLis().concat(BRC).forEach(b=>{const o=m.get(b.id);if(!o||(b.date||'')>(o.date||''))m.set(b.id,b)});
+ const a=[...m.values()].sort((x,y)=>(y.date||'').localeCompare(x.date||''));
+ $e('b_liste').innerHTML=a.length?a.map(b=>`<div class="actions"><b>${esc2(b.titre)}</b> <small>${b.auteur?esc2(b.auteur)+' · ':''}${new Date(b.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small><button onclick="brouillonReprendre('${esc2(b.id)}')">Reprendre</button><button onclick="brouillonSupp('${esc2(b.id)}')">Supprimer</button></div>`).join(''):'<p>Aucun brouillon.</p>'}
+function brouillonSupp(id){if(!confirm('Supprimer ce brouillon ?'))return;brouillonsSauve(brouillonsLis().filter(x=>x.id!=id));if(draftId==id)draftId=null;
+ if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:id}).then(brouillonsAff);else brouillonsAff()}
+function brouillonReprendre(id){const b=brouillonsLis().concat(BRC).filter(x=>x.id==id).sort((x,y)=>(y.date||'').localeCompare(x.date||''))[0];if(!b)return;$e('dlgb').close();draftId=id;M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d');
  if(b.champs&&!varEdit){ouvrirDlg();CH.forEach(k=>$e(k).value=b.champs[k]);document.querySelectorAll('#f_cats input').forEach(x=>x.checked=b.champs.cats.includes(x.value))}}
 function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):null;
  const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:[...document.querySelectorAll('#f_cats input:checked')].map(x=>x.value),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
@@ -346,7 +357,7 @@ function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lin
   objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());const o={...(ov||{}),nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''};delete o.schema_svg;return o}),
   schema_modele:cl(M)};delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
- const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
+ const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:draftId});draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
 const hyd=e=>{if(!e.schema_modele)return e;return{...e,schema_svg:render(e.schema_modele,{animOn:true}),variantes:(e.variantes||[]).map(v=>v.schema_modele?{...v,schema_svg:render(v.schema_modele,{animOn:true})}:v)}};
 // Copie d'une fiche sans ce qui est recalculé à l'affichage (schémas SVG) ni les infos du club.
 function propre(f,keep){const o=cl(f);['schema_svg','club','maj',...(keep?[]:['perso','auteur'])].forEach(k=>delete o[k]);(o.variantes||[]).forEach(v=>delete v.schema_svg);return o}

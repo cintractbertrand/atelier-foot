@@ -113,7 +113,7 @@ dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4p
  <label>Variantes (« nom : ce qui change », une par ligne) <textarea id="f_var" rows="3"></textarea></label>
  <div class="actions"><button type="submit" class="add">Enregistrer</button><button type="button" id="f_brouillon" title="Garder la fiche incomplète pour la finir plus tard">Enregistrer en brouillon</button><button type="button" id="cancel">Annuler</button></div>
 </form></dialog>
-<dialog id="dlgb"><div class="form"><h3>Mes brouillons</h3><p class="hint">Fiches commencées, gardées sur cet appareil. Elles n'apparaissent pas dans la base.</p><div id="b_liste"></div><div class="actions"><button id="b_nouv" class="add">Garder le schéma actuel en brouillon</button><button onclick="dlgb.close()">Fermer</button></div></div></dialog>
+<dialog id="dlgb"><div class="form"><h3>Mes brouillons</h3><p class="hint">Fiches commencées, gardées sur cet appareil et partagées avec le club (si le code club est saisi). Elles n'apparaissent pas dans la base.</p><div id="b_liste"></div><div class="actions"><button id="b_nouv" class="add">Garder le schéma actuel en brouillon</button><button onclick="dlgb.close()">Fermer</button></div></div></dialog>
 </main>
 <script src="data.js?v=7"></script><script>window.EXERCICES=window.EXERCICES||[]</script>
 <script>
@@ -251,4 +251,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=39"></script><script src="club.js?v=21"></script><script src="saison.js?v=1"></script></body></html>
+<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=40"></script><script src="club.js?v=21"></script><script src="saison.js?v=1"></script></body></html>
