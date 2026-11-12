@@ -330,11 +330,11 @@ let copieDe=null;
 function ouvrirDlg(){if(varEdit)return ouvrirDlgV();const f=editingId?E.find(x=>x.id==editingId):copieDe?E.find(x=>x.id==copieDe):null;const g=id=>$e(id);
  g('f_titre').value=f?.titre||'';g('f_theme').value=f?.theme||'échauffement';const cs=f?.categories||[];g('f_cats').innerHTML=[...new Set([...CATS,...cs])].map(c=>`<label class="chip"><input type="checkbox" value="${esc2(c)}"${cs.includes(c)?' checked':''}> ${esc2(c)}</label>`).join('');g('f_niveau').value=f?.niveau||'débutant';
  g('f_duree').value=f?.duree_min||15;g('f_jmin').value=f?.joueurs.min||6;g('f_jmax').value=f?.joueurs.max||12;
- const k=compte(M);g('f_mat').value=Object.entries(k.mat).map(([n,q])=>q+' '+nomMat(n,q)).join(', ')||(f?f.materiel.map(m=>m.quantite+' '+m.nom).join(', '):'');if(!f){g('f_jmin').value=k.joueurs||6;g('f_jmax').value=k.joueurs||12}g('f_obj').value=f?.objectif||'';g('f_org').value=f?.organisation||'';g('f_dero').value=f?.deroulement||'';
+ const k=compte(M);g('f_mat').value=Object.entries(k.mat).map(([n,q])=>q+' '+nomMat(n,q)).join(', ')||(f?f.materiel.map(m=>m.quantite+' '+m.nom).join(', '):'');if(!f){g('f_jmin').value=k.joueurs||6;g('f_jmax').value=k.joueurs||12}g('f_source').value=f?.source||'';g('f_obj').value=f?.objectif||'';g('f_org').value=f?.organisation||'';g('f_dero').value=f?.deroulement||'';
  g('f_cons').value=(f?.consignes||[]).join('\n');g('f_var').value=(f?.variantes||[]).map(v=>v.nom+' : '+v.change).join('\n');$e('dlg').showModal()}
 // ---------- brouillons de fiche (sur l'appareil, hors base commune) ----------
 let draftId=null;
-const CH=['f_titre','f_theme','f_niveau','f_duree','f_jmin','f_jmax','f_mat','f_obj','f_org','f_dero','f_cons','f_var'];
+const CH=['f_titre','f_theme','f_niveau','f_duree','f_jmin','f_jmax','f_mat','f_source','f_obj','f_org','f_dero','f_cons','f_var'];
 function brouillonsLis(){try{return JSON.parse(localStorage.getItem('brouillons_fiches')||'[]')}catch(e){return[]}}
 function brouillonsSauve(a){try{localStorage.setItem('brouillons_fiches',JSON.stringify(a));return true}catch(e){alert('Enregistrement impossible sur cet appareil.');return false}}
 // Appel silencieux : si le script SQL des brouillons n'est pas lancé, les brouillons restent locaux.
@@ -354,13 +354,13 @@ async function brouillonsAff(){$e('b_liste').innerHTML='<p>Chargement…</p>';$e
 function brouillonSupp(id){if(!confirm('Supprimer ce brouillon ?'))return;brouillonsSauve(brouillonsLis().filter(x=>x.id!=id));if(draftId==id)draftId=null;
  if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:id}).then(brouillonsAff);else brouillonsAff()}
 function brouillonReprendre(id){copieDe=null;const b=brouillonsLis().concat(BRC).filter(x=>x.id==id).sort((x,y)=>(y.date||'').localeCompare(x.date||''))[0];if(!b)return;$e('dlgb').close();draftId=id;M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d');
- if(b.champs&&!varEdit){ouvrirDlg();CH.forEach(k=>$e(k).value=b.champs[k]);document.querySelectorAll('#f_cats input').forEach(x=>x.checked=b.champs.cats.includes(x.value))}}
+ if(b.champs&&!varEdit){ouvrirDlg();CH.forEach(k=>$e(k).value=b.champs[k]||"");document.querySelectorAll('#f_cats input').forEach(x=>x.checked=b.champs.cats.includes(x.value))}}
 function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):copieDe?(c=>{if(!c)return null;const o=cl(c);['id','club','maj','auteur','schema_svg'].forEach(k=>delete o[k]);return o})(E.find(x=>x.id==copieDe)):null;copieDe=null;
  const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:[...document.querySelectorAll('#f_cats input:checked')].map(x=>x.value),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
   materiel:g('f_mat').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d+)\s+(.*)$/);return m?{nom:m[2],quantite:+m[1]}:{nom:x,quantite:1}}),
-  objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
+  source:g('f_source'),objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());const o={...(ov||{}),nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''};delete o.schema_svg;return o}),
-  schema_modele:cl(M)};delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
+  schema_modele:cl(M)};if(!fiche.source)delete fiche.source;delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
  const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:draftId});draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
 const hyd=e=>{if(!e.schema_modele)return e;return{...e,schema_svg:render(e.schema_modele,{animOn:true}),variantes:(e.variantes||[]).map(v=>v.schema_modele?{...v,schema_svg:render(v.schema_modele,{animOn:true})}:v)}};
 // Copie d'une fiche sans ce qui est recalculé à l'affichage (schémas SVG) ni les infos du club.
