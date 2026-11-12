@@ -24,7 +24,16 @@ async function partager(id){const f=E.find(x=>x.id==id);if(!f)return;const code=
  savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
 async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est seulement masquée et reste récupérable.'))return;const code=clubCode();if(!code)return;
  if(!await clubRpc('retirer_fiche',{code,fid:id}))return;lsS('codeclub',code);await clubCharger()}
-function boutonsClub(e){if(!clubOn())return'';return e.perso?`<button class="add" onclick="partager('${e.id}')">Partager au club</button>`:e.club?`<button onclick="retirer('${e.id}')">Retirer du club</button>`:''}
+const THEMES=['échauffement','physique','technique','tactique','jeu réduit','tir','gardien','retour au calme'];
+function deplacer(id){const f=E.find(x=>x.id==id);if(!f)return;let d=document.getElementById('dpd');if(d)d.remove();d=document.createElement('dialog');d.id='dpd';d.style.cssText='max-width:420px;width:92vw;border:0;border-radius:10px;padding:16px';
+ const th=[...new Set(THEMES.concat(E.map(e=>e.theme)))];
+ d.innerHTML='<h3 style="margin:0 0 8px">Déplacer la fiche</h3><p style="margin:0 0 8px"><b>'+esc(f.titre)+'</b><br><small>Thème actuel : '+esc(f.theme)+'</small></p><select id="dps" style="width:100%;padding:8px">'+th.map(t=>'<option'+(t==f.theme?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select><div style="margin-top:12px;text-align:right"><button id="dpx">Annuler</button> <button class="add" id="dpo">Déplacer</button></div>';
+ document.body.appendChild(d);d.querySelector('#dpx').onclick=()=>d.close();
+ d.querySelector('#dpo').onclick=async()=>{const t=d.querySelector('#dps').value;if(t==f.theme){d.close();return}
+  if(f.perso){savePerso(chargePerso().map(x=>x.id==id?{...x,theme:t}:x));d.close();majE();return}
+  const code=clubCode();if(!code)return;const o=propre(f);o.theme=t;
+  if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||'Commun'}))return;lsS('codeclub',code);d.close();await clubCharger()};d.showModal()}
+function boutonsClub(e){if(!clubOn())return'';const dep=`<button onclick="deplacer('${e.id}')">⇄ Déplacer</button>`;return e.perso?`<button class="add" onclick="partager('${e.id}')">Partager au club</button>`+dep:e.club?dep+`<button onclick="retirer('${e.id}')">Retirer du club</button>`:''}
 function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!clubOn()||document.getElementById('cenvoi'))return;
  const l=document.createElement('label');l.id='cenvoi';l.className='fo';l.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l.textContent='Importer des fiches (.json) ';
  const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l);
