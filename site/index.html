@@ -241,10 +241,13 @@ function faireSeance(){let d=document.getElementById('fsd');if(d)d.remove();d=do
  d.querySelector('#fsx').onclick=()=>d.close();
  d.querySelector('#fsok').onclick=()=>{const ch=[...d.querySelectorAll('input.gt:checked')].map(x=>({t:GT[+x.value][0],L:gMatch(GT[+x.value])})).concat([...d.querySelectorAll('input:checked:not(.gt)')].map(x=>({t:ths[+x.value],L:pool.filter(e=>e.theme==ths[+x.value])})));if(!ch.length){alert('Coche au moins un thème.');return}
   let k=0;const etape=()=>{const t=ch[k].t,last=k==ch.length-1,L=ch[k].L;
-   d.innerHTML='<div style="position:sticky;top:-16px;background:#f4f6fa;padding:8px 0;z-index:2"><b>Thème '+(k+1)+'/'+ch.length+' : '+esc(t)+'</b> <button id="fsb">'+(k?'← Précédent':'← Thèmes')+'</button> <button class="add" id="fsf">'+(last?'Terminer (voir la séance)':'Suivant →')+'</button><br><input id="fsq" placeholder="Mots-clés (ex. passe, 3 contre 1, plots)…" style="margin-top:6px;width:100%;padding:6px;box-sizing:border-box"></div><div id="fsl"></div>';
-   const aff=()=>{const m=d.querySelector('#fsq').value.toLowerCase().split(/\s+/).filter(Boolean),r=L.filter(e=>{const h=JSON.stringify(e).toLowerCase();return m.every(w=>h.includes(w))});
+   d.innerHTML='<div style="position:sticky;top:-16px;background:#f4f6fa;padding:8px 0;z-index:2"><b>Thème '+(k+1)+'/'+ch.length+' : '+esc(t)+'</b> <button id="fsb">'+(k?'← Précédent':'← Thèmes')+'</button> <button class="add" id="fsf">'+(last?'Terminer (voir la séance)':'Suivant →')+'</button><br><div id="fss" style="margin-top:6px"></div><div style="display:flex;gap:6px;margin-top:6px"><select id="fsd2"><option value="">Toute durée</option><option>10</option><option>15</option><option>20</option><option>30</option></select><input id="fsn" type="number" min="1" placeholder="Joueurs" style="width:90px"><input id="fsq" placeholder="Mots-clés (ex. passe, 3 contre 1, plots)…" style="flex:1;padding:6px;box-sizing:border-box"></div></div><div id="fsl"></div>';
+   const SB=(typeof SUBS!='undefined'&&SUBS[t])||[],sel=new Set();
+   const aff=()=>{const m=d.querySelector('#fsq').value.toLowerCase().split(/\s+/).filter(Boolean),du=d.querySelector('#fsd2').value,nj=+d.querySelector('#fsn').value,r=L.filter(e=>{const h=JSON.stringify(e).toLowerCase();return m.every(w=>h.includes(w))&&(!sel.size||[...sel].some(k=>k.split('|').some(w=>h.includes(w))))&&(!du||dB(e)==+du)&&(!nj||(e.joueurs&&e.joueurs.min<=nj&&nj<=e.joueurs.max))});
+    d.querySelector('#fss').innerHTML=SB.map(([n,k])=>'<button class="fo'+(sel.has(k)?' on':'')+'" data-k="'+esc(k)+'">'+esc(n)+'</button>').join('')+(r.length?' <small style="color:#666">'+r.length+' fiche'+(r.length>1?'s':'')+'</small>':'');
+    d.querySelectorAll('#fss button').forEach(x=>x.onclick=()=>{const k=x.dataset.k;sel.has(k)?sel.delete(k):sel.add(k);aff()});
     d.querySelector('#fsl').innerHTML=r.length?r.map(e=>fiche(e)+'<div class="actions"><button class="add" onclick="ajouter(\''+e.id+'\')">+ Ajouter à la séance</button></div></div>').join(''):'<p class="vide">Aucune fiche pour ces mots-clés.</p>'};
-   aff();d.querySelector('#fsq').oninput=aff;
+   aff();d.querySelector('#fsq').oninput=aff;d.querySelector('#fsd2').onchange=aff;d.querySelector('#fsn').oninput=aff;
    d.scrollTop=0;d.querySelector('#fsb').onclick=()=>{if(k){k--;etape()}else faireSeance()};d.querySelector('#fsf').onclick=()=>{if(last){d.close();show('s')}else{k++;etape()}}};etape()};d.showModal()}
 nf.onclick=faireSeance;
 ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;TM={};seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
@@ -256,4 +259,4 @@ exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 majFiltres();base();save();
 </script>
-<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=40"></script><script src="club.js?v=21"></script><script src="saison.js?v=7"></script></body></html>
+<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=40"></script><script src="club.js?v=21"></script><script src="saison.js?v=8"></script></body></html>

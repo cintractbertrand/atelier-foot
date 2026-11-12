@@ -4,6 +4,19 @@ const SA_MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août
 const SA_CATS=['U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U17','U18','Seniors'];
 // Grands thèmes de la saison (couleur fixe), d'après les phases du jeu et les progressions FFF.
 const GRANDS=[['Conduite et dribbles','#d6f0d9','conduite|dribble'],['Conservation et passes','#dce8f8','conservation|possession|passe'],['Jeu sans ballon / démarquage','#e3dcf6','démarquage|appel|sans ballon|placement'],['Duels 1 contre 1','#fde0c8','1 contre 1|1c1|duel'],['Sortie de balle','#c9e8f2','sortie de balle|relance'],['Transitions','#fbe9b0','transition|contre-pressing|repli'],['Pressing et défense collective','#f6d6e0','pressing|défense|défendre'],['Finition et jeu devant le but','#ffd0a8','finition|tir|frappe'],['Coups de pied arrêtés','#e0e0c8','coup franc|corner|coup de pied arrêté|touche'],['Physique et appuis','#e6e6e6','physique|appuis|vitesse|coordination'],['Gardien','#d4e8d0','gardien'],['Jeu libre et matchs','#f0e0f6','match|jeu réduit|opposition']];
+// Sous-thèmes proposés dans « Faire une séance » (mots-clés cherchés dans la fiche, l'un ou l'autre).
+const SUBS={'Conduite et dribbles':[['Slalom','slalom|zigzag'],['Changements de direction','direction|feinte'],['Dribble','dribble'],['Tête haute','tête haute|lever la tête']],
+'Conservation et passes':[['Rondos','rondo|taureau'],['Jeu à thème','thème|joker'],['Supériorité numérique','supériorité|3 contre 1|4 contre 2|5 contre 2'],['Possession par zones','zone|possession']],
+'Jeu sans ballon / démarquage':[['Appels de balle','appel'],['Démarquage','démarquage'],['Se placer','placement|se placer'],['Triangles','triangle']],
+'Duels 1 contre 1':[['Défendre','défen'],['Attaquer','dribble|attaqu'],['Avec buts','but'],['Appuis','appuis']],
+'Sortie de balle':[['Relance du gardien','gardien'],['Défenseurs','défenseur'],['Construire derrière','relance|2-1-2'],['Passes longues','longue']],
+'Transitions':[['Contre-pressing','contre-pressing'],['Récupération → attaque','récupération|contre-attaque'],['Perte → repli','repli|perte'],['Jeu à 4 buts','transition']],
+'Pressing et défense collective':[['Pressing','pressing'],['Bloc / collectif','bloc|collectif'],['Infériorité','infériorité'],['Fermer l\'axe','axe']],
+'Finition et jeu devant le but':[['Frappes','frappe|tir'],['1 contre 1 devant le but','1 contre 1'],['Centres','centre'],['2 contre 1 / 3 contre 2','2 contre 1|3 contre 2']],
+'Coups de pied arrêtés':[['Corners','corner'],['Coups francs','coup franc'],['Touches','touche'],['Penalty','penalty']],
+'Physique et appuis':[['Appuis','appuis'],['Vitesse','vitesse'],['Coordination','coordination'],['Gainage / force','gainage|force']],
+'Gardien':[['Prise de balle','prise de balle'],['Plongeon','plongeon'],['Jeu au pied','pied'],['Duel 1 contre 1','1 contre 1']],
+'Jeu libre et matchs':[['Match à thème','thème'],['Jeu réduit','jeu réduit'],['Opposition','opposition'],['Match libre','match']]};
 // Filtre la Base sur un thème de la saison (mots-clés du grand thème, ou le nom du thème tel quel).
 function filtrerTheme(t,cat){const g=GRANDS.find(x=>x[0]==t),q=g?g[2]:t.toLowerCase();
  F={theme:'',cat:cat||'',duree:'',niveau:'',auteur:'',source:'',liste:'',joueurs:'',sans:[]};
