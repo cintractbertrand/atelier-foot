@@ -35,11 +35,33 @@ function deplacer(id){const f=E.find(x=>x.id==id);if(!f)return;let d=document.ge
   if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||'Commun'}))return;lsS('codeclub',code);d.close();await clubCharger()};d.showModal()}
 function boutonsClub(e){if(!clubOn())return'';const dep=`<button onclick="deplacer('${e.id}')">⇄ Déplacer</button>`;return e.perso?`<button class="add" onclick="partager('${e.id}')">Partager au club</button>`+dep:e.club?dep+`<button onclick="retirer('${e.id}')">Retirer du club</button>`:''}
 function boutonEnvoi(){const s=document.getElementById('clubetat');if(!s||!clubOn()||document.getElementById('cenvoi'))return;
+ const sy=document.createElement('button');sy.className='fo';sy.style.marginLeft='8px';sy.textContent='🔄 Synchroniser mon dossier';sy.onclick=()=>synchroDossier();s.appendChild(sy);const sc=document.createElement('button');sc.className='fo';sc.style.marginLeft='4px';sc.textContent='Changer de dossier';sc.onclick=()=>synchroDossier(true);s.appendChild(sc);
  const l=document.createElement('label');l.id='cenvoi';l.className='fo';l.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l.textContent='Importer des fiches (.json) ';
  const i=document.createElement('input');i.type='file';i.accept='.json';i.multiple=true;i.style.display='none';i.onchange=()=>importerFichiers(i.files);l.appendChild(i);s.appendChild(l);
  const l2=document.createElement('label');l2.className='fo';l2.style.cssText='display:inline-block;cursor:pointer;margin-left:8px';l2.textContent='Envoyer un dossier de fiches ';
  const i2=document.createElement('input');i2.type='file';i2.setAttribute('webkitdirectory','');i2.style.display='none';i2.onchange=()=>importerFichiers([...i2.files].filter(f=>/\.json$/i.test(f.name)));l2.appendChild(i2);s.appendChild(l2);
 }
+// ---- Synchronisation d'un dossier mémorisé (nouvelles fiches seulement) ----
+const idbOpen=()=>new Promise((ok,ko)=>{const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)});
+const idbGet=async k=>{try{const d=await idbOpen();return await new Promise(ok=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null)})}catch(e){return null}};
+const idbSet=async(k,v)=>{try{const d=await idbOpen();await new Promise(ok=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok();t.onerror=()=>ok()})}catch(e){}};
+async function* jsonDuDossier(dir){for await(const [n,h] of dir.entries()){if(h.kind=='directory')yield* jsonDuDossier(h);else if(/\.json$/i.test(n))yield h}}
+async function synchroDossier(changer){
+ if(!window.showDirectoryPicker){alert('Ce navigateur ne peut pas retenir le dossier : utilise Chrome ou Edge, ou « Envoyer un dossier de fiches ».');return}
+ let dir=changer?null:await idbGet('dossier');
+ try{if(dir&&await dir.queryPermission({mode:'read'})!='granted'&&await dir.requestPermission({mode:'read'})!='granted')dir=null}catch(e){dir=null}
+ if(!dir){try{dir=await showDirectoryPicker({id:'fichesclub',mode:'read'})}catch(e){return}await idbSet('dossier',dir)}
+ const code=clubCode();if(!code)return;
+ let stock;try{stock=new Set(JSON.parse(lsG('idsimportes')||'[]'))}catch(e){stock=new Set()}
+ const vus=new Set(stock);CLUBF.forEach(f=>vus.add(f.id));
+ let n=0,ign=0,bad=0;
+ for await(const h of jsonDuDossier(dir)){let d;try{d=JSON.parse(await(await h.getFile()).text())}catch(e){bad++;continue}
+  for(const f of Array.isArray(d)?d:[d]){if(!f||!f.id||!f.titre)continue;
+   if(vus.has(f.id)){ign++;continue}
+   if(!await clubRpc('publier_fiche',{code,fiche:propre(f),auteur:f.auteur||'Commun'}))return;
+   vus.add(f.id);stock.add(f.id);n++;clubEtat('Synchro… '+n+' nouvelle(s)')}}
+ lsS('idsimportes',JSON.stringify([...stock]));lsS('codeclub',code);await clubCharger();
+ alert(n+' nouvelle(s) fiche(s) envoyée(s), '+ign+' déjà présente(s)'+(bad?', '+bad+' fichier(s) illisible(s)':'')+'.')}
 async function retirerAffichees(){const L=(window.AFF||[]).filter(e=>e.club);if(!L.length){alert('Aucune fiche du club affichée.');return}
  if(!confirm('Retirer '+L.length+' fiche(s) du club ? Elles sont seulement masquées et récupérables.'))return;const code=clubCode();if(!code)return;let n=0;
  for(const e of L){clubEtat('Retrait… '+n+'/'+L.length);if(!await clubRpc('retirer_fiche',{code,fid:e.id}))return;n++}
