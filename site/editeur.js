@@ -152,6 +152,7 @@ function bind(){
    snap();sel=i;drag={k:'mv',i,x0:x,y0:y,moved:false};return}
   if(tool=='ball'&&i!=null&&M.items[i].t=='p'){snap();const p=M.items[i];M.items.push({t:'ball',x:p.x+OFF[0],y:p.y+OFF[1],o:i});sel=M.items.length-1;draw();return}
   if(i!=null&&selG.includes(i)){const o={};selG.forEach(j=>o[j]=[M.items[j].x,M.items[j].y]);drag={k:'g',x,y,o,s:false};return}
+  if(i!=null&&M.items[i].gr){const g=M.items[i].gr;selG=M.items.map((o,j)=>o.gr==g?j:-1).filter(j=>j>=0);sel=null;const o={};selG.forEach(j=>o[j]=[M.items[j].x,M.items[j].y]);drag={k:'g',x,y,o,s:false};draw();return}
   selG=[];
   if(i!=null){sel=i;const it=M.items[i],o=cl(it);if(it.t=='ball'&&isP(M,it.o)){const q=M.items[it.o];o.x=q.x+OFF[0];o.y=q.y+OFF[1]}drag={k:'d',i,x,y,o,s:false};draw();return}
   if(!tool){sel=null;box={x1:x,y1:y,x2:x,y2:y};return}
@@ -208,7 +209,7 @@ function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
  return'Touche le terrain à chaque endroit où poser un '+nom.toLowerCase()+'. Re-touche le bouton pour arrêter.'}
 function setTool(t){tool=t;selG=[];document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
 function props(){
- if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button><div class="disp">Ranger : <button onclick="alignG('h')">⇔ Aligner en ligne</button><button onclick="alignG('v')">⇕ Aligner en colonne</button><button onclick="repartirG()">↔ Espacer régulièrement</button><button onclick="miroirCopie()">⧉ Copie en miroir</button></div>`;
+ if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button>${selG.some(j=>M.items[j]&&M.items[j].gr)?' <button onclick="degrouper()" title="Pour bouger un seul élément de la forme">✂ Séparer la forme</button>':''}<div class="disp">Ranger : <button onclick="alignG('h')">⇔ Aligner en ligne</button><button onclick="alignG('v')">⇕ Aligner en colonne</button><button onclick="repartirG()">↔ Espacer régulièrement</button><button onclick="miroirCopie()">⧉ Copie en miroir</button></div>`;
  if(mode=='d'&&sel==null&&DISPO.includes(tool))return dispo(null);
  if(sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;
  if(mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[i];if(!q)return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <span class="vide0">ne bouge pas dans ce temps</span>`;
@@ -237,12 +238,15 @@ function miroirCopie(){const f=field(M),cx=f.x+f.w/2,X=x=>R(2*cx-x),ids=(selG.le
   if(it.t=='p')n.l=nextLabel(it.c);M.items.push(n);map[i]=M.items.length-1});
  Object.entries(map).forEach(([i,j])=>{const n=M.items[j];if(n.t=='ball'&&n.o!=null){if(map[n.o]!=null)n.o=map[n.o];else delete n.o}});
  M.temps.forEach(T=>Object.keys(T.moves||{}).forEach(k=>{const j=map[k];if(j==null)return;const q=cl(T.moves[k]);q.x=X(q.x);if(q.c)q.c=[X(q.c[0]),q.c[1]];if(q.o!=null)q.o=map[q.o]!=null?map[q.o]:null;T.moves[j]=q}));
- const nw=Object.values(map);selG=nw.length>1?nw:[];sel=null;draw()}
+ const nw=Object.values(map);regrp(nw);selG=nw.length>1?nw:[];sel=null;draw()}
+// Copies : les éléments copiés forment leur propre groupe.
+function regrp(js){const m={};js.forEach(j=>{const o=M.items[j];if(o&&o.gr)o.gr=m[o.gr]||(m[o.gr]='g'+Date.now().toString(36)+Object.keys(m).length)});const n={};js.forEach(j=>{const o=M.items[j];if(o&&o.gr)n[o.gr]=(n[o.gr]||0)+1});js.forEach(j=>{const o=M.items[j];if(o&&o.gr&&n[o.gr]<2)delete o.gr})}
+function degrouper(){snap();selG.forEach(j=>delete M.items[j].gr);selG=[];draw()}
 function dupSel(){const ids=selG.length?selG.slice():sel!=null?[sel]:[];if(!ids.length)return;snap();const map={},D=24;
  ids.forEach(i=>{const it=cl(M.items[i]);it.x+=D;if(it.t=='p')it.l=nextLabel(it.c);map[i]=M.items.length;M.items.push(it)});
  ids.forEach(i=>{const it=M.items[map[i]];if(it.o!=null)it.o=map[it.o]!=null?map[it.o]:(delete it.o,undefined);if(it.o===undefined)delete it.o});
  M.temps.forEach(T=>{const mv=T.moves||{};ids.forEach(i=>{const q=mv[i];if(!q)return;const n=cl(q);n.x+=D;if(n.c)n.c=[n.c[0]+D,n.c[1]];if(n.o!=null&&map[n.o]!=null)n.o=map[n.o];mv[map[i]]=n});T.moves=mv});
- const nw=ids.map(i=>map[i]);if(nw.length>1){selG=nw;sel=null}else{sel=nw[0];selG=[]}draw()}
+ const nw=ids.map(i=>map[i]);regrp(nw);if(nw.length>1){selG=nw;sel=null}else{sel=nw[0];selG=[]}draw()}
 function suppSel(){snap();selG.slice().sort((a,b)=>b-a).forEach(removeItem);selG=[];sel=null;draw()}
 function tbar(){
  const n=M.temps.length;return (n?M.temps.map((T,j)=>`<button class="${j==cur?'on':''}" onclick="cur=${j};sel=null;draw()">Temps ${j+1}</button>`).join(''):'')+
@@ -296,7 +300,7 @@ function dpSvg(){const {C,pts}=dpPts(),it=M.items[DP.i],r=Math.max(10,...pts.map
 function dpMaj(){const o=$e('dpov');if(o)o.remove();const s=$e('cv');const g=s&&DP&&s.querySelector(`[data-i="${DP.i}"]`);if(g)g.style.opacity=.25;if(s&&DP)s.insertAdjacentHTML('beforeend',dpSvg());const m=$e('disp_m');if(m&&DP&&document.activeElement!==m)m.value=DP.L;const a=$e('disp_a');if(a&&DP)a.textContent=DP.a+'°'}
 function dpAnnuler(){if(DP&&DP.neuf){DP=null;undo()}else{DP=null;draw()}}
 function dpPlacer(){if(!DP)return;const {pts}=dpPts(),it=M.items[DP.i],f=field(M),in_=([x,y])=>x>=f.x-2&&x<=f.x+f.w+2&&y>=f.y-2&&y<=f.y+f.h+2;
- snap();if(it.t=='haie')it.rot=(((it.rot||0)+DP.a)%360+360)%360;[it.x,it.y]=pts[0];pts.slice(1).forEach(p=>{if(in_(p))M.items.push({...cl(it),x:p[0],y:p[1]})});DPL=DP.L;DPN=DP.n;if(DP.neuf&&tool)sel=null;DP=null;draw()}
+ const gr='g'+Date.now().toString(36);snap();if(it.t=='haie')it.rot=(((it.rot||0)+DP.a)%360+360)%360;[it.x,it.y]=pts[0];const n0=M.items.length;pts.slice(1).forEach(p=>{if(in_(p))M.items.push({...cl(it),x:p[0],y:p[1]})});if(M.items.length>n0){it.gr=gr;M.items.slice(n0).forEach(o=>o.gr=gr)}else delete it.gr;DPL=DP.L;DPN=DP.n;if(DP.neuf&&tool)sel=null;DP=null;draw()}
 // Curseur des temps (idée GeoGebra) : on fige l'animation à la fin d'un temps.
 function vAller(k){const svg=$e('cvbox').querySelector('svg');if(!svg)return;const S=simulate(norm(M)),TM=timing(S),n=S.segs.length;k=Math.max(0,Math.min(n,k));
  const t=k==0?0:TM.starts[k-1]+TM.durs[k-1]+.05;svg.pauseAnimations();svg.setCurrentTime(t/(+$e('vspeed').value||1));$e('vtemps').value=k;$e('vtlab').textContent=k?'Temps '+k+' / '+n:'Départ';const b=$e('vpause');b.textContent='▶ Lecture';b.dataset.p=1}
