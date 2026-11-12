@@ -12,13 +12,13 @@ async function clubCharger(){if(!clubOn())return;
  clubEtat('Chargement des fiches du club…');window.clubOk=false;
  try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_fiches',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
   if(!r.ok){const t=await r.text();if(t.includes('code club')){lsS('codeclub','');clubEtat('Code club incorrect.',1);return}throw new Error(r.status)}
-  lsS('codeclub',code);window.clubOk=true;CLUBF=(await r.json()).map(x=>({...x.data,club:true,auteur:x.auteur||'',maj:x.maj}));majE();clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club');boutonEnvoi()}
+  lsS('codeclub',code);window.clubOk=true;CLUBF=(await r.json()).map(x=>({...x.data,club:true,auteur:nomAut(x.auteur),maj:x.maj}));majE();clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club');boutonEnvoi()}
  catch(e){clubEtat('Fiches du club indisponibles pour le moment (connexion ?)')}}
 async function clubRpc(fn,body){const r=await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify(body)});
  if(r.ok)return true;const t=await r.text();if(t.includes('code club')){lsS('codeclub','');alert('Code club incorrect.')}else alert('Envoi impossible ('+r.status+'). Réessaie plus tard ou exporte la fiche.');return false}
 const clubCode=()=>(lsG('codeclub')||prompt('Code club :')||'').trim();
 async function partager(id){const f=E.find(x=>x.id==id);if(!f)return;const code=clubCode();if(!code)return;
- let nom=lsG('nomeduc');if(!nom){nom=(prompt('Ton nom, affiché sur la fiche :')||'').trim().slice(0,40);lsS('nomeduc',nom)}
+ let nom=nomAut(lsG('nomeduc'));if(!nom){nom=(prompt('Ton nom, affiché sur la fiche :')||'').trim().slice(0,40);lsS('nomeduc',nom)}
  const o=propre(f);
  if(!await clubRpc('publier_fiche',{code,fiche:o,auteur:f.auteur||nom}))return;
  savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
@@ -79,7 +79,7 @@ const dateFr=d=>d?d.split('-').reverse().join('/'):'';
 async function seancesCharger(){if(!clubOn())return;const code=lsG('codeclub');if(!code){seancesAff('Saisis d\'abord le code club (onglet Base).');return}
  seancesAff('Chargement des séances…');
  try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_seances',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
-  if(!r.ok)throw new Error(r.status);SEANCES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:x.auteur||'',date:x.date_seance||'',maj:x.maj}));seancesAff()}
+  if(!r.ok)throw new Error(r.status);SEANCES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur),date:x.date_seance||'',maj:x.maj}));seancesAff()}
  catch(e){seancesAff('Séances indisponibles pour le moment (le script SQL séances est-il lancé ? connexion ?)')}}
 function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;
  const sa=document.getElementById('sa'),cur=sa.value,au=[...new Set(SEANCES.map(x=>x.auteur).filter(Boolean))].sort();
@@ -95,7 +95,7 @@ function ouvrirSeance(id,terrain,clone){const x=SEANCES.find(s=>s.id==id);if(!x)
  S=(x.exercices||[]).map(e=>({...e}));nom.value=x.nom||'';dat.value=x.date||'';lsS('nomseance',nom.value);lsS('dateseance',dat.value);lsS('seanceid',clone?'':x.id);if(clone){nom.value='Copie de '+(x.nom||'séance').replace(/^Copie de /,'');dat.value='';lsS('nomseance',nom.value);lsS('dateseance','')}TERRAIN=!!terrain||(!clone&&matchMedia('(max-width:700px)').matches);TM={};save();show('s')}
 async function enregistrerSeance(){if(!S.length){alert('La séance est vide.');return}if(!nom.value.trim()){alert('Donne un nom à la séance.');nom.focus();return}
  if(!dat.value){alert('Choisis la date de la séance.');dat.focus();return}
- const code=clubCode();if(!code)return;let au=lsG('nomeduc');if(!au){au=(prompt('Ton nom, affiché sur la séance :')||'').trim().slice(0,40);lsS('nomeduc',au)}
+ const code=clubCode();if(!code)return;let au=nomAut(lsG('nomeduc'));if(!au){au=(prompt('Ton nom, affiché sur la séance :')||'').trim().slice(0,40);lsS('nomeduc',au)}
  const id=lsG('seanceid')||('s'+Date.now().toString(36));
  if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:nom.value.trim(),exercices:S},auteur:au,datej:dat.value}))return;
  lsS('codeclub',code);lsS('seanceid',id);await seancesCharger();alert('Séance enregistrée : visible par tous les éducateurs, sur téléphone.')}
@@ -107,5 +107,5 @@ async function importerSeances(fs){fs=[...fs];if(!fs.length)return;const code=cl
  for(const fi of fs){let d;try{d=JSON.parse(await fi.text())}catch(e){alert('Fichier illisible : '+fi.name);return}
   const m=(d.nom||'').match(/(\d{2})\/(\d{2})\/(\d{4})/)||fi.name.match(/_(\d{2})(\d{2})(\d{4})\.json$/);
   const dt=m?m[3]+'-'+m[2]+'-'+m[1]:null,id='imp-'+fi.name.replace(/\.json$/i,'').toLowerCase().replace(/[^a-z0-9_-]/g,'');
-  if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:d.nom||fi.name,exercices:d.exercices||[]},auteur:d.auteur||'Nico',datej:dt}))return;n++}
+  if(!await clubRpc('publier_seance',{code,sid:id,seance:{nom:d.nom||fi.name,exercices:d.exercices||[]},auteur:nomAut(d.auteur)||'Nicolas Rouseau',datej:dt}))return;n++}
  lsS('codeclub',code);await seancesCharger();alert(n+' séance(s) importée(s).')}

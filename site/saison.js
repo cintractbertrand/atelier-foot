@@ -32,14 +32,14 @@ async function saisonCharger(msg){
  if(!clubOn()){PERIODES=saisonPourStock();saisonAff(msg);return}
  const code=lsG('codeclub');if(!code){saisonAff('Saisis d\'abord le code club (onglet Base).');return}
  try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_periodes',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
-  if(!r.ok)throw new Error(r.status);PERIODES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:x.auteur||''}));saisonAff(msg)}
+  if(!r.ok)throw new Error(r.status);PERIODES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur)}));saisonAff(msg)}
  catch(e){saisonAff('Planning indisponible pour le moment (le script SQL « saison » est-il lancé ? connexion ?)')}}
 const LH=30;
 const saD=s=>{const [y,m,d]=s.split('-');return new Date(+y,m-1,+d)};
 const saLundi=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
 const saAdd=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 async function periodeSauver(id,o){const pid=id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));
- if(clubOn()){const code=clubCode();if(!code)return false;let au=lsG('nomeduc');if(!au){au=(prompt('Ton nom, affiché sur le thème :')||'').trim().slice(0,40);lsS('nomeduc',au)}
+ if(clubOn()){const code=clubCode();if(!code)return false;let au=nomAut(lsG('nomeduc'));if(!au){au=(prompt('Ton nom, affiché sur le thème :')||'').trim().slice(0,40);lsS('nomeduc',au)}
   if(!await clubRpc('publier_periode',{code,pid,periode:o,auteur:au}))return false;lsS('codeclub',code)}
  else{const l=saisonPourStock().filter(x=>x.id!=pid);l.push({...o,id:pid});lsS('periodes',JSON.stringify(l))}return true}
 function themesEnCours(){const e=document.getElementById('thencours');if(!e)return;const auj=saIso(new Date());
