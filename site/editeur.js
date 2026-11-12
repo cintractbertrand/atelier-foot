@@ -138,8 +138,8 @@ const AIM=['plot','piquet','mannequin','haie','cerceau'];
 function aimant(x,y){let best=null,bd=16;M.items.forEach(it=>{if(AIM.includes(it.t)){const d=Math.hypot(it.x-x,it.y-y);if(d<bd){bd=d;best=it}}});
  if(!best)return[x,y];if(best.t=='cerceau')return[best.x,best.y];const d=bd||1,ux=bd>.5?(x-best.x)/d:-.7,uy=bd>.5?(y-best.y)/d:.7;return[R(best.x+ux*9),R(best.y+uy*9)]}
 // Grille aimantée (idée GeoGebra) : réglage de l'appareil, invisible sur les fiches.
-let GRID=0;try{GRID=+localStorage.getItem('grille_m')||0}catch(e){}
-function setGrille(v){GRID=+v||0;try{localStorage.setItem('grille_m',GRID)}catch(e){}draw()}
+let GRID=1;try{const g=localStorage.getItem('grille1');if(g!=null)GRID=+g||0}catch(e){}// grille 1 m par défaut (demande de Bertrand, 12/11/2026)
+function setGrille(v){GRID=+v||0;try{localStorage.setItem('grille1',GRID)}catch(e){}draw()}
 function grille(x,y){if(!GRID)return[x,y];const f=field(M),kx=f.w/M.w,ky=f.h/M.h,c=(v,o,k,L)=>R(o+Math.min(L,Math.max(0,Math.round((v-o)/k/GRID)*GRID))*k);return[c(x,f.x,kx,M.w),c(y,f.y,ky,M.h)]}
 function cale(x,y,joueur){if(joueur){const a=aimant(x,y);if(a[0]!=x||a[1]!=y)return a}return grille(x,y)}
 function bind(){
