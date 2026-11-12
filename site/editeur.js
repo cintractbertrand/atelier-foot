@@ -252,7 +252,8 @@ function mesure(a,b){const s=$e('cv');if(!s||!a||!b)return;const d=metres(a,b);i
 function mesureDrag(){
  if(drag.k=='mv'&&drag.moved){const T=M.temps[cur],q=T&&T.moves[drag.i];if(!q)return;const S=simulate({...M,temps:M.temps.slice(0,cur)}),a=S.states[S.states.length-1].pos[drag.i];mesure(a,[q.x,q.y]);return}
  if(drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='zone'||it.t=='ligne')return;const P=simulate(M).states[0].pos,me=(it.t=='p'||it.t=='ball')?P[drag.i]:[it.x,it.y];const pr=[];
-  M.items.forEach((o,j)=>{if(j==drag.i||o.t=='zone'||o.t=='ligne'||o.t=='txt'||(o.t=='ball'&&o.o!=null)||(it.t=='ball'&&j===it.o))return;const q=(o.t=='p'||o.t=='ball')?P[j]:[o.x,o.y];pr.push([dist(q,me),q])});pr.sort((a,b)=>a[0]-b[0]).slice(0,2).forEach(([,q])=>mesure(q,me))}}
+  const mob=t=>t=='p'||t=='ball';// un joueur se mesure aux joueurs, un plot (ou autre matériel) au matériel du terrain
+  M.items.forEach((o,j)=>{if(j==drag.i||o.t=='zone'||o.t=='ligne'||o.t=='txt'||o.t=='ball'||mob(o.t)!=mob(it.t)||(it.t=='ball'&&j===it.o))return;const q=(o.t=='p'||o.t=='ball')?P[j]:[o.x,o.y];pr.push([dist(q,me),q])});pr.sort((a,b)=>a[0]-b[0]).slice(0,2).forEach(([,q])=>mesure(q,me))}}
 // ---------- dispositions de plots (idée GeoGebra : polygones réguliers) ----------
 function disposer(forme){const it=M.items[sel];if(!it)return;const n=Math.max(2,Math.min(12,+($e('disp_n')||{}).value||4)),L=Math.max(1,+($e('disp_m')||{}).value||10),f=field(M),kx=f.w/M.w,ky=f.h/M.h,pts=[];
  if(forme=='ligne')for(let k=1;k<n;k++)pts.push([k*L,0]);
