@@ -164,7 +164,7 @@ function sourceInfo(e){const s=String(e.source||'').trim();
  if(s){let m=s.match(/https?:\/\/[^\s)]+/),url=m?m[0].replace(/[.,;]+$/,''):'',nom=s.split(/[,:(]/)[0].replace(/https?:\/\/\S+/,'').trim()||s;if(/^livre/i.test(nom))nom='Livre';return{nom,url,detail:s}}
  const p=((e.id||'').match(/^([a-z]+)-\d/)||[])[1];
  if(['ech','phy','tec','tac','mat'].includes(p))return{nom:'Livre',url:'',detail:'Livre d\'exercices (fiche reformulée)'};
- if(e.auteur&&e.auteur!='Commun')return{nom:'Coach '+e.auteur,url:'',detail:'Exercice du coach '+e.auteur};
+ if(e.auteur&&e.auteur!='Commun')return{nom:e.auteur,url:'',detail:'Exercice de '+e.auteur};
  return null}
 const srcTag=e=>{const s=sourceInfo(e);return s?`<span class="tsrc" title="${esc(s.detail)}">Source : ${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a>`:esc(s.nom)}</span>`:''};
 const srcLigne=e=>{const s=sourceInfo(e);return s?`<p class="srcl">Source : ${esc(s.detail.replace(/https?:\/\/\S+/,'').replace(/[\s:,(]+$/,'').replace(/,\s+\(/,' (').replace(/\s+/g,' ').replace(/\.$/,'')||s.nom)}${s.url?` — <a href="${esc(s.url)}" target="_blank" rel="noopener">voir la page d'origine</a>`:''}</p>`:''};
