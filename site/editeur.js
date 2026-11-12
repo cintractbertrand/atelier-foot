@@ -132,6 +132,10 @@ function nearP(P,x,y,r,skip){let best=null,bd=r;M.items.forEach((it,i)=>{if(it.t
 function removeItem(i){M.items.splice(i,1);const sh=j=>j==null?null:(j==i?null:(j>i?j-1:j));
  M.items.forEach(it=>{if(it.o!=null)it.o=sh(it.o)});
  M.temps.forEach(T=>{const n={};Object.keys(T.moves||{}).forEach(s=>{const j=+s;if(j==i)return;const q=T.moves[s];if(q.o!=null)q.o=sh(q.o);n[j>i?j-1:j]=q});T.moves=n});sel=null}
+// Aimant : un joueur lâché près d'un plot (piquet, mannequin, haie) se colle juste à côté ; dans un cerceau, au centre.
+const AIM=['plot','piquet','mannequin','haie','cerceau'];
+function aimant(x,y){let best=null,bd=16;M.items.forEach(it=>{if(AIM.includes(it.t)){const d=Math.hypot(it.x-x,it.y-y);if(d<bd){bd=d;best=it}}});
+ if(!best)return[x,y];if(best.t=='cerceau')return[best.x,best.y];const d=bd||1,ux=bd>.5?(x-best.x)/d:-.7,uy=bd>.5?(y-best.y)/d:.7;return[R(best.x+ux*12),R(best.y+uy*12)]}
 function bind(){
  const s=$e('cv');
  s.onpointerdown=ev=>{const [x,y]=pt(ev),h=ev.target.closest('[data-h]'),el=ev.target.closest('[data-i]'),i=el?+el.dataset.i:null;s.setPointerCapture(ev.pointerId);
@@ -153,10 +157,10 @@ function bind(){
   sel=M.items.length-1;if(ONCE.includes(tool))setTool(null);draw()};
  s.onpointermove=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='curve'){const T=M.temps[cur],q=T&&T.moves[drag.i];if(q){q.c=[x,y];draw()}else{const S=simulate(M),g=S.segs[cur]&&S.segs[cur][drag.i];if(g&&g.kind=='conduite'){}}return}
-  if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};T.moves[drag.i]={x,y,...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
+  if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};const g=M.items[drag.i].t=='p'?aimant(x,y):[x,y];T.moves[drag.i]={x:g[0],y:g[1],...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
   if(drag&&drag.k=='g'){const dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}selG.forEach(j=>{const it=M.items[j];if(it.t=='ball'&&isP(M,it.o)&&selG.includes(it.o))return;if(it.t=='ball'&&it.o!=null)delete it.o;it.x=drag.o[j][0]+dx;it.y=drag.o[j][1]+dy});draw();return}
   if(box){box.x2=x;box.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',`<rect id="prev" x="${Math.min(box.x1,box.x2)}" y="${Math.min(box.y1,box.y2)}" width="${Math.abs(box.x2-box.x1)}" height="${Math.abs(box.y2-box.y1)}" fill="#e8b92322" stroke="#e8731a" stroke-dasharray="3 2"/>`);return}
-  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;draw();return}
+  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;if(it.t=='p')[it.x,it.y]=aimant(it.x,it.y);draw();return}
   if(tmp){tmp.x2=x;tmp.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',tmp.k=='ligne'?`<line id="prev" x1="${tmp.x1}" y1="${tmp.y1}" x2="${tmp.x2}" y2="${tmp.y2}" stroke="${NAVY}" stroke-width="2" stroke-dasharray="6 4"/>`:`<rect id="prev" x="${Math.min(tmp.x1,tmp.x2)}" y="${Math.min(tmp.y1,tmp.y2)}" width="${Math.abs(tmp.x2-tmp.x1)}" height="${Math.abs(tmp.y2-tmp.y1)}" fill="none" stroke="${NAVY}" stroke-dasharray="6 4"/>`)}};
  s.onpointerup=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='mv'){const i=drag.i,T=M.temps[cur];
