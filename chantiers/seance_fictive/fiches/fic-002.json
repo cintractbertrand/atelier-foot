@@ -1,0 +1,520 @@
+{
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "auteur": "Démo",
+  "source": "Fiche fictive de démonstration",
+  "fictive": true,
+  "id": "fic-002",
+  "titre": "Attaque placée 9 c 7 : débordement et centre",
+  "theme": "tactique",
+  "categories": [
+    "U18",
+    "Seniors"
+  ],
+  "niveau": "confirmé",
+  "duree_min": 25,
+  "joueurs": {
+    "min": 16,
+    "max": 18
+  },
+  "surface": "Demi-terrain 68 x 52 m, grand but",
+  "materiel": [
+    {
+      "nom": "ballons",
+      "quantite": 8
+    },
+    {
+      "nom": "plots",
+      "quantite": 6
+    },
+    {
+      "nom": "chasubles",
+      "quantite": 9
+    },
+    {
+      "nom": "buts",
+      "quantite": 1
+    }
+  ],
+  "objectif": "Faire circuler vers un côté, renverser, déborder et finir en multipliant les arrivées dans la surface.",
+  "organisation": "9 attaquants (2 défenseurs, 1 milieu relayeur, 2 latéraux, 2 ailiers, 1 numéro 10, 1 avant-centre) contre un bloc de 7 (4-2-1) plus gardien. L'attaque démarre du côté du défenseur central, ballon au pied.",
+  "deroulement": "Séquence imposée pour apprendre le geste : passe d'attirance, renversement vers le côté libre, passe dans la ligne vers l'ailier, ailier qui rentre dans l'axe, débordement du latéral, centre en retrait pour l'arrivée lancée. Les attaquants non ballon entrent dans la zone des 11 m (avant-centre au premier poteau, ailier opposé (J) au second, 10 à la limite). Puis jeu libre : même scénario sans séquence imposée, on compte les buts.",
+  "consignes": [
+    "Le renversement doit être rapide : au maximum 2 touches de balle.",
+    "Le latéral déborde quand l'ailier rentre dans l'axe.",
+    "Trois arrivées dans la surface : premier poteau, second poteau, point de penalty.",
+    "L'éducateur regarde : le timing de l'appel, pas la vitesse de course."
+  ],
+  "variantes": [
+    {
+      "nom": "Défense réduite",
+      "change": "Le bloc passe à 5 défenseurs (4-1) pour apprendre la séquence.",
+      "difficulte": "plus facile"
+    },
+    {
+      "nom": "Pressing haut",
+      "change": "Le 7 presse le porteur dans la zone de sortie.",
+      "difficulte": "plus difficile"
+    },
+    {
+      "nom": "Centre côté gauche",
+      "change": "Mêmes schémas, inversés (miroir du schéma).",
+      "difficulte": ""
+    }
+  ],
+  "mots_cles": [
+    "attaque placée",
+    "centre",
+    "débordement",
+    "renversement",
+    "9 contre 7",
+    "finition"
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 68,
+    "h": 52,
+    "items": [
+      {
+        "t": "but",
+        "x": 150.0,
+        "y": 22.0
+      },
+      {
+        "t": "zone",
+        "x": 114.0,
+        "y": 22.0,
+        "w": 72.0,
+        "h": 48.0
+      },
+      {
+        "t": "p",
+        "c": "j",
+        "l": "G",
+        "x": 150.0,
+        "y": 32.2
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "1",
+        "x": 90.0,
+        "y": 67.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "2",
+        "x": 129.0,
+        "y": 61.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "3",
+        "x": 171.0,
+        "y": 61.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "4",
+        "x": 210.0,
+        "y": 67.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "5",
+        "x": 126.0,
+        "y": 97.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "6",
+        "x": 174.0,
+        "y": 97.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "7",
+        "x": 150.0,
+        "y": 124.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 117.0,
+        "y": 154.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 183.0,
+        "y": 154.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "C",
+        "x": 150.0,
+        "y": 145.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "D",
+        "x": 225.0,
+        "y": 133.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "E",
+        "x": 75.0,
+        "y": 133.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "F",
+        "x": 228.0,
+        "y": 91.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "J",
+        "x": 72.0,
+        "y": 91.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "H",
+        "x": 150.0,
+        "y": 109.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "I",
+        "x": 150.0,
+        "y": 76.0
+      },
+      {
+        "t": "ball",
+        "x": 0,
+        "y": 0,
+        "o": 10
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "19": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 11
+          },
+          "9": {
+            "x": 168.0,
+            "y": 130.0
+          },
+          "7": {
+            "x": 138.0,
+            "y": 100.0
+          },
+          "8": {
+            "x": 186.0,
+            "y": 100.0
+          },
+          "3": {
+            "x": 102.0,
+            "y": 67.0
+          },
+          "4": {
+            "x": 141.0,
+            "y": 61.0
+          },
+          "5": {
+            "x": 183.0,
+            "y": 61.0
+          },
+          "6": {
+            "x": 216.0,
+            "y": 67.0
+          },
+          "12": {
+            "x": 156.0,
+            "y": 139.0
+          },
+          "13": {
+            "x": 222.0,
+            "y": 124.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "19": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 13
+          },
+          "13": {
+            "x": 228.0,
+            "y": 115.0
+          },
+          "9": {
+            "x": 186.0,
+            "y": 124.0
+          },
+          "8": {
+            "x": 201.0,
+            "y": 103.0
+          },
+          "7": {
+            "x": 156.0,
+            "y": 100.0
+          },
+          "6": {
+            "x": 222.0,
+            "y": 73.0
+          },
+          "5": {
+            "x": 189.0,
+            "y": 64.0
+          },
+          "4": {
+            "x": 150.0,
+            "y": 61.0
+          },
+          "3": {
+            "x": 111.0,
+            "y": 67.0
+          },
+          "15": {
+            "x": 213.0,
+            "y": 85.0
+          },
+          "16": {
+            "x": 93.0,
+            "y": 79.0
+          },
+          "17": {
+            "x": 168.0,
+            "y": 106.0
+          },
+          "18": {
+            "x": 156.0,
+            "y": 73.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "19": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 15
+          },
+          "15": {
+            "x": 219.0,
+            "y": 88.0
+          },
+          "13": {
+            "x": 231.0,
+            "y": 106.0
+          },
+          "6": {
+            "x": 219.0,
+            "y": 79.0
+          },
+          "8": {
+            "x": 204.0,
+            "y": 94.0
+          },
+          "9": {
+            "x": 198.0,
+            "y": 115.0
+          },
+          "17": {
+            "x": 180.0,
+            "y": 88.0
+          },
+          "12": {
+            "x": 162.0,
+            "y": 130.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "15": {
+            "x": 204.0,
+            "y": 73.0,
+            "c": [
+              216.0,
+              73.0
+            ]
+          },
+          "13": {
+            "x": 243.0,
+            "y": 64.0,
+            "c": [
+              243.0,
+              94.0
+            ]
+          },
+          "6": {
+            "x": 222.0,
+            "y": 73.0
+          },
+          "8": {
+            "x": 195.0,
+            "y": 85.0
+          },
+          "5": {
+            "x": 195.0,
+            "y": 61.0
+          },
+          "17": {
+            "x": 168.0,
+            "y": 82.0
+          },
+          "18": {
+            "x": 147.0,
+            "y": 64.0
+          },
+          "16": {
+            "x": 87.0,
+            "y": 58.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "19": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 13
+          },
+          "13": {
+            "x": 237.0,
+            "y": 46.0
+          },
+          "15": {
+            "x": 198.0,
+            "y": 64.0
+          },
+          "18": {
+            "x": 171.0,
+            "y": 49.0
+          },
+          "17": {
+            "x": 150.0,
+            "y": 71.5
+          },
+          "16": {
+            "x": 105.0,
+            "y": 43.0
+          },
+          "6": {
+            "x": 228.0,
+            "y": 55.0
+          },
+          "5": {
+            "x": 189.0,
+            "y": 52.0
+          },
+          "4": {
+            "x": 147.0,
+            "y": 49.0
+          },
+          "3": {
+            "x": 123.0,
+            "y": 58.0
+          },
+          "7": {
+            "x": 150.0,
+            "y": 82.0
+          },
+          "8": {
+            "x": 183.0,
+            "y": 79.0
+          },
+          "2": {
+            "x": 159.0,
+            "y": 32.2
+          }
+        }
+      },
+      {
+        "moves": {
+          "19": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 17
+          },
+          "17": {
+            "x": 150.0,
+            "y": 59.5
+          },
+          "18": {
+            "x": 171.0,
+            "y": 40.0
+          },
+          "16": {
+            "x": 99.0,
+            "y": 37.0
+          },
+          "15": {
+            "x": 204.0,
+            "y": 55.0
+          },
+          "4": {
+            "x": 141.0,
+            "y": 43.0
+          },
+          "5": {
+            "x": 186.0,
+            "y": 46.0
+          },
+          "7": {
+            "x": 129.0,
+            "y": 67.0
+          },
+          "8": {
+            "x": 174.0,
+            "y": 70.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "19": {
+            "x": 154.5,
+            "y": 25.6,
+            "o": null
+          },
+          "2": {
+            "x": 138.0,
+            "y": 32.2
+          },
+          "17": {
+            "x": 150.0,
+            "y": 55.0
+          }
+        }
+      }
+    ],
+    "fond": "demi"
+  }
+}

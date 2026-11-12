@@ -1,0 +1,294 @@
+{
+  "public": [
+    "filles",
+    "garçons"
+  ],
+  "auteur": "Démo",
+  "source": "Fiche fictive de démonstration",
+  "fictive": true,
+  "id": "fic-003",
+  "titre": "Contre-attaque éclair 4 contre 3",
+  "theme": "tactique",
+  "categories": [
+    "U15",
+    "U18",
+    "Seniors"
+  ],
+  "niveau": "confirmé",
+  "duree_min": 15,
+  "joueurs": {
+    "min": 8,
+    "max": 12
+  },
+  "surface": "Demi-terrain 68 x 52 m, grand but",
+  "materiel": [
+    {
+      "nom": "ballons",
+      "quantite": 6
+    },
+    {
+      "nom": "chasubles",
+      "quantite": 7
+    },
+    {
+      "nom": "buts",
+      "quantite": 1
+    }
+  ],
+  "objectif": "Quand on récupère le ballon, attaquer vite et à plusieurs : passe vers l'avant, écartement, profondeur, centre en retrait.",
+  "organisation": "4 attaquants au niveau de la ligne médiane, 3 défenseurs et le gardien devant le but. Un entraîneur ou un défenseur donne le ballon à l'un des attaquants (simule la récupération).",
+  "deroulement": "Les attaquants ont 12 secondes pour conclure. Les défenseurs jouent en repli défensif et ne peuvent pas presser avant la ligne médiane. Si les défenseurs récupèrent, ils marquent dans deux mini-buts à l'opposé. 6 à 8 passages puis rotation.",
+  "consignes": [
+    "Première passe vers l'avant, pas en retrait.",
+    "Deux joueurs sprintent pour étirer la défense, un seul porte.",
+    "Centre en retrait : le joueur arrive lancé, il ne s'arrête pas."
+  ],
+  "variantes": [
+    {
+      "nom": "Cinquième attaquant",
+      "change": "Un 5e attaquant arrive en retard pour tenter de dépasser le ballon.",
+      "difficulte": "plus facile"
+    },
+    {
+      "nom": "8 secondes",
+      "change": "Conclure en 8 secondes au lieu de 12.",
+      "difficulte": "plus difficile"
+    }
+  ],
+  "mots_cles": [
+    "contre-attaque",
+    "transition",
+    "4 contre 3",
+    "profondeur",
+    "centre en retrait"
+  ],
+  "schema_modele": {
+    "v": 3,
+    "w": 68,
+    "h": 52,
+    "items": [
+      {
+        "t": "but",
+        "x": 150.0,
+        "y": 22.0
+      },
+      {
+        "t": "p",
+        "c": "j",
+        "l": "G",
+        "x": 150.0,
+        "y": 28.6
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "1",
+        "x": 126.0,
+        "y": 79.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "2",
+        "x": 168.0,
+        "y": 73.0
+      },
+      {
+        "t": "p",
+        "c": "r",
+        "l": "3",
+        "x": 198.0,
+        "y": 91.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "A",
+        "x": 141.0,
+        "y": 154.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "B",
+        "x": 102.0,
+        "y": 142.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "C",
+        "x": 198.0,
+        "y": 142.0
+      },
+      {
+        "t": "p",
+        "c": "b",
+        "l": "D",
+        "x": 150.0,
+        "y": 121.0
+      },
+      {
+        "t": "ball",
+        "x": 0,
+        "y": 0,
+        "o": 5
+      }
+    ],
+    "temps": [
+      {
+        "moves": {
+          "9": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 8
+          },
+          "6": {
+            "x": 78.0,
+            "y": 103.0
+          },
+          "7": {
+            "x": 222.0,
+            "y": 103.0
+          },
+          "5": {
+            "x": 144.0,
+            "y": 136.0
+          },
+          "8": {
+            "x": 150.0,
+            "y": 115.0
+          },
+          "2": {
+            "x": 132.0,
+            "y": 73.0
+          },
+          "3": {
+            "x": 162.0,
+            "y": 67.0
+          },
+          "4": {
+            "x": 192.0,
+            "y": 79.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "8": {
+            "x": 150.0,
+            "y": 91.0
+          },
+          "6": {
+            "x": 72.0,
+            "y": 73.0
+          },
+          "7": {
+            "x": 228.0,
+            "y": 73.0
+          },
+          "5": {
+            "x": 147.0,
+            "y": 115.0
+          },
+          "2": {
+            "x": 123.0,
+            "y": 64.0
+          },
+          "3": {
+            "x": 156.0,
+            "y": 64.0
+          },
+          "4": {
+            "x": 198.0,
+            "y": 67.0
+          }
+        }
+      },
+      {
+        "moves": {
+          "9": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 7
+          },
+          "7": {
+            "x": 219.0,
+            "y": 52.0
+          },
+          "6": {
+            "x": 114.0,
+            "y": 49.0
+          },
+          "5": {
+            "x": 156.0,
+            "y": 82.0
+          },
+          "8": {
+            "x": 168.0,
+            "y": 73.0
+          },
+          "4": {
+            "x": 201.0,
+            "y": 58.0
+          },
+          "3": {
+            "x": 168.0,
+            "y": 52.0
+          },
+          "2": {
+            "x": 132.0,
+            "y": 49.0
+          },
+          "1": {
+            "x": 162.0,
+            "y": 28.6
+          }
+        }
+      },
+      {
+        "moves": {
+          "9": {
+            "x": 48.0,
+            "y": 22.0,
+            "o": 6
+          },
+          "6": {
+            "x": 138.0,
+            "y": 55.0
+          },
+          "5": {
+            "x": 162.0,
+            "y": 58.0
+          },
+          "3": {
+            "x": 156.0,
+            "y": 46.0
+          },
+          "2": {
+            "x": 129.0,
+            "y": 46.0
+          },
+          "1": {
+            "x": 150.0,
+            "y": 28.6
+          }
+        }
+      },
+      {
+        "moves": {
+          "9": {
+            "x": 142.5,
+            "y": 25.6,
+            "o": null
+          },
+          "1": {
+            "x": 168.0,
+            "y": 28.6
+          }
+        }
+      }
+    ],
+    "fond": "demi"
+  }
+}
