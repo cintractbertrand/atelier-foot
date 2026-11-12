@@ -54,7 +54,7 @@ function saisonAff(msg){themesEnCours();const L=document.getElementById('saisonc
  const an=SAISON_AN,cat=document.getElementById('scat').value;document.getElementById('san').textContent='Saison '+an+'-'+(an+1)+' (août → juin)';
  const d0=saLundi(new Date(an,7,1)),W=Math.floor((new Date(an+1,5,30)-d0)/6048e5)+1;
  const idx=s=>Math.floor((saD(s)-d0)/6048e5);
- const wid=(L.clientWidth||1000)-4,nrows=wid<700?6:4,RW=Math.ceil(W/nrows),CW=Math.max(24,Math.floor(wid/RW));
+ const wid=(L.clientWidth||1000)-4,nrows=wid<700?6:wid>=1500?3:4,RW=Math.ceil(W/nrows),CW=Math.max(24,Math.floor(wid/RW));
  const per=PERIODES.filter(p=>idx(p.fin)>=0&&idx(p.debut)<W&&(!cat||!p.cat||p.cat==cat)).sort((x,y)=>x.debut.localeCompare(y.debut));
  const lanes=[];per.forEach(p=>{p._a=Math.max(0,idx(p.debut));p._b=Math.min(W-1,idx(p.fin));let l=lanes.findIndex(e=>e<p._a);if(l<0){l=lanes.length;lanes.push(-1)}lanes[l]=p._b;p._l=l});
  const H=Math.max(lanes.length+1,2)*LH+6;
