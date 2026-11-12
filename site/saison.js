@@ -45,11 +45,19 @@ async function periodeSauver(id,o){const pid=id||('p'+Date.now().toString(36)+Ma
 function themesEnCours(){const e=document.getElementById('thencours');if(!e)return;const auj=saIso(new Date());
  const l=PERIODES.filter(p=>p.debut<=auj&&p.fin>=auj);
  e.innerHTML=l.map(p=>`<button onclick="filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')" title="Voir les exercices de ce thème (en cours jusqu'au ${dateFr(p.fin)})">🎯 ${esc(p.theme)}${p.cat?' · '+esc(p.cat):''}</button>`).join('')}
-let SEL_SEANCE='',SA_G=null;
-function saisonSel(id){SEL_SEANCE=SEL_SEANCE==id?'':id;saisonAff()}
+let SEL_SEANCE='',SEL_PER='',SA_G=null;
+function saisonSel(id){SEL_SEANCE=SEL_SEANCE==id?'':id;SEL_PER='';saisonAff()}
+function perSel(id){SEL_PER=id;SEL_SEANCE='';saisonAff()}
+async function periodeRetirer(id,sans){if(!sans&&!confirm('Retirer ce thème du planning ? Il est seulement masqué.'))return false;
+ if(clubOn()){const code=clubCode();if(!code)return false;if(!await clubRpc('retirer_periode',{code,pid:id}))return false}
+ else{const l=saisonPourStock().filter(x=>x.id!=id);lsS('periodes',JSON.stringify(l))}
+ if(SEL_PER==id)SEL_PER='';saisonCharger();return true}
+async function periodeDecaler(id,da,db){const p=PERIODES.find(x=>x.id==id);if(!p)return;const {_a,_b,_l,id:_i,auteur,...o}=p;
+ const f=(s,n)=>saIso(saAdd(saD(s),n*7));o.debut=f(p.debut,da);o.fin=f(p.fin,db);if(o.fin<o.debut)return;
+ if(await periodeSauver(id,o))saisonCharger();else saisonAff()}
 async function saisonRetirerSeance(id){await retirerSeance(id);SEL_SEANCE='';saisonAff()}
-document.addEventListener('keydown',e=>{const sec=document.getElementById('saison');if(!SEL_SEANCE||!sec||sec.classList.contains('hide'))return;
- if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;if(e.key=='Delete'||e.key=='Backspace'){e.preventDefault();saisonRetirerSeance(SEL_SEANCE)}}); // géométrie courante du calendrier
+document.addEventListener('keydown',e=>{const sec=document.getElementById('saison');if(!(SEL_SEANCE||SEL_PER)||!sec||sec.classList.contains('hide'))return;
+ if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;if(e.key=='Escape'){SEL_PER=SEL_SEANCE='';saisonAff();return}if(e.key=='Delete'||e.key=='Backspace'){e.preventDefault();if(SEL_SEANCE)saisonRetirerSeance(SEL_SEANCE);else periodeRetirer(SEL_PER)}}); // géométrie courante du calendrier
 function saisonAff(msg){themesEnCours();const L=document.getElementById('saisonc');if(!L)return;
  const an=SAISON_AN,cat=document.getElementById('scat').value;document.getElementById('san').textContent='Saison '+an+'-'+(an+1)+' (août → juin)';
  const d0=saLundi(new Date(an,7,1)),W=Math.floor((new Date(an+1,5,30)-d0)/6048e5)+1;
@@ -71,14 +79,14 @@ function saisonAff(msg){themesEnCours();const L=document.getElementById('saisonc
   h+=`<div class="srow" style="width:${(r1-r0+1)*CW}px"><div style="position:relative;height:20px">${mh}</div><div style="position:relative;height:16px">${wh}</div>
   <div class="slanes" data-r="${r}" style="position:relative;height:${H}px;background:${grid}"></div>
   <div style="position:relative;height:${Math.max(30,mx*20+8)}px;background:${grid};border-top:2px solid var(--or)">${sh}</div></div>`}
- L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+`<p class="hint noprint">Tire sur une ligne vide pour créer un thème (ou choisis d'abord un grand thème), tire un thème pour le déplacer, tire ses bords pour l'allonger. Clique dessus pour voir ses exercices dans la Base (✎ pour le modifier). Clique une semaine du bas pour planifier une séance ; clique une séance pour la sélectionner (Suppr pour la retirer, double-clic pour l'ouvrir).</p>${(()=>{const x=(window.SEANCES||[]).find(q=>q.id==SEL_SEANCE);return x?`<div class="tot noprint" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Séance sélectionnée : <b>${esc(x.nom||'Séance')}</b> <small>${dateFr(x.date)}${x.auteur?' · '+esc(x.auteur):''}</small> <button class="add" onclick="ouvrirSeance('${esc(x.id)}',0)">Ouvrir</button><button class="del" onclick="saisonRetirerSeance('${esc(x.id)}')">Retirer (Suppr)</button></div>`:''})()}<div id="scal" style="background:#fff;border-radius:8px;padding:6px 2px">${h}</div>`;
+ L.innerHTML=(msg?`<p class="vide">${esc(msg)}</p>`:'')+`<p class="hint noprint">Tire sur une ligne vide pour créer un thème (ou choisis d'abord un grand thème), tire un thème pour le déplacer, tire ses bords pour l'allonger. Clique un thème pour le sélectionner et agir dessus (modifier, décaler, retirer avec Suppr) ; double-clic pour le modifier. Clique une semaine du bas pour planifier une séance ; clique une séance pour la sélectionner (Suppr pour la retirer, double-clic pour l'ouvrir).</p>${(()=>{const x=(window.SEANCES||[]).find(q=>q.id==SEL_SEANCE);return x?`<div class="tot noprint" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Séance sélectionnée : <b>${esc(x.nom||'Séance')}</b> <small>${dateFr(x.date)}${x.auteur?' · '+esc(x.auteur):''}</small> <button class="add" onclick="ouvrirSeance('${esc(x.id)}',0)">Ouvrir</button><button class="del" onclick="saisonRetirerSeance('${esc(x.id)}')">Retirer (Suppr)</button></div>`:''})()}${(()=>{const p=PERIODES.find(q=>q.id==SEL_PER);if(!p)return'';const b=(t,f,c)=>`<button${c?` class="${c}"`:''} onclick="${f}">${t}</button>`,i=`'${esc(p.id)}'`;return `<div class="tot noprint" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="width:14px;height:14px;border-radius:3px;background:${coulTheme(p.theme)}"></span><b>${esc(p.theme)}</b> <small>${p.cat?esc(p.cat)+' · ':''}${dateFr(p.debut)} → ${dateFr(p.fin)}${p.note?' · '+esc(p.note):''}</small> ${b('✎ Modifier',`periodeEditer(${i})`,'add')}${b('◀ Semaine avant',`periodeDecaler(${i},-1,-1)`)}${b('Semaine après ▶',`periodeDecaler(${i},1,1)`)}${b('＋ 1 semaine',`periodeDecaler(${i},0,1)`)}${b('－ 1 semaine',`periodeDecaler(${i},0,-1)`)}${b('🔍 Voir les exercices',`filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')`)}${b('Retirer (Suppr)',`periodeRetirer(${i})`,'del')}${b('✕',"SEL_PER='';saisonAff()")}</div>`})()}<div id="scal" style="background:#fff;border-radius:8px;padding:6px 2px">${h}</div>`;
  per.forEach(p=>saSegs(p.id,p._a,p._b,p._l,p));
  saisonDrag()}
 // Dessine (ou redessine) les morceaux d'un thème sur chaque ligne du calendrier.
 function saSegs(id,a,b,lane,p){const G=SA_G;document.querySelectorAll('.pbar[data-id="'+id+'"]').forEach(e=>e.remove());
  const col=p.theme?coulTheme(p.theme):'#e8b92399';
  document.querySelectorAll('.slanes').forEach(el=>{const r=+el.dataset.r,r0=r*G.RW,r1=Math.min(G.W-1,r0+G.RW-1);if(b<r0||a>r1)return;
-  const s=Math.max(a,r0),e=Math.min(b,r1),d=document.createElement('div');d.className='pbar';d.dataset.id=id;
+  const s=Math.max(a,r0),e=Math.min(b,r1),d=document.createElement('div');d.className='pbar'+(SEL_PER==id?' sel':'');d.dataset.id=id;
   d.style.cssText=`left:${(s-r0)*G.CW+1}px;width:${(e-s+1)*G.CW-2}px;top:${lane*LH+3}px;background:${col}`;
   d.title=p.theme?p.theme+' · '+dateFr(p.debut)+' → '+dateFr(p.fin)+(p.cat?' · '+p.cat:'')+(p.note?' · '+p.note:''):'';
   d.innerHTML=(s==a?'<i class="gh gl"></i><i class="ged" title="Modifier">✎</i>':'')+'<span>'+esc(p.theme||'')+(p.cat?' · '+esc(p.cat):'')+'</span>'+(e==b?'<i class="gh gr"></i>':'');
@@ -101,9 +109,10 @@ function saisonDrag(){const cal=document.getElementById('scal');if(!cal)return;c
   m.a=a;m.b=b;saSegs(m.p.id,a,b,m.p._l,m.p)};
  cal.onpointerup=async e=>{if(!m)return;const q=m;m=null;document.querySelectorAll('.pbar[data-id="__g"]').forEach(x=>x.remove());
   if(q.t=='new'){const a=Math.min(q.a,q.b),b=Math.max(q.a,q.b);if(THEME_ACTIF){const c=document.getElementById('scat').value;if(await periodeSauver('',{theme:THEME_ACTIF,cat:c,debut:dIso(a),fin:dIso(b,1),note:''}))saisonCharger();else saisonAff();return}periodeEditer('',dIso(a),dIso(b,1));return}
-  if(!q.mv){if(q.edit)periodeEditer(q.p.id);else filtrerTheme(q.p.theme,q.p.cat);return}
+  if(!q.mv){if(q.edit)periodeEditer(q.p.id);else if(SEL_PER!=q.p.id)perSel(q.p.id);return}
   const {_a,_b,_l,id,auteur,...o}=q.p;o.debut=dIso(q.a);o.fin=dIso(q.b,1);
   if(await periodeSauver(q.p.id,o))saisonCharger();else saisonAff()};
+ cal.ondblclick=e=>{const bar=e.target.closest('.pbar');if(bar&&bar.dataset.id!='__g')periodeEditer(bar.dataset.id)};
  cal.onpointercancel=()=>{m=null;saisonAff()}}
 window.addEventListener('resize',()=>{const s=document.getElementById('saison');if(s&&!s.classList.contains('hide'))saisonAff()});
 function saisonNouvelleSeance(mois){let d=document.getElementById('pld');if(d)d.remove();d=document.createElement('dialog');d.id='pld';d.style.cssText='max-width:420px;width:92vw;padding:16px';
@@ -116,17 +125,14 @@ function periodeEditer(id,debut,fin){const p=PERIODES.find(x=>x.id==id)||{theme:
  let d=document.getElementById('ped');if(d)d.remove();d=document.createElement('dialog');d.id='ped';d.style.cssText='max-width:440px;width:92vw;padding:16px';
  d.innerHTML='<h3 style="margin:0 0 8px">'+(id?'Modifier le thème':'Thème de période')+'</h3><label>Thème<br><input id="et" list="etl" value="'+esc(p.theme)+'" style="width:100%"></label><datalist id="etl">'+THEMES_SAISON.map(t=>'<option>'+t+'</option>').join('')+'</datalist><br><br><label>Catégorie<br><select id="ec" style="width:100%"><option value="">Toutes</option>'+SA_CATS.map(c=>'<option'+(c==p.cat?' selected':'')+'>'+c+'</option>').join('')+'</select></label><br><br><div style="display:flex;gap:8px"><label>Du<br><input type="date" id="ed" value="'+p.debut+'"></label><label>Au<br><input type="date" id="ef" value="'+p.fin+'"></label></div><br><label>Note (objectif, accent à mettre…)<br><input id="en" value="'+esc(p.note||'')+'" style="width:100%"></label><div style="margin-top:12px;text-align:right">'+(id?'<button id="es" class="del">Retirer</button> ':'')+'<button id="ex">Annuler</button> <button class="add" id="eo">Enregistrer</button></div>';
  document.body.appendChild(d);d.querySelector('#ex').onclick=()=>d.close();
- if(id)d.querySelector('#es').onclick=async()=>{if(!confirm('Retirer ce thème du planning ? Il est seulement masqué.'))return;
-  if(clubOn()){const code=clubCode();if(!code)return;if(!await clubRpc('retirer_periode',{code,pid:id}))return}
-  else{const l=saisonPourStock().filter(x=>x.id!=id);lsS('periodes',JSON.stringify(l))}
-  d.close();saisonCharger()};
+ if(id)d.querySelector('#es').onclick=async()=>{if(await periodeRetirer(id))d.close()};
  d.querySelector('#eo').onclick=async()=>{const o={theme:d.querySelector('#et').value.trim().slice(0,60),cat:d.querySelector('#ec').value,debut:d.querySelector('#ed').value,fin:d.querySelector('#ef').value,note:d.querySelector('#en').value.trim().slice(0,200)};
   if(!o.theme){alert('Donne un thème.');return}if(!o.debut||!o.fin||o.fin<o.debut){alert('Vérifie les dates (la fin doit suivre le début).');return}
   if(!await periodeSauver(id,o))return;
   d.close();saisonCharger()};d.showModal()}
 (function(){const sec=document.getElementById('saison');if(!sec)return;
  sec.innerHTML='<div class="filtres noprint"><button onclick="SAISON_AN--;saisonAff()">◀</button><b id="san" style="padding:7px"></b><button onclick="SAISON_AN++;saisonAff()">▶</button><select id="scat" onchange="saisonAff()"><option value="">Toutes catégories</option>'+SA_CATS.map(c=>'<option>'+c+'</option>').join('')+'</select><button class="add" onclick="periodeEditer(\'\')">+ Thème sur une période</button><button onclick="saisonCharger()">Actualiser</button><button onclick="window.print()">Imprimer</button></div><div id="spal" class="noprint"></div><div id="saisonc"></div>';
- const st=document.createElement('style');st.textContent='.pbar{position:absolute;height:26px;border-radius:6px;border:1px solid #0003;cursor:grab;display:flex;align-items:center;overflow:hidden;user-select:none;touch-action:none}.pbar span{flex:1;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:600;color:#1b3a73;pointer-events:none}.ged{padding:0 4px;font-style:normal;cursor:pointer;font-size:12px}.gh{width:8px;height:100%;cursor:ew-resize;background:#0002;flex:none}.slanes{touch-action:pan-y;cursor:crosshair}.srow{margin:0 0 12px}.swk{border-radius:4px;cursor:pointer}.swk:hover{background:#e8b92333}.ssea.sel{outline:3px solid var(--or);background:#c0392b}.ssea{background:var(--o);color:#fff;border-radius:4px;font-size:11px;margin:2px;padding:2px 3px;text-align:center}';document.head.appendChild(st);
+ const st=document.createElement('style');st.textContent='.pbar{position:absolute;height:26px;border-radius:6px;border:1px solid #0003;cursor:grab;display:flex;align-items:center;overflow:hidden;user-select:none;touch-action:none}.pbar span{flex:1;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:600;color:#1b3a73;pointer-events:none}.ged{padding:0 4px;font-style:normal;cursor:pointer;font-size:12px}.gh{width:8px;height:100%;cursor:ew-resize;background:#0002;flex:none}.slanes{touch-action:pan-y;cursor:crosshair}.srow{margin:0 0 12px}.swk{border-radius:4px;cursor:pointer}.swk:hover{background:#e8b92333}.pbar.sel{outline:3px solid var(--or);outline-offset:1px;z-index:2}.ssea.sel{outline:3px solid var(--or);background:#c0392b}.ssea{background:var(--o);color:#fff;border-radius:4px;font-size:11px;margin:2px;padding:2px 3px;text-align:center}';document.head.appendChild(st);
  saisonPalette();document.getElementById('nsa').onclick=async()=>{show('a');saisonCharger();if(clubOn()&&lsG('codeclub')){await seancesCharger();saisonAff()}};
  if(clubOn()&&lsG('codeclub'))saisonCharger();})();
 
