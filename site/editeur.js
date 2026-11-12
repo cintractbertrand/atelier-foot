@@ -320,10 +320,13 @@ const CATS=['U7','U9','U11','U13','U15','U18','Seniors'];
 function enregistrerChoix(){const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&varEdit.idx!=null&&E.find(x=>x.id==varEdit.pid);
  if(!f&&!pv)return ouvrirDlg();const v=pv&&pv.variantes[varEdit.idx];
  $e('c_titre').textContent=f?'« '+f.titre+' »':'la variante « '+(v&&v.nom)+' »';$e('c_rempl').textContent=f?'Remplacer la fiche (même nom)':'Remplacer cette variante';
- $e('c_rempl').onclick=()=>{$e('dlgc').close();ouvrirDlg()};
- $e('c_var').onclick=()=>{$e('dlgc').close();varEdit={pid:f?f.id:varEdit.pid,idx:null};editingId=null;ui();brouillon();ouvrirDlg()};
+ $e('c_rempl').onclick=()=>{$e('dlgc').close();copieDe=null;ouvrirDlg()};
+ // Nouvelle fiche : on repart d'une copie de la fiche (textes compris), à renommer et modifier ; l'ancienne ne bouge pas.
+ $e('c_new').onclick=()=>{$e('dlgc').close();const src=f||pv;copieDe=src.id;editingId=null;varEdit=null;ui();brouillon();ouvrirDlg();$e('f_titre').value=(f?f.titre+' (copie)':pv.titre+' – '+(v&&v.nom||'')).slice(0,40);$e('f_titre').select()};
+ $e('c_var').onclick=()=>{$e('dlgc').close();copieDe=null;varEdit={pid:f?f.id:varEdit.pid,idx:null};editingId=null;ui();brouillon();ouvrirDlg()};
  $e('dlgc').showModal()}
-function ouvrirDlg(){if(varEdit)return ouvrirDlgV();const f=editingId?E.find(x=>x.id==editingId):null;const g=id=>$e(id);
+let copieDe=null;
+function ouvrirDlg(){if(varEdit)return ouvrirDlgV();const f=editingId?E.find(x=>x.id==editingId):copieDe?E.find(x=>x.id==copieDe):null;const g=id=>$e(id);
  g('f_titre').value=f?.titre||'';g('f_theme').value=f?.theme||'échauffement';const cs=f?.categories||[];g('f_cats').innerHTML=[...new Set([...CATS,...cs])].map(c=>`<label class="chip"><input type="checkbox" value="${esc2(c)}"${cs.includes(c)?' checked':''}> ${esc2(c)}</label>`).join('');g('f_niveau').value=f?.niveau||'débutant';
  g('f_duree').value=f?.duree_min||15;g('f_jmin').value=f?.joueurs.min||6;g('f_jmax').value=f?.joueurs.max||12;
  const k=compte(M);g('f_mat').value=Object.entries(k.mat).map(([n,q])=>q+' '+nomMat(n,q)).join(', ')||(f?f.materiel.map(m=>m.quantite+' '+m.nom).join(', '):'');if(!f){g('f_jmin').value=k.joueurs||6;g('f_jmax').value=k.joueurs||12}g('f_obj').value=f?.objectif||'';g('f_org').value=f?.organisation||'';g('f_dero').value=f?.deroulement||'';
@@ -349,9 +352,9 @@ async function brouillonsAff(){$e('b_liste').innerHTML='<p>Chargement…</p>';$e
  $e('b_liste').innerHTML=a.length?a.map(b=>`<div class="actions"><b>${esc2(b.titre)}</b> <small>${b.auteur?esc2(b.auteur)+' · ':''}${new Date(b.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small><button onclick="brouillonReprendre('${esc2(b.id)}')">Reprendre</button><button onclick="brouillonSupp('${esc2(b.id)}')">Supprimer</button></div>`).join(''):'<p>Aucun brouillon.</p>'}
 function brouillonSupp(id){if(!confirm('Supprimer ce brouillon ?'))return;brouillonsSauve(brouillonsLis().filter(x=>x.id!=id));if(draftId==id)draftId=null;
  if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:id}).then(brouillonsAff);else brouillonsAff()}
-function brouillonReprendre(id){const b=brouillonsLis().concat(BRC).filter(x=>x.id==id).sort((x,y)=>(y.date||'').localeCompare(x.date||''))[0];if(!b)return;$e('dlgb').close();draftId=id;M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d');
+function brouillonReprendre(id){copieDe=null;const b=brouillonsLis().concat(BRC).filter(x=>x.id==id).sort((x,y)=>(y.date||'').localeCompare(x.date||''))[0];if(!b)return;$e('dlgb').close();draftId=id;M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d');
  if(b.champs&&!varEdit){ouvrirDlg();CH.forEach(k=>$e(k).value=b.champs[k]);document.querySelectorAll('#f_cats input').forEach(x=>x.checked=b.champs.cats.includes(x.value))}}
-function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):null;
+function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lines=s=>g(s).split('\n').map(x=>x.trim()).filter(Boolean),old=editingId?E.find(x=>x.id==editingId):copieDe?(c=>{if(!c)return null;const o=cl(c);['id','club','maj','auteur','schema_svg'].forEach(k=>delete o[k]);return o})(E.find(x=>x.id==copieDe)):null;copieDe=null;
  const fiche={...(old||{}),id:editingId||'perso-'+Date.now().toString(36),perso:true,titre:g('f_titre').slice(0,40),theme:g('f_theme'),categories:[...document.querySelectorAll('#f_cats input:checked')].map(x=>x.value),public:old?.public||['filles','garçons'],niveau:g('f_niveau'),duree_min:+g('f_duree')||15,joueurs:{min:+g('f_jmin')||1,max:+g('f_jmax')||1},surface:old?.surface||(M.w+' x '+M.h+' m'),
   materiel:g('f_mat').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d+)\s+(.*)$/);return m?{nom:m[2],quantite:+m[1]}:{nom:x,quantite:1}}),
   objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
@@ -397,7 +400,7 @@ function initEditeur(){
  $e('save').onclick=enregistrerChoix;$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
  $e('f_brouillon').onclick=()=>{if(brouillonEnreg(true)){$e('dlg').close();alert('Brouillon enregistré. Retrouve-le avec « Mes brouillons ».')}};
  $e('brouillons').onclick=brouillonsAff;$e('b_nouv').onclick=()=>{if(brouillonEnreg(false)){brouillonsAff()}};
- $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;editingId=null;varEdit=null;draftId=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
+ $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;copieDe=null;editingId=null;varEdit=null;draftId=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
  document.addEventListener('keydown',ev=>{if($e('editeur').classList.contains('hide')||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='z'){ev.preventDefault();ev.shiftKey?redoF():undo();return}
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='y'){ev.preventDefault();redoF();return}
