@@ -317,6 +317,8 @@ function chargePerso(){try{return JSON.parse(localStorage.getItem('mesfiches')||
 function savePerso(a){try{localStorage.setItem('mesfiches',JSON.stringify(a))}catch(e){alert('Enregistrement local impossible : exporte la fiche en fichier.')}}
 const CATS=['U7','U9','U11','U13','U15','U18','Seniors'];
 // Enregistrer une fiche ou une variante déjà existante : on choisit de la remplacer ou d'en faire une nouvelle variante.
+// Étape ④ : pour une fiche existante, on arrive d'abord sur le texte à modifier ; les autres choix (variante, nouvelle fiche) restent accessibles depuis le formulaire.
+function etapeFiche(){if(editingId&&!varEdit&&E.find(x=>x.id==editingId)){copieDe=null;ouvrirDlg()}else enregistrerChoix()}
 function enregistrerChoix(){const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&varEdit.idx!=null&&E.find(x=>x.id==varEdit.pid),pn=varEdit&&varEdit.idx==null&&E.find(x=>x.id==varEdit.pid);
  if(!f&&!pv&&!pn)return ouvrirDlg();const v=pv&&pv.variantes[varEdit.idx],src=f||pv||pn;
  $e('c_titre').textContent=f?'« '+f.titre+' »':pv?'la variante « '+(v&&v.nom)+' »':'ce schéma (fait à partir de « '+pn.titre+' »)';
@@ -360,7 +362,7 @@ function enregistrer(ev){ev.preventDefault();const g=id=>$e(id).value.trim(),lin
   materiel:g('f_mat').split(',').map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d+)\s+(.*)$/);return m?{nom:m[2],quantite:+m[1]}:{nom:x,quantite:1}}),
   source:g('f_source'),objectif:g('f_obj'),organisation:g('f_org'),deroulement:g('f_dero'),consignes:lines('f_cons'),
   variantes:lines('f_var').map(l=>{const [n,...r]=l.split(':');const ov=old?.variantes?.find(v=>v.nom==n.trim());const o={...(ov||{}),nom:n.trim(),change:r.join(':').trim()||n.trim(),difficulte:ov?.difficulte||''};delete o.schema_svg;return o}),
-  schema_modele:cl(M)};if(!fiche.source)delete fiche.source;delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
+  schema_modele:texteSeul&&old?(old.schema_modele?cl(old.schema_modele):undefined):cl(M)};if(fiche.schema_modele===undefined)delete fiche.schema_modele;if(!fiche.source)delete fiche.source;delete fiche.club;delete fiche.maj;delete fiche.schema_svg;
  const a=chargePerso().filter(x=>x.id!=fiche.id);a.push(fiche);savePerso(a);if(draftId){brouillonsSauve(brouillonsLis().filter(x=>x.id!=draftId));if(clubBr())brRpc('retirer_brouillon',{code:lsG('codeclub'),bid:draftId});draftId=null}$e('dlg').close();editingId=fiche.id;majE();show('b');setTimeout(()=>alert('Fiche « '+fiche.titre+' » enregistrée sur cet appareil.'+(window.boutonsClub?' Pour la partager, utilise le bouton du club sur la fiche.':'')),50)}
 const hyd=e=>{if(!e.schema_modele)return e;return{...e,schema_svg:render(e.schema_modele,{animOn:true}),variantes:(e.variantes||[]).map(v=>v.schema_modele?{...v,schema_svg:render(v.schema_modele,{animOn:true})}:v)}};
 // Copie d'une fiche sans ce qui est recalculé à l'affichage (schémas SVG) ni les infos du club.
@@ -384,6 +386,8 @@ function nomAut(a){a=(a||'').trim();if(/^coach\s+bc$/i.test(a))return'bc';if(/^n
 function nettoie(f){f.auteur=nomAut(f.auteur);if(!f.mots_cles||!f.mots_cles.length)f.mots_cles=motsCles(f);if(f.auteur=='ESGA')f.auteur='Commun';if(f.theme=='passe'||f.theme=='tir')f.theme='technique';const num=+((f.id||'').match(/-(\d+)$/)||[])[1];if(f.theme=='match'||(/^match/i.test(f.titre||'')&&num<100)){if(Array.isArray(f.mots_cles))f.mots_cles=f.mots_cles.map(m=>m==f.theme?'jeu réduit':m);f.theme='jeu réduit'}if(Array.isArray(f.categories))f.categories=[...new Set(f.categories.map(c=>/^seniors?$/i.test(c)?'Seniors':/^U[79]$/.test(c)?'U7-U9':c))];return f}
 function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id)),c=(window.CLUBF||[]).filter(x=>!ids.has(x.id)),cid=new Set(c.map(x=>x.id));
  E=window.EXERCICES.filter(x=>!ids.has(x.id)&&!cid.has(x.id)).map(hyd).concat(c.map(hyd),p.map(hyd)).map(nettoie);majFiltres();base();if(typeof seance=='function')seance()}
+let texteSeul=false;
+function modifierTexte(id){const f=E.find(x=>x.id==id);if(!f)return;editingId=id;varEdit=null;copieDe=null;texteSeul=true;if(f.schema_modele)M=norm(f.schema_modele);ouvrirDlg();$e('dlg').addEventListener('close',()=>{texteSeul=false},{once:true})}
 function modifierSchema(id){const f=E.find(x=>x.id==id);if(!f||!f.schema_modele)return;editingId=id;varEdit=null;M=norm(f.schema_modele);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d')}
 function exporterFiche(id){const f=E.find(x=>x.id==id),o=propre(f);if(!o.schema_modele&&f.schema_svg)o.schema_svg=f.schema_svg;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));a.download=f.id+'.json';a.click()}
 function supprimerPerso(id){if(confirm(aOrig(id)?'Rétablir la fiche d\'origine ?':'Supprimer cette fiche ?')){savePerso(chargePerso().filter(x=>x.id!=id));majE()}}
@@ -393,13 +397,13 @@ function initEditeur(){
  $e('dw').oninput=$e('dh').oninput=majDim;$e('fond').onchange=ev=>setFond(ev.target.value);$e('dw').onblur=$e('dh').onblur=()=>{dimSnap=false};
  $e('undo').onclick=undo;$e('redo').onclick=redoF;
  $e('clear').onclick=()=>{if(confirm('Tout effacer ?')){snap();M.items=[];M.temps=[];sel=null;cur=0;draw()}};
- $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?enregistrerChoix():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
+ $e('tabD').onclick=()=>setMode('d');$e('suiv').onclick=()=>{const n=SUIV[mode][1];n=='f'?etapeFiche():setMode(n)};$e('tabM').onclick=()=>setMode('m');$e('tabV').onclick=()=>setMode('v');
  $e('vpause').onclick=()=>{const s=$e('cvbox').querySelector('svg'),b=$e('vpause');if(b.dataset.p){s.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{s.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}};
  $e('vrestart').onclick=()=>{$e('vpause').textContent='⏸ Pause';delete $e('vpause').dataset.p;draw()};
  $e('vspeed').onchange=()=>draw();
  $e('dlpng').onclick=()=>pngDe(render(M,{}),'schema');
  $e('dlsvg').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([render(M,{animOn:true})],{type:'image/svg+xml'}));a.download='schema.svg';a.click()};
- $e('save').onclick=enregistrerChoix;$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
+ $e('save').onclick=etapeFiche;$e('f_autres').onclick=()=>{$e('dlg').close();enregistrerChoix()};$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
  $e('f_brouillon').onclick=()=>{if(brouillonEnreg(true)){$e('dlg').close();alert('Brouillon enregistré. Retrouve-le avec « Mes brouillons ».')}};
  $e('brouillons').onclick=brouillonsAff;$e('b_nouv').onclick=()=>{if(brouillonEnreg(false)){brouillonsAff()}};
  $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;copieDe=null;editingId=null;varEdit=null;draftId=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
