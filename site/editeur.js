@@ -102,12 +102,13 @@ function transfo(quart,fixe){const of=field(M),old={w:M.w,h:M.h};if(quart&&!fixe
  M.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{[q.x,q.y]=P(q.x,q.y);if(q.c)q.c=P(q.c[0],q.c[1])}));M.fr=[nf.x,nf.y,nf.w,nf.h]}
 function tourner(){snap();transfo(true,M.fond=='demi'||M.items.some(i=>i.t=='but'));$e('dw').value=M.w;$e('dh').value=M.h;sel=null;draw()}
 function miroir(){snap();transfo(false,M.fond=='demi'||M.items.some(i=>i.t=='but'));sel=null;draw()}
+function gridSvg(m,f,g){let d='';for(let v=g;v<m.w;v+=g){const x=R(f.x+v*f.w/m.w);d+=`M${x} ${R(f.y)}V${R(f.y+f.h)}`}for(let v=g;v<m.h;v+=g){const y=R(f.y+v*f.h/m.h);d+=`M${R(f.x)} ${y}H${R(f.x+f.w)}`}return `<path d="${d}" stroke="${NAVY}" stroke-width=".4" opacity=".25" fill="none" style="pointer-events:none"/>`}
 // ---------- rendu ----------
 function render0(m,o={}){
  m=norm(m);const S=simulate(m),I=m.items,f=field(m),ed=o.editor,nT=S.segs.length;
  const k=Math.min(cur,Math.max(0,nT-1)),st=ed=='m'?S.states[Math.min(k+1,nT)]:S.states[0],before=ed=='m'&&nT?S.states[k]:null;
  const TM=o.animOn?timing(S):null,P=i=>(I[i].t=='p'||I[i].t=='ball')?st.pos[i]:[I[i].x,I[i].y];
- let b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="${NAVY}"/><rect x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" fill="#f4f8fd" stroke="${NAVY}" stroke-width="1.5"/>`+(m.fond=='demi'?demi(m,f):'');
+ let b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="${NAVY}"/><rect x="${R(f.x)}" y="${R(f.y)}" width="${R(f.w)}" height="${R(f.h)}" fill="#f4f8fd" stroke="${NAVY}" stroke-width="1.5"/>`+(m.fond=='demi'?demi(m,f):'')+(o.grid?gridSvg(m,f,o.grid):'');
  const di=i=>ed=='d'||(ed=='m'&&(I[i].t=='p'||I[i].t=='ball'))?` data-i="${i}" style="cursor:grab"`:'';
  I.forEach((it,i)=>{if(it.t=='zone')b+=`<rect${ed=='d'?` data-i="${i}" style="cursor:grab"`:''} x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="${ed?'#1b3a7310':'none'}" stroke="${NAVY}" stroke-dasharray="6 4"/>`});
  S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
@@ -136,6 +137,11 @@ function removeItem(i){M.items.splice(i,1);const sh=j=>j==null?null:(j==i?null:(
 const AIM=['plot','piquet','mannequin','haie','cerceau'];
 function aimant(x,y){let best=null,bd=16;M.items.forEach(it=>{if(AIM.includes(it.t)){const d=Math.hypot(it.x-x,it.y-y);if(d<bd){bd=d;best=it}}});
  if(!best)return[x,y];if(best.t=='cerceau')return[best.x,best.y];const d=bd||1,ux=bd>.5?(x-best.x)/d:-.7,uy=bd>.5?(y-best.y)/d:.7;return[R(best.x+ux*9),R(best.y+uy*9)]}
+// Grille aimantée (idée GeoGebra) : réglage de l'appareil, invisible sur les fiches.
+let GRID=0;try{GRID=+localStorage.getItem('grille_m')||0}catch(e){}
+function setGrille(v){GRID=+v||0;try{localStorage.setItem('grille_m',GRID)}catch(e){}draw()}
+function grille(x,y){if(!GRID)return[x,y];const f=field(M),kx=f.w/M.w,ky=f.h/M.h,c=(v,o,k,L)=>R(o+Math.min(L,Math.max(0,Math.round((v-o)/k/GRID)*GRID))*k);return[c(x,f.x,kx,M.w),c(y,f.y,ky,M.h)]}
+function cale(x,y,joueur){if(joueur){const a=aimant(x,y);if(a[0]!=x||a[1]!=y)return a}return grille(x,y)}
 function bind(){
  const s=$e('cv');
  s.onpointerdown=ev=>{const [x,y]=pt(ev),h=ev.target.closest('[data-h]'),el=ev.target.closest('[data-i]'),i=el?+el.dataset.i:null;s.setPointerCapture(ev.pointerId);
@@ -149,18 +155,18 @@ function bind(){
   if(i!=null){sel=i;const it=M.items[i],o=cl(it);if(it.t=='ball'&&isP(M,it.o)){const q=M.items[it.o];o.x=q.x+OFF[0];o.y=q.y+OFF[1]}drag={k:'d',i,x,y,o,s:false};draw();return}
   if(!tool){sel=null;box={x1:x,y1:y,x2:x,y2:y};return}
   if(tool=='zone'||tool=='ligne'){tmp={x1:x,y1:y,x2:x,y2:y,k:tool};return}
-  snap();
+  snap();{const [x,y]=cale(...pt(ev),tool.startsWith('p_'));
   if(tool.startsWith('p_')){const c=tool[2];M.items.push({t:'p',c,l:nextLabel(c),x,y})}
   else if(tool=='txt'){const t=prompt('Texte :');if(!t){hist.pop();return}M.items.push({t:'txt',s:t,x,y})}
   else if(tool=='ball')M.items.push({t:'ball',x,y});
-  else M.items.push({t:tool,x,y});
+  else M.items.push({t:tool,x,y});}
   sel=M.items.length-1;if(ONCE.includes(tool))setTool(null);draw()};
  s.onpointermove=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='curve'){const T=M.temps[cur],q=T&&T.moves[drag.i];if(q){q.c=[x,y];draw()}else{const S=simulate(M),g=S.segs[cur]&&S.segs[cur][drag.i];if(g&&g.kind=='conduite'){}}return}
-  if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};const g=M.items[drag.i].t=='p'?aimant(x,y):[x,y];T.moves[drag.i]={x:g[0],y:g[1],...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
+  if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};const g=cale(x,y,M.items[drag.i].t=='p');T.moves[drag.i]={x:g[0],y:g[1],...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
   if(drag&&drag.k=='g'){const dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}selG.forEach(j=>{const it=M.items[j];if(it.t=='ball'&&isP(M,it.o)&&selG.includes(it.o))return;if(it.t=='ball'&&it.o!=null)delete it.o;it.x=drag.o[j][0]+dx;it.y=drag.o[j][1]+dy});draw();return}
   if(box){box.x2=x;box.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',`<rect id="prev" x="${Math.min(box.x1,box.x2)}" y="${Math.min(box.y1,box.y2)}" width="${Math.abs(box.x2-box.x1)}" height="${Math.abs(box.y2-box.y1)}" fill="#e8b92322" stroke="#e8731a" stroke-dasharray="3 2"/>`);return}
-  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;if(it.t=='p')[it.x,it.y]=aimant(it.x,it.y);draw();return}
+  if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;if(!['zone','ligne'].includes(it.t))[it.x,it.y]=cale(it.x,it.y,it.t=='p');draw();return}
   if(tmp){tmp.x2=x;tmp.y2=y;if(tmp.k=='ligne'){const dx=x-tmp.x1,dy=y-tmp.y1,k=Math.tan(10*Math.PI/180);if(Math.abs(dy)<=k*Math.abs(dx))tmp.y2=tmp.y1;else if(Math.abs(dx)<=k*Math.abs(dy))tmp.x2=tmp.x1}// presque horizontale ou verticale : on la redresse
    const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',tmp.k=='ligne'?`<line id="prev" x1="${tmp.x1}" y1="${tmp.y1}" x2="${tmp.x2}" y2="${tmp.y2}" stroke="${NAVY}" stroke-width="2" stroke-dasharray="6 4"/>`:`<rect id="prev" x="${Math.min(tmp.x1,tmp.x2)}" y="${Math.min(tmp.y1,tmp.y2)}" width="${Math.abs(tmp.x2-tmp.x1)}" height="${Math.abs(tmp.y2-tmp.y1)}" fill="none" stroke="${NAVY}" stroke-dasharray="6 4"/>`)}};
  s.onpointerup=ev=>{const [x,y]=pt(ev);
@@ -196,7 +202,7 @@ function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
  return'Touche le terrain à chaque endroit où poser un '+nom.toLowerCase()+'. Re-touche le bouton pour arrêter.'}
 function setTool(t){tool=t;selG=[];document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
 function props(){
- if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button>`;
+ if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button><div class="disp">Ranger : <button onclick="alignG('h')">⇔ Aligner en ligne</button><button onclick="alignG('v')">⇕ Aligner en colonne</button><button onclick="repartirG()">↔ Espacer régulièrement</button><button onclick="miroirCopie()">⧉ Copie en miroir</button></div>`;
  if(sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;
  if(mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[i];if(!q)return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <span class="vide0">ne bouge pas dans ce temps</span>`;
   return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <button onclick="snap();delete M.temps[cur].moves[${i}];draw()">✕ Annuler ce mouvement</button>${q.c?` <button onclick="snap();delete M.temps[cur].moves[${i}].c;draw()">Redresser la flèche</button>`:''}`}
@@ -208,6 +214,20 @@ function props(){
  else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`+(['plot','piquet','cerceau','mannequin','haie'].includes(it.t)?`<div class="disp">Disposer à partir d'ici : <button onclick="disposer('carre')" title="Carré">▢ Carré</button><button onclick="disposer('losange')" title="Losange">◇ Losange</button><button onclick="disposer('ligne')" title="Ligne">⋯ Ligne</button><button onclick="disposer('cercle')" title="Cercle">◯ Cercle</button><br>côté / écart <input id="disp_m" type="number" min="1" value="10" style="width:56px"> m · nombre (ligne, cercle) <input id="disp_n" type="number" min="2" max="12" value="4" style="width:50px"></div>`:'');
  return h+` <button class="del" onclick="snap();removeItem(${i});draw()">🗑 Supprimer</button>`}
 function rotSel(d){if(sel==null)return;const it=M.items[sel];if(!ROTABLE.includes(it.t))return;snap();it.rot=((it.rot||0)+d+360)%360;draw()}
+// ---------- ranger la sélection (idées GeoGebra) ----------
+const libres=()=>selG.filter(j=>{const it=M.items[j];return it&&!(it.t=='ball'&&isP(M,it.o))&&it.t!='zone'&&it.t!='ligne'});
+function alignG(ax){const L=libres();if(L.length<2)return;snap();const k=ax=='h'?'y':'x',m=R(L.reduce((a,j)=>a+M.items[j][k],0)/L.length);L.forEach(j=>M.items[j][k]=m);draw()}
+function repartirG(){const L=libres();if(L.length<3)return;const xs=L.map(j=>M.items[j].x),ys=L.map(j=>M.items[j].y),k=(Math.max(...xs)-Math.min(...xs))>=(Math.max(...ys)-Math.min(...ys))?'x':'y',o=L.slice().sort((a,b)=>M.items[a][k]-M.items[b][k]),a=M.items[o[0]][k],b=M.items[o[o.length-1]][k];
+ snap();o.forEach((j,n)=>M.items[j][k]=R(a+(b-a)*n/(o.length-1)));draw()}
+// Copie en miroir gauche/droite (sélection, ou tout le schéma) : pour deux ateliers face à face. Trajets compris.
+function miroirCopie(){const f=field(M),cx=f.x+f.w/2,X=x=>R(2*cx-x),ids=(selG.length?selG:M.items.map((_,j)=>j)).slice().sort((a,b)=>a-b),map={};snap();
+ ids.forEach(i=>{const it=M.items[i];if(!it)return;const n=cl(it);n.x=X(it.x);if(it.t=='zone')n.x=R(2*cx-it.x-it.w);if(it.t=='ligne'){n.x=X(it.x);n.dx=-it.dx}
+  if(['but','haie','echelle'].includes(it.t))n.rot=((180-(it.rot||0))%360+360)%360;
+  if(it.t!='p'&&it.t!='ball'&&M.items.some(o=>o.t==it.t&&Math.hypot(o.x-n.x,o.y-n.y)<3))return;
+  if(it.t=='p')n.l=nextLabel(it.c);M.items.push(n);map[i]=M.items.length-1});
+ Object.entries(map).forEach(([i,j])=>{const n=M.items[j];if(n.t=='ball'&&n.o!=null){if(map[n.o]!=null)n.o=map[n.o];else delete n.o}});
+ M.temps.forEach(T=>Object.keys(T.moves||{}).forEach(k=>{const j=map[k];if(j==null)return;const q=cl(T.moves[k]);q.x=X(q.x);if(q.c)q.c=[X(q.c[0]),q.c[1]];if(q.o!=null)q.o=map[q.o]!=null?map[q.o]:null;T.moves[j]=q}));
+ const nw=Object.values(map);selG=nw.length>1?nw:[];sel=null;draw()}
 function dupSel(){const ids=selG.length?selG.slice():sel!=null?[sel]:[];if(!ids.length)return;snap();const map={},D=24;
  ids.forEach(i=>{const it=cl(M.items[i]);it.x+=D;if(it.t=='p')it.l=nextLabel(it.c);map[i]=M.items.length;M.items.push(it)});
  ids.forEach(i=>{const it=M.items[map[i]];if(it.o!=null)it.o=map[it.o]!=null?map[it.o]:(delete it.o,undefined);if(it.o===undefined)delete it.o});
@@ -224,7 +244,7 @@ function ui(){
  $e('hint').textContent=mode=='d'?hintD():mode=='m'?(M.temps.length?'Temps '+(cur+1)+' : glisse joueurs et ballon à leur nouvelle place (ils bougent ensemble). Ballon sur un joueur = passe, dans le but = tir. Rond orange = courber.':'Glisse un joueur ou le ballon vers sa nouvelle place : la flèche se dessine toute seule.'):'Vérifie que l\'animation raconte bien l\'exercice.';
  $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'');
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
- $e('fond').value=M.fond||'';$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
+ $e('fond').value=M.fond||'';$e('grille').value=String(GRID);if(mode=='v'){$e('vtemps').max=M.temps.length}$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
 // ---------- mesures (idée GeoGebra) : distance en mètres pendant qu'on glisse ----------
 function metres(a,b){const f=field(M);return Math.hypot((b[0]-a[0])*M.w/f.w,(b[1]-a[1])*M.h/f.h)}
 function mesure(a,b){const s=$e('cv');if(!s||!a||!b)return;const d=metres(a,b);if(d<.5)return;const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,t=(Math.round(d*10)/10).toString().replace('.',',')+' m';
@@ -240,7 +260,11 @@ function disposer(forme){const it=M.items[sel];if(!it)return;const n=Math.max(2,
  if(forme=='losange')pts.push([L/2,-L/2],[L,0],[L/2,L/2]);
  if(forme=='cercle')for(let k=1;k<n;k++){const a=2*Math.PI*k/n,r=L/2;pts.push([r-r*Math.cos(a),-r*Math.sin(a)])}
  snap();pts.forEach(([mx,my])=>{const x=R(it.x+mx*kx),y=R(it.y+my*ky);if(x>=f.x-2&&x<=f.x+f.w+2&&y>=f.y-2&&y<=f.y+f.h+2)M.items.push({...cl(it),x,y})});draw()}
-function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind();if(drag)mesureDrag()}ui();brouillon()}
+// Curseur des temps (idée GeoGebra) : on fige l'animation à la fin d'un temps.
+function vAller(k){const svg=$e('cvbox').querySelector('svg');if(!svg)return;const S=simulate(norm(M)),TM=timing(S),n=S.segs.length;k=Math.max(0,Math.min(n,k));
+ const t=k==0?0:TM.starts[k-1]+TM.durs[k-1]+.05;svg.pauseAnimations();svg.setCurrentTime(t/(+$e('vspeed').value||1));$e('vtemps').value=k;$e('vtlab').textContent=k?'Temps '+k+' / '+n:'Départ';const b=$e('vpause');b.textContent='▶ Lecture';b.dataset.p=1}
+function vTemps(d){vAller((+$e('vtemps').value||0)+d)}
+function draw(){const box=$e('cvbox');if($e('vtlab'))$e('vtlab').textContent='';if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode,grid:GRID});bind();if(drag)mesureDrag()}ui();brouillon()}
 function setMode(m){mode=m;tmp=null;box=null;selG=[];drag=null;sel=null;tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'));fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
 // Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
 function brouillon(){try{localStorage.setItem('brouillon_editeur',JSON.stringify({M,editingId,varEdit}))}catch(e){}}
