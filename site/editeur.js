@@ -2,7 +2,7 @@
    Format v3 : items = situation de départ ; temps = [{moves:{indice:{x,y,c?,o?}}}].
    Dans un temps, tout bouge en même temps. Le type de flèche est déduit :
    joueur sans ballon = course, joueur avec ballon = conduite, ballon vers joueur = passe, ballon vers but = tir. */
-const NAVY='#1b3a73',RED='#d63a2a',GOLD='#e8b923',PLOT='#d9a406',OFF=[9,6],V=45;
+const NAVY='#1b3a73',RED='#d63a2a',GOLD='#e8b923',PLOT='#d9a406',OFF=[7,4.5],V=45,SC=.75;// SC : taille des objets sur le terrain (demande de Bertrand : plus petits)
 const DEFS='<defs>'+[['ap','#222'],['ad',PLOT],['ar',RED],['ag','#999']].map(([id,c])=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`).join('')+'</defs>';
 const blank=()=>{const m={v:3,w:30,h:20,items:[],temps:[]};const f=field(m);m.fr=[f.x,f.y,f.w,f.h];return m};
 let M=blank(),tool=null,sel=null,selG=[],box=null,drag=null,tmp=null,hist=[],redo=[],editingId=null,varEdit=null,mode='d',cur=0;
@@ -73,7 +73,7 @@ function motion(S,TM,i,speed){
 function trim(p,r,end){const q=end?p.slice().reverse():p.slice(),o=q[0];while(q.length>2&&dist(q[0],o)<r)q.shift();return end?q.reverse():q}
 function wavy(p){const o=[],L=plen(p);let s=0;for(let k=1;k<p.length;k++){const a=p[k-1],b=p[k],l=dist(a,b)||1,nx=-(b[1]-a[1])/l,ny=(b[0]-a[0])/l;for(let u=0;u<l;u+=2){const amp=3*Math.min(1,(L-s-u)/12);const w=amp*Math.sin((s+u)/3);o.push([a[0]+(b[0]-a[0])*u/l+nx*w,a[1]+(b[1]-a[1])*u/l+ny*w])}s+=l}o.push(p[p.length-1]);return o}
 function arrow(g,n,op,an){
- let p=qpts(g.from,g.c,g.to,30);if(g.fromP)p=trim(p,13,false);if(g.toP)p=trim(p,13,true);if(plen(p)<6)return'';
+ let p=qpts(g.from,g.c,g.to,30);if(g.fromP)p=trim(p,10,false);if(g.toP)p=trim(p,10,true);if(plen(p)<6)return'';
  if(g.kind=='conduite')p=wavy(p);
  const st={course:`stroke="${PLOT}" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ad)"`,conduite:`stroke="#222" stroke-width="1.6" marker-end="url(#ap)"`,passe:`stroke="#222" stroke-width="2" marker-end="url(#ap)"`,tir:`stroke="${RED}" stroke-width="3" marker-end="url(#ar)"`}[g.kind];
  let s=`<polyline points="${p.map(q=>R(q[0])+','+R(q[1])).join(' ')}" fill="none" ${st}${op<1?` opacity="${op}"`:''}/>`;
@@ -111,9 +111,9 @@ function render0(m,o={}){
  const di=i=>ed=='d'||(ed=='m'&&(I[i].t=='p'||I[i].t=='ball'))?` data-i="${i}" style="cursor:grab"`:'';
  I.forEach((it,i)=>{if(it.t=='zone')b+=`<rect${ed=='d'?` data-i="${i}" style="cursor:grab"`:''} x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="${ed?'#1b3a7310':'none'}" stroke="${NAVY}" stroke-dasharray="6 4"/>`});
  S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
- if(before)S.mob.forEach(i=>{if(dist(before.pos[i],st.pos[i])>2)b+=`<g transform="translate(${R(before.pos[i][0])} ${R(before.pos[i][1])})" opacity=".3" style="pointer-events:none">${shape(I[i])}</g>`});
- const draw1=(it,i)=>{const p=P(i);let inner=shape(it);if(TM&&(it.t=='p'||it.t=='ball')){const mo=motion(S,TM,i,o.speed);if(mo)inner=`<g>${inner}${mo}</g>`}
-  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&(sel===i||selG.includes(i))?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${di(i)?`<circle r="${it.t=='ball'?7:14}" fill="transparent"/>`:''}${inner}</g>`};
+ if(before)S.mob.forEach(i=>{if(dist(before.pos[i],st.pos[i])>2)b+=`<g transform="translate(${R(before.pos[i][0])} ${R(before.pos[i][1])})" opacity=".3" style="pointer-events:none"><g transform="scale(${SC})">${shape(I[i])}</g></g>`});
+ const draw1=(it,i)=>{const p=P(i);let inner=['zone','ligne','txt'].includes(it.t)?shape(it):`<g transform="scale(${SC})">${shape(it)}</g>`;if(TM&&(it.t=='p'||it.t=='ball')){const mo=motion(S,TM,i,o.speed);if(mo)inner=`<g>${inner}${mo}</g>`}
+  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&(sel===i||selG.includes(i))?'<circle r="12" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${di(i)?`<circle r="${it.t=='ball'?6:12}" fill="transparent"/>`:''}${inner}</g>`};
  [...EQUIP,'p','ball'].forEach(t=>I.forEach((it,i)=>{if(it.t==t)b+=draw1(it,i)}));
  if(ed=='m'&&nT)Object.keys(S.segs[k]).forEach(s=>{const g=S.segs[k][s];if(g.kind=='suivi')return;const h=g.c||[(g.from[0]+g.to[0])/2,(g.from[1]+g.to[1])/2];b+=`<circle data-h="${s}" cx="${R(h[0])}" cy="${R(h[1])}" r="5" fill="#fff" stroke="#e8731a" stroke-width="2" style="cursor:move"><title>Tirer pour courber, double-clic pour redresser</title></circle>`});
  const lab=(x,y,t,r)=>{const tr=r?` transform="rotate(-90 ${x} ${y})"`:'';return `<rect x="${x-17}" y="${y-8}" width="34" height="13" rx="3" fill="#fff"${tr}/><text x="${x}" y="${y+3}" font-size="10" font-weight="700" fill="${NAVY}" text-anchor="middle" font-family="sans-serif"${tr}>${t}</text>`};
@@ -135,7 +135,7 @@ function removeItem(i){M.items.splice(i,1);const sh=j=>j==null?null:(j==i?null:(
 // Aimant : un joueur lâché près d'un plot (piquet, mannequin, haie) se colle juste à côté ; dans un cerceau, au centre.
 const AIM=['plot','piquet','mannequin','haie','cerceau'];
 function aimant(x,y){let best=null,bd=16;M.items.forEach(it=>{if(AIM.includes(it.t)){const d=Math.hypot(it.x-x,it.y-y);if(d<bd){bd=d;best=it}}});
- if(!best)return[x,y];if(best.t=='cerceau')return[best.x,best.y];const d=bd||1,ux=bd>.5?(x-best.x)/d:-.7,uy=bd>.5?(y-best.y)/d:.7;return[R(best.x+ux*12),R(best.y+uy*12)]}
+ if(!best)return[x,y];if(best.t=='cerceau')return[best.x,best.y];const d=bd||1,ux=bd>.5?(x-best.x)/d:-.7,uy=bd>.5?(y-best.y)/d:.7;return[R(best.x+ux*9),R(best.y+uy*9)]}
 function bind(){
  const s=$e('cv');
  s.onpointerdown=ev=>{const [x,y]=pt(ev),h=ev.target.closest('[data-h]'),el=ev.target.closest('[data-i]'),i=el?+el.dataset.i:null;s.setPointerCapture(ev.pointerId);
