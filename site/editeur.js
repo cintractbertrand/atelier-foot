@@ -5,7 +5,7 @@
 const NAVY='#1b3a73',RED='#d63a2a',GOLD='#e8b923',PLOT='#d9a406',OFF=[9,6],V=45;
 const DEFS='<defs>'+[['ap','#222'],['ad',PLOT],['ar',RED],['ag','#999']].map(([id,c])=>`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`).join('')+'</defs>';
 const blank=()=>{const m={v:3,w:30,h:20,items:[],temps:[]};const f=field(m);m.fr=[f.x,f.y,f.w,f.h];return m};
-let M=blank(),tool=null,sel=null,drag=null,tmp=null,hist=[],redo=[],editingId=null,varEdit=null,mode='d',cur=0;
+let M=blank(),tool=null,sel=null,selG=[],box=null,drag=null,tmp=null,hist=[],redo=[],editingId=null,varEdit=null,mode='d',cur=0;
 const $e=id=>document.getElementById(id);
 const esc2=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const R=v=>Math.round(v*10)/10,cl=o=>JSON.parse(JSON.stringify(o)),dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -17,10 +17,10 @@ function field(m){const r=Math.min(2.2,Math.max(.8,m.w/m.h));let fw,fh;if(r>260/
 function fieldOld(m){const s=Math.min(260/m.w,156/m.h),fw=m.w*s,fh=m.h*s;return{x:20+(260-fw)/2,y:22+(156-fh)/2,w:fw,h:fh}}
 function remap(m,of,nf){m.fr=[nf.x,nf.y,nf.w,nf.h];if(Math.abs(of.x-nf.x)+Math.abs(of.y-nf.y)+Math.abs(of.w-nf.w)+Math.abs(of.h-nf.h)<.5)return;
  const sx=nf.w/of.w,sy=nf.h/of.h,X=x=>R(nf.x+(x-of.x)*sx),Y=y=>R(nf.y+(y-of.y)*sy);
- m.items.forEach(it=>{it.x=X(it.x);it.y=Y(it.y);if(it.t=='zone'){it.w=R(it.w*sx);it.h=R(it.h*sy)}});
+ m.items.forEach(it=>{it.x=X(it.x);it.y=Y(it.y);if(it.t=='zone'){it.w=R(it.w*sx);it.h=R(it.h*sy)}if(it.t=='ligne'){it.dx=R(it.dx*sx);it.dy=R(it.dy*sy)}});
  m.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{q.x=X(q.x);q.y=Y(q.y);if(q.c)q.c=[X(q.c[0]),Y(q.c[1])]}))}
-const EQUIP=['plot','but','haie','cerceau','piquet','mannequin','echelle','txt'],ROTABLE=['but','plot','txt','haie','piquet','echelle'];
-const NOMS={p:'Joueur',ball:'Ballon',plot:'Plot',but:'But',haie:'Haie',cerceau:'Cerceau',piquet:'Piquet',mannequin:'Mannequin',echelle:'Échelle de rythme',txt:'Texte',zone:'Zone'};
+const EQUIP=['plot','but','haie','cerceau','piquet','mannequin','echelle','txt','ligne'],ROTABLE=['but','plot','txt','haie','piquet','echelle'];
+const NOMS={p:'Joueur',ball:'Ballon',plot:'Plot',but:'But',haie:'Haie',cerceau:'Cerceau',piquet:'Piquet',mannequin:'Mannequin',echelle:'Échelle de rythme',txt:'Texte',zone:'Zone',ligne:'Ligne'};
 function shape(it){
  if(it.t=='p'){const c=it.c=='r'?RED:it.c=='j'?GOLD:NAVY;return `<ellipse cy="9" rx="7" ry="2.2" fill="#0002"/><circle r="9.5" fill="${c}" stroke="#fff" stroke-width="1.6"/><circle r="9.5" fill="none" stroke="#0003" stroke-width=".6"/><text y="3.8" font-size="10.5" text-anchor="middle" fill="${it.c=='j'?NAVY:'#fff'}" font-family="sans-serif" font-weight="700">${esc2(it.l)}</text>`}
  if(it.t=='plot')return `<ellipse cy="4.2" rx="5" ry="1.4" fill="#0002"/><path d="M-1 -4.5h2L4 3.5h-8z" fill="${PLOT}" stroke="#9a7000" stroke-width=".5"/><rect x="-5" y="3" width="10" height="1.8" rx=".9" fill="#9a7000"/>`;
@@ -31,6 +31,7 @@ function shape(it){
  if(it.t=='piquet')return `<ellipse cy="2.5" rx="4" ry="1.4" fill="#0003"/><rect x="-1.6" y="-15" width="3.2" height="17" rx="1.6" fill="#fff" stroke="#333" stroke-width=".5"/>${[-13,-8,-3].map(y=>`<rect x="-1.6" y="${y}" width="3.2" height="2.6" fill="${RED}"/>`).join('')}`;
  if(it.t=='mannequin')return `<ellipse cy="2.5" rx="6" ry="1.8" fill="#0003"/><path d="M-4.5 2 L-3.5 -9 Q0 -11 3.5 -9 L4.5 2 Z" fill="#5b6b82" stroke="#2b3646" stroke-width=".6"/><circle cy="-13" r="3.6" fill="#5b6b82" stroke="#2b3646" stroke-width=".6"/><rect x="-4" y="-6" width="8" height="1.8" fill="#fff" opacity=".8"/>`;
  if(it.t=='echelle')return `<line x1="-30" y1="-5" x2="30" y2="-5" stroke="#333" stroke-width="1.2"/><line x1="-30" y1="5" x2="30" y2="5" stroke="#333" stroke-width="1.2"/>${[-30,-22.5,-15,-7.5,0,7.5,15,22.5,30].map(x=>`<line x1="${x}" y1="-5" x2="${x}" y2="5" stroke="${GOLD}" stroke-width="2"/>`).join('')}`;
+ if(it.t=='ligne')return `<line x2="${it.dx}" y2="${it.dy}" stroke="transparent" stroke-width="14"/><line x2="${it.dx}" y2="${it.dy}" stroke="${NAVY}" stroke-width="2" stroke-dasharray="6 4"/>`;
  if(it.t=='txt')return `<text font-size="10" text-anchor="middle" fill="#333" font-family="sans-serif">${esc2(it.s)}</text>`;
  return ''}
 // ---------- simulation ----------
@@ -94,6 +95,7 @@ function setFond(v){snap();const of=field(M);M.fond=v||undefined;if(v=='demi'){i
 function transfo(quart){const of=field(M),old={w:M.w,h:M.h};if(quart){M.w=old.h;M.h=old.w}const nf=field(M);
  const P=(x,y)=>{const u=(x-of.x)/of.w,v=(y-of.y)/of.h,[a,b]=quart?[1-v,u]:[1-u,v];return[R(nf.x+a*nf.w),R(nf.y+b*nf.h)]};
  M.items.forEach(it=>{if(it.t=='zone'){const p1=P(it.x,it.y),p2=P(it.x+it.w,it.y+it.h);it.x=Math.min(p1[0],p2[0]);it.y=Math.min(p1[1],p2[1]);it.w=R(Math.abs(p2[0]-p1[0]));it.h=R(Math.abs(p2[1]-p1[1]));return}
+  if(it.t=='ligne'){const e=P(it.x+it.dx,it.y+it.dy),a=P(it.x,it.y);it.x=a[0];it.y=a[1];it.dx=R(e[0]-a[0]);it.dy=R(e[1]-a[1]);return}
   [it.x,it.y]=P(it.x,it.y);if(['but','haie','echelle'].includes(it.t))it.rot=(((it.rot||0)+(quart?90:(180-2*(it.rot||0))))%360+360)%360});
  M.temps.forEach(T=>Object.values(T.moves||{}).forEach(q=>{[q.x,q.y]=P(q.x,q.y);if(q.c)q.c=P(q.c[0],q.c[1])}));M.fr=[nf.x,nf.y,nf.w,nf.h]}
 function tourner(){if(M.fond=='demi'&&!confirm('La cage du demi-terrain doit rester en haut : le schéma repassera en terrain simple. Continuer ?'))return;snap();if(M.fond=='demi')delete M.fond;transfo(true);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;draw()}
@@ -109,7 +111,7 @@ function render0(m,o={}){
  S.segs.forEach((sg,j)=>{const op=ed=='d'?.25:(ed=='m'&&j!=k?.22:1);Object.values(sg).forEach(g=>{if(g.kind!='suivi')b+=arrow(g,ed&&nT>1?j+1:0,op,TM&&nT>1?{s:TM.starts[j],d:TM.durs[j],T:TM.T,sp:o.speed||1}:null)})});
  if(before)S.mob.forEach(i=>{if(dist(before.pos[i],st.pos[i])>2)b+=`<g transform="translate(${R(before.pos[i][0])} ${R(before.pos[i][1])})" opacity=".3" style="pointer-events:none">${shape(I[i])}</g>`});
  const draw1=(it,i)=>{const p=P(i);let inner=shape(it);if(TM&&(it.t=='p'||it.t=='ball')){const mo=motion(S,TM,i,o.speed);if(mo)inner=`<g>${inner}${mo}</g>`}
-  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&sel===i?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${di(i)?`<circle r="${it.t=='ball'?7:14}" fill="transparent"/>`:''}${inner}</g>`};
+  return `<g transform="translate(${R(p[0])} ${R(p[1])})${it.rot?` rotate(${it.rot})`:''}"${di(i)}>${ed&&(sel===i||selG.includes(i))?'<circle r="15" fill="none" stroke="#e8731a" stroke-dasharray="3 2"/>':''}${di(i)?`<circle r="${it.t=='ball'?7:14}" fill="transparent"/>`:''}${inner}</g>`};
  [...EQUIP,'p','ball'].forEach(t=>I.forEach((it,i)=>{if(it.t==t)b+=draw1(it,i)}));
  if(ed=='m'&&nT)Object.keys(S.segs[k]).forEach(s=>{const g=S.segs[k][s];if(g.kind=='suivi')return;const h=g.c||[(g.from[0]+g.to[0])/2,(g.from[1]+g.to[1])/2];b+=`<circle data-h="${s}" cx="${R(h[0])}" cy="${R(h[1])}" r="5" fill="#fff" stroke="#e8731a" stroke-width="2" style="cursor:move"><title>Tirer pour courber, double-clic pour redresser</title></circle>`});
  const lab=(x,y,t,r)=>{const tr=r?` transform="rotate(-90 ${x} ${y})"`:'';return `<rect x="${x-17}" y="${y-8}" width="34" height="13" rx="3" fill="#fff"${tr}/><text x="${x}" y="${y+3}" font-size="10" font-weight="700" fill="${NAVY}" text-anchor="middle" font-family="sans-serif"${tr}>${t}</text>`};
@@ -119,8 +121,8 @@ function render0(m,o={}){
 function render(m,o={}){return uniq2(render0(m,o))}
 // ---------- édition ----------
 function snap(){hist.push(JSON.stringify(M));if(hist.length>80)hist.shift();redo=[]}
-function undo(){if(hist.length){redo.push(JSON.stringify(M));M=JSON.parse(hist.pop());sel=null;fixCur();draw()}}
-function redoF(){if(redo.length){hist.push(JSON.stringify(M));M=JSON.parse(redo.pop());sel=null;fixCur();draw()}}
+function undo(){if(hist.length){redo.push(JSON.stringify(M));M=JSON.parse(hist.pop());sel=null;selG=[];fixCur();draw()}}
+function redoF(){if(redo.length){hist.push(JSON.stringify(M));M=JSON.parse(redo.pop());sel=null;selG=[];fixCur();draw()}}
 function fixCur(){cur=Math.max(0,Math.min(cur,M.temps.length-1))}
 function pt(ev){const s=$e('cv'),p=s.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const q=p.matrixTransform(s.getScreenCTM().inverse());return[Math.round(q.x),Math.round(q.y)]}
 function nextLabel(c){const n=M.items.filter(i=>i.t=='p'&&i.c==c).length;return c=='r'?String(n+1):c=='j'?'G':String.fromCharCode(65+n%26)}
@@ -136,9 +138,11 @@ function bind(){
    if(i==null){if(sel!=null){sel=null;draw()}return}if(!M.temps.length){M.temps.push({moves:{}});cur=0}
    snap();sel=i;drag={k:'mv',i,x0:x,y0:y,moved:false};return}
   if(tool=='ball'&&i!=null&&M.items[i].t=='p'){snap();const p=M.items[i];M.items.push({t:'ball',x:p.x+OFF[0],y:p.y+OFF[1],o:i});sel=M.items.length-1;draw();return}
+  if(i!=null&&selG.includes(i)){const o={};selG.forEach(j=>o[j]=[M.items[j].x,M.items[j].y]);drag={k:'g',x,y,o,s:false};return}
+  selG=[];
   if(i!=null){sel=i;const it=M.items[i],o=cl(it);if(it.t=='ball'&&isP(M,it.o)){const q=M.items[it.o];o.x=q.x+OFF[0];o.y=q.y+OFF[1]}drag={k:'d',i,x,y,o,s:false};draw();return}
-  if(!tool){sel=null;draw();return}
-  if(tool=='zone'){tmp={x1:x,y1:y,x2:x,y2:y};return}
+  if(!tool){sel=null;box={x1:x,y1:y,x2:x,y2:y};return}
+  if(tool=='zone'||tool=='ligne'){tmp={x1:x,y1:y,x2:x,y2:y,k:tool};return}
   snap();
   if(tool.startsWith('p_')){const c=tool[2];M.items.push({t:'p',c,l:nextLabel(c),x,y})}
   else if(tool=='txt'){const t=prompt('Texte :');if(!t){hist.pop();return}M.items.push({t:'txt',s:t,x,y})}
@@ -148,8 +152,10 @@ function bind(){
  s.onpointermove=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='curve'){const T=M.temps[cur],q=T&&T.moves[drag.i];if(q){q.c=[x,y];draw()}else{const S=simulate(M),g=S.segs[cur]&&S.segs[cur][drag.i];if(g&&g.kind=='conduite'){}}return}
   if(drag&&drag.k=='mv'){if(!drag.moved&&Math.hypot(x-drag.x0,y-drag.y0)<4)return;drag.moved=true;const T=M.temps[cur];T.moves=T.moves||{};const q=T.moves[drag.i]||{};T.moves[drag.i]={x,y,...(M.items[drag.i].t=='ball'?{o:null}:{})};if(q.c&&M.items[drag.i].t=='p')delete T.moves[drag.i].c;draw();return}
+  if(drag&&drag.k=='g'){const dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}selG.forEach(j=>{const it=M.items[j];if(it.t=='ball'&&isP(M,it.o)&&selG.includes(it.o))return;if(it.t=='ball'&&it.o!=null)delete it.o;it.x=drag.o[j][0]+dx;it.y=drag.o[j][1]+dy});draw();return}
+  if(box){box.x2=x;box.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',`<rect id="prev" x="${Math.min(box.x1,box.x2)}" y="${Math.min(box.y1,box.y2)}" width="${Math.abs(box.x2-box.x1)}" height="${Math.abs(box.y2-box.y1)}" fill="#e8b92322" stroke="#e8731a" stroke-dasharray="3 2"/>`);return}
   if(drag&&drag.k=='d'){const it=M.items[drag.i],o=drag.o,dx=x-drag.x,dy=y-drag.y;if(!drag.s){if(Math.hypot(dx,dy)<3)return;snap();drag.s=true}if(it.t=='ball'&&it.o!=null)delete it.o;it.x=o.x+dx;it.y=o.y+dy;draw();return}
-  if(tmp){tmp.x2=x;tmp.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',`<rect id="prev" x="${Math.min(tmp.x1,tmp.x2)}" y="${Math.min(tmp.y1,tmp.y2)}" width="${Math.abs(tmp.x2-tmp.x1)}" height="${Math.abs(tmp.y2-tmp.y1)}" fill="none" stroke="${NAVY}" stroke-dasharray="6 4"/>`)}};
+  if(tmp){tmp.x2=x;tmp.y2=y;const p=$e('prev');if(p)p.remove();s.insertAdjacentHTML('beforeend',tmp.k=='ligne'?`<line id="prev" x1="${tmp.x1}" y1="${tmp.y1}" x2="${tmp.x2}" y2="${tmp.y2}" stroke="${NAVY}" stroke-width="2" stroke-dasharray="6 4"/>`:`<rect id="prev" x="${Math.min(tmp.x1,tmp.x2)}" y="${Math.min(tmp.y1,tmp.y2)}" width="${Math.abs(tmp.x2-tmp.x1)}" height="${Math.abs(tmp.y2-tmp.y1)}" fill="none" stroke="${NAVY}" stroke-dasharray="6 4"/>`)}};
  s.onpointerup=ev=>{const [x,y]=pt(ev);
   if(drag&&drag.k=='mv'){const i=drag.i,T=M.temps[cur];
    if(!drag.moved){hist.pop()}else{const S=simulate({...M,temps:M.temps.slice(0,cur)}),start=S.states[S.states.length-1];
@@ -158,26 +164,32 @@ function bind(){
      else if(Math.hypot(x-start.pos[i][0],y-start.pos[i][1])<6)delete T.moves[i]}
     else if(Math.hypot(x-start.pos[i][0],y-start.pos[i][1])<6)delete T.moves[i]}
    drag=null;draw();return}
+  if(box){const b=box;box=null;const x0=Math.min(b.x1,b.x2),x1=Math.max(b.x1,b.x2),y0=Math.min(b.y1,b.y2),y1=Math.max(b.y1,b.y2);
+   if(x1-x0>6||y1-y0>6){const P=simulate(M).states[0].pos;selG=[];M.items.forEach((it,j)=>{const q=(it.t=='p'||it.t=='ball')?P[j]:[it.x,it.y];if(q[0]>=x0&&q[0]<=x1&&q[1]>=y0&&q[1]<=y1)selG.push(j)});if(selG.length==1){sel=selG[0];selG=[]}}
+   drag=null;draw();return}
+  if(drag&&drag.k=='g'){drag=null;draw();return}
   if(drag&&drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='ball'&&it.o==null){const P={};M.items.forEach((q,j)=>P[j]=[q.x,q.y]);const o=nearP(P,it.x,it.y,16);if(o!=null)it.o=o}}
   drag=null;
-  if(tmp){const t=tmp;tmp=null;if(Math.hypot(t.x2-t.x1,t.y2-t.y1)>6){snap();M.items.push({t:'zone',x:Math.min(t.x1,t.x2),y:Math.min(t.y1,t.y2),w:Math.abs(t.x2-t.x1),h:Math.abs(t.y2-t.y1)});sel=M.items.length-1}}
+  if(tmp){const t=tmp;tmp=null;if(Math.hypot(t.x2-t.x1,t.y2-t.y1)>6){snap();M.items.push(t.k=='ligne'?{t:'ligne',x:t.x1,y:t.y1,dx:t.x2-t.x1,dy:t.y2-t.y1}:{t:'zone',x:Math.min(t.x1,t.x2),y:Math.min(t.y1,t.y2),w:Math.abs(t.x2-t.x1),h:Math.abs(t.y2-t.y1)});sel=M.items.length-1;if(ONCE.includes(t.k))setTool(null)}}
   draw()};
  s.ondblclick=ev=>{const h=ev.target.closest('[data-h]');if(h&&mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[+h.dataset.h];if(q&&q.c){snap();delete q.c;draw()}return}
   const el=ev.target.closest('[data-i]');if(!el||mode!='d')return;const it=M.items[+el.dataset.i];if(it.t=='p'){const l=prompt('Nom du joueur :',it.l);if(l!=null){snap();it.l=l.slice(0,3);draw()}}else if(it.t=='txt'){const l=prompt('Texte :',it.s);if(l!=null){snap();it.s=l;draw()}}};
 }
-const TOOLS=[['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['cerceau','Cerceau',{t:'cerceau'}],['haie','Haie',{t:'haie'}],['mannequin','Mannequin',{t:'mannequin'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['txt','Texte']];
+const TOOLS=[['p_b','Joueur',{t:'p',c:'b',l:'A'}],['p_r','Adversaire',{t:'p',c:'r',l:'1'}],['p_j','Gardien',{t:'p',c:'j',l:'G'}],['ball','Ballon',{t:'ball'}],['plot','Plot',{t:'plot'}],['piquet','Piquet',{t:'piquet'}],['cerceau','Cerceau',{t:'cerceau'}],['haie','Haie',{t:'haie'}],['mannequin','Mannequin',{t:'mannequin'}],['echelle','Échelle',{t:'echelle'}],['but','But',{t:'but'}],['zone','Zone'],['ligne','Ligne'],['txt','Texte']];
 // Ces éléments se posent un par un ; les autres restent actifs pour en poser plusieurs à la suite.
-const ONCE=['but','echelle','txt','zone'];
-const ICO={zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>'};
+const ONCE=['but','echelle','txt','zone','ligne'];
+const ICO={ligne:'<line x1="-9" y1="6" x2="9" y2="-6" stroke="#1b3a73" stroke-width="2" stroke-dasharray="3 2"/>',zone:'<rect x="-8" y="-6" width="16" height="12" fill="none" stroke="#1b3a73" stroke-dasharray="3 2"/>',txt:'<text y="5" font-size="14" font-weight="700" text-anchor="middle" fill="#333" font-family="serif">T</text>'};
 const icon=(t,s)=>{const vb=t=='echelle'||t=='but'?'-32 -12 64 24':(t=='piquet'||t=='mannequin')?'-12 -17 24 24':'-12 -12 24 24';return `<svg viewBox="${vb}" width="${t=='echelle'||t=='but'?40:24}" height="24">${s?shape(s):ICO[t]||''}</svg>`};
 function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
- if(!tool)return sel!=null?'Glisse l\'élément pour le placer, ou règle-le ci-dessous.':'Choisis un élément ci-dessus, puis touche le terrain pour le poser. Glisse un élément pour le déplacer.';
+ if(!tool)return sel!=null?'Glisse l\'élément pour le placer, ou règle-le ci-dessous.':'Choisis un élément ci-dessus, puis touche le terrain pour le poser. Glisse un élément pour le déplacer, ou entoure-en plusieurs avec ton doigt pour les bouger ensemble.';
  if(tool=='ball')return'Touche un joueur pour lui donner le ballon, ou le terrain pour un ballon libre.';
  if(tool=='zone')return'Glisse ton doigt sur le terrain pour tracer la zone.';
+ if(tool=='ligne')return'Glisse ton doigt sur le terrain pour tracer une ligne (couloir, tiers…).';
  if(ONCE.includes(tool))return'Touche le terrain pour poser : '+nom.toLowerCase()+'.';
  return'Touche le terrain à chaque endroit où poser un '+nom.toLowerCase()+'. Re-touche le bouton pour arrêter.'}
-function setTool(t){tool=t;document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
+function setTool(t){tool=t;selG=[];document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
 function props(){
+ if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button>`;
  if(sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;
  if(mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[i];if(!q)return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <span class="vide0">ne bouge pas dans ce temps</span>`;
   return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <button onclick="snap();delete M.temps[cur].moves[${i}];draw()">✕ Annuler ce mouvement</button>${q.c?` <button onclick="snap();delete M.temps[cur].moves[${i}].c;draw()">Redresser la flèche</button>`:''}`}
@@ -189,7 +201,12 @@ function props(){
  else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`;
  return h+` <button class="del" onclick="snap();removeItem(${i});draw()">🗑 Supprimer</button>`}
 function rotSel(d){if(sel==null)return;const it=M.items[sel];if(!ROTABLE.includes(it.t))return;snap();it.rot=((it.rot||0)+d+360)%360;draw()}
-function dupSel(){const it=M.items[sel];snap();M.items.push({...cl(it),x:it.x+24,l:it.t=='p'?nextLabel(it.c):it.l});sel=M.items.length-1;draw()}
+function dupSel(){const ids=selG.length?selG.slice():sel!=null?[sel]:[];if(!ids.length)return;snap();const map={},D=24;
+ ids.forEach(i=>{const it=cl(M.items[i]);it.x+=D;if(it.t=='p')it.l=nextLabel(it.c);map[i]=M.items.length;M.items.push(it)});
+ ids.forEach(i=>{const it=M.items[map[i]];if(it.o!=null)it.o=map[it.o]!=null?map[it.o]:(delete it.o,undefined);if(it.o===undefined)delete it.o});
+ M.temps.forEach(T=>{const mv=T.moves||{};ids.forEach(i=>{const q=mv[i];if(!q)return;const n=cl(q);n.x+=D;if(n.c)n.c=[n.c[0]+D,n.c[1]];if(n.o!=null&&map[n.o]!=null)n.o=map[n.o];mv[map[i]]=n});T.moves=mv});
+ const nw=ids.map(i=>map[i]);if(nw.length>1){selG=nw;sel=null}else{sel=nw[0];selG=[]}draw()}
+function suppSel(){snap();selG.slice().sort((a,b)=>b-a).forEach(removeItem);selG=[];sel=null;draw()}
 function tbar(){
  const n=M.temps.length;return (n?M.temps.map((T,j)=>`<button class="${j==cur?'on':''}" onclick="cur=${j};sel=null;draw()">Temps ${j+1}</button>`).join(''):'')+
  ` <button onclick="snap();M.temps.splice(${n?cur+1:0},0,{moves:{}});cur=${n?cur+1:0};sel=null;draw()">+ Temps suivant</button>`+(n?` <button class="del" onclick="if(confirm('Supprimer le Temps ${cur+1} ?')){snap();M.temps.splice(cur,1);fixCur();draw()}">🗑</button>`:'')}
@@ -202,7 +219,7 @@ function ui(){
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
  $e('fond').value=M.fond||'';$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
 function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui();brouillon()}
-function setMode(m){mode=m;tmp=null;drag=null;sel=null;tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'));fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
+function setMode(m){mode=m;tmp=null;box=null;selG=[];drag=null;sel=null;tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'));fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
 // Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
 function brouillon(){try{localStorage.setItem('brouillon_editeur',JSON.stringify({M,editingId,varEdit}))}catch(e){}}
 let dimSnap=false;
@@ -265,14 +282,23 @@ function initEditeur(){
  $e('vpause').onclick=()=>{const s=$e('cvbox').querySelector('svg'),b=$e('vpause');if(b.dataset.p){s.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{s.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}};
  $e('vrestart').onclick=()=>{$e('vpause').textContent='⏸ Pause';delete $e('vpause').dataset.p;draw()};
  $e('vspeed').onchange=()=>draw();
+ $e('dlpng').onclick=()=>pngDe(render(M,{}),'schema');
  $e('dlsvg').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([render(M,{animOn:true})],{type:'image/svg+xml'}));a.download='schema.svg';a.click()};
  $e('save').onclick=enregistrerChoix;$e('fdlg').onsubmit=enregistrer;$e('fdlgv').onsubmit=enregistrerV;$e('cancel').onclick=()=>$e('dlg').close();
  $e('nouveau').onclick=()=>{if(M.items.length&&!confirm('Commencer un nouveau schéma ? Le schéma en cours sera remplacé.'))return;editingId=null;varEdit=null;M=blank();$e('dw').value=30;$e('dh').value=20;sel=null;hist=[];redo=[];cur=0;setMode('d')};
  document.addEventListener('keydown',ev=>{if($e('editeur').classList.contains('hide')||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='z'){ev.preventDefault();ev.shiftKey?redoF():undo();return}
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()=='y'){ev.preventDefault();redoF();return}
+  if(mode=='d'&&selG.length&&(ev.key=='Delete'||ev.key=='Backspace')){ev.preventDefault();suppSel();return}
   if(mode=='d'&&sel!=null&&(ev.key=='Delete'||ev.key=='Backspace')){ev.preventDefault();snap();removeItem(sel);draw()}
   if(mode=='d'&&sel!=null&&(ev.key=='r'||ev.key=='R'))rotSel(ev.shiftKey?-90:90)});
  try{const b=JSON.parse(localStorage.getItem('brouillon_editeur')||'null');if(b&&b.M){M=norm(b.M);editingId=b.editingId||null;varEdit=b.varEdit||null;$e('dw').value=M.w;$e('dh').value=M.h}}catch(e){}
  setMode('d');majE()}
 initEditeur();
+
+// Export PNG : le schéma (position de départ, fond blanc) pour l'envoyer par message.
+function pngDe(svg,nom){const im=new Image(),u=URL.createObjectURL(new Blob([svg.replace('<svg ','<svg width="1200" height="800" ')],{type:'image/svg+xml'}));
+ im.onload=()=>{const c=document.createElement('canvas');c.width=1200;c.height=800;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,1200,800);x.drawImage(im,0,0,1200,800);URL.revokeObjectURL(u);
+  c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nom+'.png';a.click()},'image/png')};
+ im.onerror=()=>alert('Export PNG impossible sur cet appareil.');im.src=u}
+function pngFiche(btn,titre){const s=btn.closest('figure').querySelector('svg');if(!s)return;const c=s.cloneNode(true);c.querySelectorAll('animate,animateMotion').forEach(n=>n.remove());pngDe(new XMLSerializer().serializeToString(c),(titre||'schema').replace(/[^\w-]+/g,'_').slice(0,40))}
