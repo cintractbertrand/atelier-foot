@@ -209,6 +209,7 @@ function hintD(){const nom=(TOOLS.find(x=>x[0]==tool)||[])[1];
 function setTool(t){tool=t;selG=[];document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t)sel=null;draw()}
 function props(){
  if(mode=='d'&&selG.length)return`<b>${selG.length} éléments</b> <button onclick="dupSel()">+ Copier (avec leurs trajets)</button> <button class="del" onclick="suppSel()">🗑 Supprimer</button> <button onclick="selG=[];draw()">Désélectionner</button><div class="disp">Ranger : <button onclick="alignG('h')">⇔ Aligner en ligne</button><button onclick="alignG('v')">⇕ Aligner en colonne</button><button onclick="repartirG()">↔ Espacer régulièrement</button><button onclick="miroirCopie()">⧉ Copie en miroir</button></div>`;
+ if(mode=='d'&&sel==null&&DISPO.includes(tool))return dispo(null);
  if(sel==null||!M.items[sel])return'';const it=M.items[sel],i=sel;
  if(mode=='m'){const q=M.temps[cur]&&M.temps[cur].moves[i];if(!q)return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <span class="vide0">ne bouge pas dans ce temps</span>`;
   return`<b>${esc2(NOMS[it.t])} ${esc2(it.l||'')}</b> <button onclick="snap();delete M.temps[cur].moves[${i}];draw()">✕ Annuler ce mouvement</button>${q.c?` <button onclick="snap();delete M.temps[cur].moves[${i}].c;draw()">Redresser la flèche</button>`:''}`}
@@ -219,8 +220,9 @@ function props(){
  else if(it.t=='txt')h=`<b>Texte</b> <input value="${esc2(it.s)}" onchange="snap();M.items[${i}].s=this.value;draw()"> ${rot}`;
  else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`+(['plot','piquet','cerceau','mannequin','haie'].includes(it.t)?`${dispo(i)}`:'');
  return h+` <button class="del" onclick="snap();removeItem(${i});draw()">🗑 Supprimer</button>`}
-function dispo(i){const on=DP&&DP.i===i,v=on?DP:{L:DPL,n:DPN,a:0};
- return `<div class="disp">${on?'<b>Aperçu</b> : glisse la forme pour la déplacer, ↻ pour la tourner, ▢ pour l’agrandir.':'Disposer à partir d’ici :'}<br>${Object.entries(FORMES).map(([k,l])=>`<button${on&&DP.forme==k?' class="on"':''} onclick="disposer('${k}')">${l}</button>`).join('')}<br>côté / écart <input id="disp_m" type="number" min="1" max="60" step=".5" value="${v.L}" style="width:56px"${on?' oninput="dpSet()"':''}> m · nombre (ligne, cercle) <input id="disp_n" type="number" min="2" max="12" value="${v.n}" style="width:50px"${on?' oninput="dpSet()"':''}>${on?` · angle <b id="disp_a">${v.a}°</b><br><button class="ok" onclick="dpPlacer()">✓ Placer</button> <button onclick="DP=null;draw()">✕ Annuler</button>`:''}</div>`}
+const DISPO=['plot','piquet','cerceau','mannequin','haie'];
+function dispo(i){const on=DP&&i!=null&&DP.i===i,v=on?DP:{L:DPL,n:DPN,a:0};
+ return `<div class="disp">${on?'<b>Aperçu</b> : glisse la forme pour la déplacer, ↻ pour la tourner, ▢ pour l’agrandir.':i==null?'Ou pose directement en forme :':'Disposer à partir d’ici :'}<br>${Object.entries(FORMES).map(([k,l])=>`<button${on&&DP.forme==k?' class="on"':''} onclick="disposer('${k}')">${l}</button>`).join('')}<br>côté / écart <input id="disp_m" type="number" min="1" max="60" step=".5" value="${v.L}" style="width:56px"${on?' oninput="dpSet()"':''}> m · nombre (ligne, cercle) <input id="disp_n" type="number" min="2" max="12" value="${v.n}" style="width:50px"${on?' oninput="dpSet()"':''}>${on?` · angle <b id="disp_a">${v.a}°</b><br><button class="ok" onclick="dpPlacer()">✓ Placer</button> <button onclick="dpAnnuler()">✕ Annuler</button>`:''}</div>`}
 function rotSel(d){if(sel==null)return;const it=M.items[sel];if(!ROTABLE.includes(it.t))return;snap();it.rot=((it.rot||0)+d+360)%360;draw()}
 // ---------- ranger la sélection (idées GeoGebra) ----------
 const libres=()=>selG.filter(j=>{const it=M.items[j];return it&&!(it.t=='ball'&&isP(M,it.o))&&it.t!='zone'&&it.t!='ligne'});
@@ -265,20 +267,23 @@ function mesureDrag(){
 // ---------- dispositions de plots (idée GeoGebra : polygones réguliers) ----------
 // Aperçu à placer : on le glisse, on le tourne (poignée ↻) et on l'agrandit (poignée carrée) à la souris, puis « Placer ».
 let DP=null,DPL=10,DPN=4;// DP = {i: plot de départ, forme, n, L (m), a (degrés), C (centre en px)}
-const FORMES={carre:'▢ Carré',losange:'◇ Losange',ligne:'⋯ Ligne',cercle:'◯ Cercle'};
+const FORMES={carre:'▢ Carré',triangle:'△ Triangle',ligne:'⋯ Ligne',cercle:'◯ Cercle'};
 function dpMetres(){const {forme:fo,n,L}=DP,pts=[[0,0]];
  if(fo=='ligne')for(let k=1;k<n;k++)pts.push([k*L,0]);
  if(fo=='carre')pts.push([L,0],[L,L],[0,L]);
- if(fo=='losange')pts.push([L/2,-L/2],[L,0],[L/2,L/2]);
+ if(fo=='triangle')pts.push([L,0],[L/2,-L*Math.sqrt(3)/2]);
  if(fo=='cercle')for(let k=1;k<n;k++){const a=2*Math.PI*k/n,r=L/2;pts.push([r-r*Math.cos(a),-r*Math.sin(a)])}
  const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;return pts.map(([x,y])=>[x-cx,y-cy])}
 function dpPts(){const f=field(M),kx=f.w/M.w,ky=f.h/M.h,a=DP.a*Math.PI/180,c=Math.cos(a),s=Math.sin(a),C=DP.C;
  return{C,pts:dpMetres().map(([u,v])=>[R(C[0]+(u*c-v*s)*kx),R(C[1]+(u*s+v*c)*ky)])}}
-function disposer(forme){const it=M.items[sel];if(!it)return;
- if(DP&&DP.i===sel){DP.forme=forme;draw();return}
- const n=Math.max(2,Math.min(12,+($e('disp_n')||{}).value||DPN)),L=Math.max(1,Math.min(60,+($e('disp_m')||{}).value||DPL)),f=field(M);
- DP={i:sel,forme,n,L,a:0,C:[0,0]};const o=dpMetres()[0];DP.C=[it.x-o[0]*f.w/M.w,it.y-o[1]*f.h/M.h];draw()}
-function dpSet(){if(!DP)return;const m=+$e('disp_m').value,n=+$e('disp_n').value;if(m>=1&&m<=60)DP.L=m;if(n>=2&&n<=12)DP.n=Math.round(n);dpMaj()}
+// Taille de départ adaptée au terrain (demande de Bertrand) : environ la moitié du petit côté ; une ligne couvre 60 % de la longueur.
+function taille0(fo,n){const c=Math.min(M.w,M.h);return Math.max(1,fo=='ligne'?Math.round(M.w*.6/Math.max(1,n-1)*2)/2:Math.round(c*.5))}
+function disposer(forme){let neuf=false;if(sel==null&&DISPO.includes(tool)){const f=field(M);snap();M.items.push({t:tool,x:R(f.x+f.w/2),y:R(f.y+f.h/2)});sel=M.items.length-1;neuf=true}
+ const it=M.items[sel];if(!it)return;
+ if(DP&&DP.i===sel){DP.forme=forme;DP.L=taille0(forme,DP.n);draw();return}
+ const n=Math.max(2,Math.min(12,+($e('disp_n')||{}).value||DPN)),L=taille0(forme,n),f=field(M);
+ DP={i:sel,forme,n,L,a:0,C:[0,0],neuf};const o=dpMetres()[0];DP.C=[it.x-o[0]*f.w/M.w,it.y-o[1]*f.h/M.h];if(neuf)DP.C=[it.x,it.y];draw()}
+function dpSet(){if(!DP)return;const m=+$e('disp_m').value,n=+$e('disp_n').value;if(m>=1&&m<=60)DP.L=m;if(n>=2&&n<=12&&Math.round(n)!=DP.n){DP.n=Math.round(n);if(DP.forme=='ligne')DP.L=taille0('ligne',DP.n)}dpMaj()}
 function dpSvg(){const {C,pts}=dpPts(),it=M.items[DP.i],r=Math.max(10,...pts.map(p=>dist(p,C))),a=DP.a*Math.PI/180,sn=Math.sin(a),cs=Math.cos(a),
  hr=[R(C[0]+sn*(r+14)),R(C[1]-cs*(r+14))],pf=pts.reduce((b,q)=>dist(q,C)>=dist(b,C)-.01?q:b,pts[0]),df=Math.max(1,dist(pf,C)),hs=[R(pf[0]+(pf[0]-C[0])/df*9),R(pf[1]+(pf[1]-C[1])/df*9)],rot=(it.rot||0)+(it.t=='haie'?DP.a:0),
  ly=R(Math.max(7,Math.min(194,hr[1]-10))),lx=R(Math.max(19,Math.min(281,hr[0]))),O='#e8731a';
@@ -289,8 +294,9 @@ function dpSvg(){const {C,pts}=dpPts(),it=M.items[DP.i],r=Math.max(10,...pts.map
  +`<g data-dp="s" style="cursor:nwse-resize" transform="translate(${hs[0]} ${hs[1]})"><title>Agrandir / rétrécir</title><rect x="-4.5" y="-4.5" width="9" height="9" rx="1.5" fill="#fff" stroke="${O}" stroke-width="1.5"/></g>`
  +`<g style="pointer-events:none"><rect x="${lx-17}" y="${ly-5}" width="34" height="7.5" rx="2" fill="#fff" opacity=".9"/><text x="${lx}" y="${R(ly+.6)}" font-size="5" font-weight="700" text-anchor="middle" fill="${O}" font-family="sans-serif">${DP.L} m · ${DP.a}°</text></g></g>`}
 function dpMaj(){const o=$e('dpov');if(o)o.remove();const s=$e('cv');const g=s&&DP&&s.querySelector(`[data-i="${DP.i}"]`);if(g)g.style.opacity=.25;if(s&&DP)s.insertAdjacentHTML('beforeend',dpSvg());const m=$e('disp_m');if(m&&DP&&document.activeElement!==m)m.value=DP.L;const a=$e('disp_a');if(a&&DP)a.textContent=DP.a+'°'}
+function dpAnnuler(){if(DP&&DP.neuf){DP=null;undo()}else{DP=null;draw()}}
 function dpPlacer(){if(!DP)return;const {pts}=dpPts(),it=M.items[DP.i],f=field(M),in_=([x,y])=>x>=f.x-2&&x<=f.x+f.w+2&&y>=f.y-2&&y<=f.y+f.h+2;
- snap();if(it.t=='haie')it.rot=(((it.rot||0)+DP.a)%360+360)%360;[it.x,it.y]=pts[0];pts.slice(1).forEach(p=>{if(in_(p))M.items.push({...cl(it),x:p[0],y:p[1]})});DPL=DP.L;DPN=DP.n;DP=null;draw()}
+ snap();if(it.t=='haie')it.rot=(((it.rot||0)+DP.a)%360+360)%360;[it.x,it.y]=pts[0];pts.slice(1).forEach(p=>{if(in_(p))M.items.push({...cl(it),x:p[0],y:p[1]})});DPL=DP.L;DPN=DP.n;if(DP.neuf&&tool)sel=null;DP=null;draw()}
 // Curseur des temps (idée GeoGebra) : on fige l'animation à la fin d'un temps.
 function vAller(k){const svg=$e('cvbox').querySelector('svg');if(!svg)return;const S=simulate(norm(M)),TM=timing(S),n=S.segs.length;k=Math.max(0,Math.min(n,k));
  const t=k==0?0:TM.starts[k-1]+TM.durs[k-1]+.05;svg.pauseAnimations();svg.setCurrentTime(t/(+$e('vspeed').value||1));$e('vtemps').value=k;$e('vtlab').textContent=k?'Temps '+k+' / '+n:'Départ';const b=$e('vpause');b.textContent='▶ Lecture';b.dataset.p=1}
