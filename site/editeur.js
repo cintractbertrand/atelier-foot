@@ -205,7 +205,7 @@ function props(){
  if(it.t=='p')h=`<b>Joueur</b> <input value="${esc2(it.l)}" maxlength="3" style="width:60px" title="Nom (3 car.)" onchange="snap();M.items[${i}].l=this.value;draw()"> ${[['b','Bleu',NAVY],['r','Rouge',RED],['j','Jaune',GOLD]].map(([v,l,c])=>`<button class="pastille${it.c==v?' on':''}" style="background:${c}" title="${l}" onclick="snap();M.items[${i}].c='${v}';draw()"></button>`).join('')} <button onclick="dupSel()">+ Copier</button>`;
  else if(it.t=='ball')h=`<b>Ballon</b> ${it.o!=null?`au pied de ${esc2(M.items[it.o]&&M.items[it.o].l)} <button onclick="snap();delete M.items[${i}].o;M.items[${i}].y+=14;draw()">Détacher</button>`:'libre : glisse-le sur un joueur pour le lui donner'}`;
  else if(it.t=='txt')h=`<b>Texte</b> <input value="${esc2(it.s)}" onchange="snap();M.items[${i}].s=this.value;draw()"> ${rot}`;
- else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`;
+ else h=`<b>${NOMS[it.t]||it.t}</b> ${ROTABLE.includes(it.t)?rot:''} <button onclick="dupSel()">+ Copier</button>`+(['plot','piquet','cerceau','mannequin','haie'].includes(it.t)?`<div class="disp">Disposer à partir d'ici : <button onclick="disposer('carre')" title="Carré">▢ Carré</button><button onclick="disposer('losange')" title="Losange">◇ Losange</button><button onclick="disposer('ligne')" title="Ligne">⋯ Ligne</button><button onclick="disposer('cercle')" title="Cercle">◯ Cercle</button><br>côté / écart <input id="disp_m" type="number" min="1" value="10" style="width:56px"> m · nombre (ligne, cercle) <input id="disp_n" type="number" min="2" max="12" value="4" style="width:50px"></div>`:'');
  return h+` <button class="del" onclick="snap();removeItem(${i});draw()">🗑 Supprimer</button>`}
 function rotSel(d){if(sel==null)return;const it=M.items[sel];if(!ROTABLE.includes(it.t))return;snap();it.rot=((it.rot||0)+d+360)%360;draw()}
 function dupSel(){const ids=selG.length?selG.slice():sel!=null?[sel]:[];if(!ids.length)return;snap();const map={},D=24;
@@ -225,7 +225,22 @@ function ui(){
  $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'');
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
  $e('fond').value=M.fond||'';$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
-function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind()}ui();brouillon()}
+// ---------- mesures (idée GeoGebra) : distance en mètres pendant qu'on glisse ----------
+function metres(a,b){const f=field(M);return Math.hypot((b[0]-a[0])*M.w/f.w,(b[1]-a[1])*M.h/f.h)}
+function mesure(a,b){const s=$e('cv');if(!s||!a||!b)return;const d=metres(a,b);if(d<.5)return;const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,t=(Math.round(d*10)/10).toString().replace('.',',')+' m';
+ s.insertAdjacentHTML('beforeend',`<g style="pointer-events:none"><line x1="${R(a[0])}" y1="${R(a[1])}" x2="${R(b[0])}" y2="${R(b[1])}" stroke="#e8731a" stroke-width="1" stroke-dasharray="2 2"/><rect x="${R(mx-13)}" y="${R(my-6)}" width="26" height="10" rx="3" fill="#e8731a"/><text x="${R(mx)}" y="${R(my+1.8)}" font-size="7" font-weight="700" text-anchor="middle" fill="#fff" font-family="sans-serif">${t}</text></g>`)}
+function mesureDrag(){
+ if(drag.k=='mv'&&drag.moved){const T=M.temps[cur],q=T&&T.moves[drag.i];if(!q)return;const S=simulate({...M,temps:M.temps.slice(0,cur)}),a=S.states[S.states.length-1].pos[drag.i];mesure(a,[q.x,q.y]);return}
+ if(drag.k=='d'&&drag.s){const it=M.items[drag.i];if(it.t=='zone'||it.t=='ligne')return;const P=simulate(M).states[0].pos,me=(it.t=='p'||it.t=='ball')?P[drag.i]:[it.x,it.y];let best=null,bd=1e9;
+  M.items.forEach((o,j)=>{if(j==drag.i||o.t=='zone'||o.t=='ligne'||o.t=='txt'||(o.t=='ball'&&o.o!=null)||(it.t=='ball'&&j===it.o))return;const q=(o.t=='p'||o.t=='ball')?P[j]:[o.x,o.y],d=dist(q,me);if(d<bd){bd=d;best=q}});if(best)mesure(best,me)}}
+// ---------- dispositions de plots (idée GeoGebra : polygones réguliers) ----------
+function disposer(forme){const it=M.items[sel];if(!it)return;const n=Math.max(2,Math.min(12,+($e('disp_n')||{}).value||4)),L=Math.max(1,+($e('disp_m')||{}).value||10),f=field(M),kx=f.w/M.w,ky=f.h/M.h,pts=[];
+ if(forme=='ligne')for(let k=1;k<n;k++)pts.push([k*L,0]);
+ if(forme=='carre')pts.push([L,0],[L,L],[0,L]);
+ if(forme=='losange')pts.push([L/2,-L/2],[L,0],[L/2,L/2]);
+ if(forme=='cercle')for(let k=1;k<n;k++){const a=2*Math.PI*k/n,r=L/2;pts.push([r-r*Math.cos(a),-r*Math.sin(a)])}
+ snap();pts.forEach(([mx,my])=>{const x=R(it.x+mx*kx),y=R(it.y+my*ky);if(x>=f.x-2&&x<=f.x+f.w+2&&y>=f.y-2&&y<=f.y+f.h+2)M.items.push({...cl(it),x,y})});draw()}
+function draw(){const box=$e('cvbox');if(mode=='v')box.innerHTML=render(M,{animOn:true,speed:+$e('vspeed').value});else{box.innerHTML=render(M,{editor:mode});bind();if(drag)mesureDrag()}ui();brouillon()}
 function setMode(m){mode=m;tmp=null;box=null;selG=[];drag=null;sel=null;tool=null;document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('on'));fixCur();const b=$e('vpause');b.textContent='⏸ Pause';delete b.dataset.p;draw();window.scrollTo({top:0})}
 // Brouillon : le schéma en cours est gardé sur l'appareil, même si on change d'écran ou ferme la page.
 function brouillon(){try{localStorage.setItem('brouillon_editeur',JSON.stringify({M,editingId,varEdit}))}catch(e){}}
