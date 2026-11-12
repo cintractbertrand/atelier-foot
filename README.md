@@ -4,6 +4,7 @@ Petit site statique pour préparer des séances d'entraînement de football (ESG
 
 - **Base** : fiches d'exercices avec schéma animé, filtres par thème, catégorie, durée et niveau.
 - **Séance** : empiler les exercices, régler durée et variante ; durée totale, joueurs et matériel calculés automatiquement.
+- **Saison** : thèmes par période (partagés au club) et séances placées par date, mois par mois. Script SQL : `chantiers/base_partagee/supabase_saison.sql`.
 - **Éditeur** : dessiner un schéma (départ puis déplacements par temps), l'animer et l'enregistrer comme fiche.
 
 ## Utiliser
