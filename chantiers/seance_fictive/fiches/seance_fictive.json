@@ -1,0 +1,22 @@
+{
+  "nom": "Séance fictive de démonstration - U18/Seniors (60 min)",
+  "fictive": true,
+  "source": "Fiche fictive de démonstration",
+  "exercices": [
+    {
+      "id": "fic-001",
+      "duree": 15,
+      "variante": ""
+    },
+    {
+      "id": "fic-002",
+      "duree": 25,
+      "variante": ""
+    },
+    {
+      "id": "fic-003",
+      "duree": 15,
+      "variante": ""
+    }
+  ]
+}
