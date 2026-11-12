@@ -9,10 +9,10 @@ const clubEtat=(t,btn)=>{const s=document.getElementById('clubetat');if(!s)retur
 const lsG=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}},lsS=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 async function clubCharger(){if(!clubOn())return;
  const code=lsG('codeclub')||(window.EXERCICES.length?'':clubCode());if(!code){clubEtat('Fiches du club verrouillées.',1);boutonEnvoi();return}
- clubEtat('Chargement des fiches du club…');
+ clubEtat('Chargement des fiches du club…');window.clubOk=false;
  try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_fiches',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
   if(!r.ok){const t=await r.text();if(t.includes('code club')){lsS('codeclub','');clubEtat('Code club incorrect.',1);return}throw new Error(r.status)}
-  lsS('codeclub',code);CLUBF=(await r.json()).map(x=>({...x.data,club:true,auteur:x.auteur||'',maj:x.maj}));majE();clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club');boutonEnvoi()}
+  lsS('codeclub',code);window.clubOk=true;CLUBF=(await r.json()).map(x=>({...x.data,club:true,auteur:x.auteur||'',maj:x.maj}));majE();clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club');boutonEnvoi()}
  catch(e){clubEtat('Fiches du club indisponibles pour le moment (connexion ?)')}}
 async function clubRpc(fn,body){const r=await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify(body)});
  if(r.ok)return true;const t=await r.text();if(t.includes('code club')){lsS('codeclub','');alert('Code club incorrect.')}else alert('Envoi impossible ('+r.status+'). Réessaie plus tard ou exporte la fiche.');return false}
@@ -52,16 +52,16 @@ async function synchroDossier(changer){
  try{if(dir&&await dir.queryPermission({mode:'read'})!='granted'&&await dir.requestPermission({mode:'read'})!='granted')dir=null}catch(e){dir=null}
  if(!dir){try{dir=await showDirectoryPicker({id:'fichesclub',mode:'read'})}catch(e){return}await idbSet('dossier',dir)}
  const code=clubCode();if(!code)return;
- let stock;try{stock=new Set(JSON.parse(lsG('idsimportes')||'[]'))}catch(e){stock=new Set()}
- const vus=new Set(stock);CLUBF.forEach(f=>vus.add(f.id));
+ await clubCharger();if(!window.clubOk){alert('Fiches du club non chargées : rien envoyé, pour ne rien écraser. Réessaie dans un instant.');return}
+ const stock=new Set(),vus=new Set();CLUBF.forEach(f=>vus.add(f.id));
  let n=0,ign=0,bad=0;
  for await(const h of jsonDuDossier(dir)){let d;try{d=JSON.parse(await(await h.getFile()).text())}catch(e){bad++;continue}
   for(const f of Array.isArray(d)?d:[d]){if(!f||!f.id||!f.titre)continue;
    if(vus.has(f.id)){ign++;continue}
    if(!await clubRpc('publier_fiche',{code,fiche:propre(f),auteur:f.auteur||'Commun'}))return;
    vus.add(f.id);stock.add(f.id);n++;clubEtat('Synchro… '+n+' nouvelle(s)')}}
- lsS('idsimportes',JSON.stringify([...stock]));lsS('codeclub',code);await clubCharger();
- alert(n+' nouvelle(s) fiche(s) envoyée(s), '+ign+' déjà présente(s)'+(bad?', '+bad+' fichier(s) illisible(s)':'')+'.')}
+ lsS('codeclub',code);await clubCharger();
+ alert(n+' nouvelle(s) fiche(s) envoyée(s), '+ign+' déjà présente(s) ; le club en compte maintenant '+CLUBF.length+' (affichées)'+(bad?', '+bad+' fichier(s) illisible(s)':'')+'.')}
 async function retirerAffichees(){const L=(window.AFF||[]).filter(e=>e.club);if(!L.length){alert('Aucune fiche du club affichée.');return}
  if(!confirm('Retirer '+L.length+' fiche(s) du club ? Elles sont seulement masquées et récupérables.'))return;const code=clubCode();if(!code)return;let n=0;
  for(const e of L){clubEtat('Retrait… '+n+'/'+L.length);if(!await clubRpc('retirer_fiche',{code,fid:e.id}))return;n++}
