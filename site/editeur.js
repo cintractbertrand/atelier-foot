@@ -258,7 +258,7 @@ function ui(){
  $e('hint').textContent=mode=='d'?hintD():mode=='m'?(M.temps.length?'Temps '+(cur+1)+' : glisse joueurs et ballon à leur nouvelle place (ils bougent ensemble). Ballon sur un joueur = passe, dans le but = tir. Rond orange = courber.':'Glisse un joueur ou le ballon vers sa nouvelle place : la flèche se dessine toute seule.'):'Vérifie que l\'animation raconte bien l\'exercice.';
  $e('tbar').innerHTML=mode=='m'?tbar():'';$e('props').innerHTML=props();const k=compte(M),l=Object.entries(k.mat);$e('compte').textContent=mode=='v'?'':`Sur le schéma : ${k.joueurs} joueur${k.joueurs>1?'s':''}`+(l.length?' · '+l.map(([n,q])=>q+' '+nomMat(n,q)).join(', '):'');
  const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&E.find(x=>x.id==varEdit.pid);$e('edtitre').textContent=pv?(varEdit.idx!=null?'Variante « '+(pv.variantes[varEdit.idx]||{}).nom+' » de : ':'Nouvelle variante de : ')+pv.titre:f?'Modification : '+f.titre:'Nouveau schéma';
- $e('fond').value=M.fond||'';$e('grille').value=String(GRID);if(mode=='v'){$e('vtemps').max=M.temps.length}$e('suiv').textContent=mode=='v'&&varEdit?'Enregistrer la variante →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
+ $e('fond').value=M.fond||'';$e('grille').value=String(GRID);if(mode=='v'){$e('vtemps').max=M.temps.length}$e('suiv').textContent=mode=='v'&&(varEdit||editingId)?'Enregistrer… →':SUIV[mode][0];$e('undo').disabled=!hist.length;$e('redo').disabled=!redo.length}
 // ---------- mesures (idée GeoGebra) : distance en mètres pendant qu'on glisse ----------
 function metres(a,b){const f=field(M);return Math.hypot((b[0]-a[0])*M.w/f.w,(b[1]-a[1])*M.h/f.h)}
 function mesure(a,b){const s=$e('cv');if(!s||!a||!b)return;const d=metres(a,b);if(d<.5)return;const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,t=(Math.round(d*10)/10).toString().replace('.',',')+' m';
@@ -317,13 +317,14 @@ function chargePerso(){try{return JSON.parse(localStorage.getItem('mesfiches')||
 function savePerso(a){try{localStorage.setItem('mesfiches',JSON.stringify(a))}catch(e){alert('Enregistrement local impossible : exporte la fiche en fichier.')}}
 const CATS=['U7','U9','U11','U13','U15','U18','Seniors'];
 // Enregistrer une fiche ou une variante déjà existante : on choisit de la remplacer ou d'en faire une nouvelle variante.
-function enregistrerChoix(){const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&varEdit.idx!=null&&E.find(x=>x.id==varEdit.pid);
- if(!f&&!pv)return ouvrirDlg();const v=pv&&pv.variantes[varEdit.idx];
- $e('c_titre').textContent=f?'« '+f.titre+' »':'la variante « '+(v&&v.nom)+' »';$e('c_rempl').textContent=f?'Remplacer la fiche (même nom)':'Remplacer cette variante';
- $e('c_rempl').onclick=()=>{$e('dlgc').close();copieDe=null;ouvrirDlg()};
+function enregistrerChoix(){const f=editingId&&E.find(x=>x.id==editingId),pv=varEdit&&varEdit.idx!=null&&E.find(x=>x.id==varEdit.pid),pn=varEdit&&varEdit.idx==null&&E.find(x=>x.id==varEdit.pid);
+ if(!f&&!pv&&!pn)return ouvrirDlg();const v=pv&&pv.variantes[varEdit.idx],src=f||pv||pn;
+ $e('c_titre').textContent=f?'« '+f.titre+' »':pv?'la variante « '+(v&&v.nom)+' »':'ce schéma (fait à partir de « '+pn.titre+' »)';
+ $e('c_rempl').textContent=f?'Remplacer la fiche (même nom)':pv?'Remplacer cette variante':'Remplacer le schéma de la fiche « '+pn.titre+' »';
+ $e('c_rempl').onclick=()=>{$e('dlgc').close();copieDe=null;if(pn){editingId=pn.id;varEdit=null;ui();brouillon()}ouvrirDlg()};
  // Nouvelle fiche : on repart d'une copie de la fiche (textes compris), à renommer et modifier ; l'ancienne ne bouge pas.
- $e('c_new').onclick=()=>{$e('dlgc').close();const src=f||pv;copieDe=src.id;editingId=null;varEdit=null;ui();brouillon();ouvrirDlg();$e('f_titre').value=(f?f.titre+' (copie)':pv.titre+' – '+(v&&v.nom||'')).slice(0,40);$e('f_titre').select()};
- $e('c_var').onclick=()=>{$e('dlgc').close();copieDe=null;varEdit={pid:f?f.id:varEdit.pid,idx:null};editingId=null;ui();brouillon();ouvrirDlg()};
+ $e('c_new').onclick=()=>{$e('dlgc').close();copieDe=src.id;editingId=null;varEdit=null;ui();brouillon();ouvrirDlg();$e('f_titre').value=(f?f.titre+' (copie)':pv?pv.titre+' – '+(v&&v.nom||''):pn.titre+' (nouvelle)').slice(0,40);$e('f_titre').select()};
+ $e('c_var').onclick=()=>{$e('dlgc').close();copieDe=null;varEdit={pid:src.id,idx:null};editingId=null;ui();brouillon();ouvrirDlg()};
  $e('dlgc').showModal()}
 let copieDe=null;
 function ouvrirDlg(){if(varEdit)return ouvrirDlgV();const f=editingId?E.find(x=>x.id==editingId):copieDe?E.find(x=>x.id==copieDe):null;const g=id=>$e(id);
