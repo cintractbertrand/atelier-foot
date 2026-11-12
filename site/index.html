@@ -15,7 +15,7 @@ input,select,button{font:inherit;padding:7px;border:1px solid #ccc;border-radius
 button{cursor:pointer}
 .fiche{background:var(--c);border-left:6px solid var(--o);border-radius:8px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px #0002}
 .fiche h3{margin:0 0 4px;color:var(--o);text-transform:uppercase;font-size:17px}
-.tags .tclub{background:var(--or);font-weight:700}.tags .tperso{background:#eee;color:#555}#clubetat{font-size:13px;color:var(--g);margin:0 0 6px}
+.tags .tclub{background:var(--or);font-weight:700}.tags .tsrc{background:#fff;border:1px solid var(--or)}.tags .tsrc a{color:inherit}.srcl{font-size:13px;color:var(--g);margin:10px 0 0}.srcl a{color:var(--o)}.tags .tperso{background:#eee;color:#555}#clubetat{font-size:13px;color:var(--g);margin:0 0 6px}
 .tags span{display:inline-block;background:#dce8f8;color:#1b3a73;border-radius:10px;padding:1px 9px;font-size:13px;margin:0 4px 4px 0}
 .min{display:inline-block;background:var(--or);color:#1b3a73;border-radius:50%;padding:6px 8px;font-weight:700;font-size:13px;margin-right:6px}
 .fiche h4{margin:10px 0 2px;font-size:14px;text-transform:uppercase;color:var(--g)}
@@ -134,14 +134,23 @@ function majFiltres(){
 function setF(k,v){F[k]=F[k]==v?'':v;majFiltres();base()}
 
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// Source d'une fiche : champ `source` (texte avec lien éventuel), sinon déduite de l'identifiant ou de l'entraîneur.
+function sourceInfo(e){const s=String(e.source||'').trim();
+ if(s){const m=s.match(/https?:\/\/[^\s)]+/),url=m?m[0].replace(/[.,;]+$/,''):'',nom=s.split(/[,:(]/)[0].replace(/https?:\/\/\S+/,'').trim()||s;return{nom,url,detail:s}}
+ const p=((e.id||'').match(/^([a-z]+)-\d/)||[])[1];
+ if(['ech','phy','tec','tac','mat'].includes(p))return{nom:'Livre',url:'',detail:'Livre d\'exercices (fiche reformulée)'};
+ if(e.auteur&&e.auteur!='Commun')return{nom:'Coach '+e.auteur,url:'',detail:'Exercice du coach '+e.auteur};
+ return null}
+const srcTag=e=>{const s=sourceInfo(e);return s?`<span class="tsrc" title="${esc(s.detail)}">Source : ${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a>`:esc(s.nom)}</span>`:''};
+const srcLigne=e=>{const s=sourceInfo(e);return s?`<p class="srcl">Source : ${esc(s.detail.replace(/https?:\/\/\S+/,'').replace(/[\s:,(]+$/,'').replace(/,\s+\(/,' (').replace(/\s+/g,' ').replace(/\.$/,'')||s.nom)}${s.url?` — <a href="${esc(s.url)}" target="_blank" rel="noopener">voir la page d'origine</a>`:''}</p>`:''};
 function fiche(e,v){return `<div class="fiche"><h3><span class="min">${v&&v.duree||e.duree_min}'</span>${esc(e.titre)}</h3>
-<div class="tags">${e.club?(e.auteur?`<span class="tclub">${esc(e.auteur)}</span>`:''):(e.auteur?`<span class="tclub">${esc(e.auteur)}</span>`:'')}${e.perso?'<span class="tperso">Sur cet appareil</span>':''}${(e.mots_cles&&e.mots_cles.length?e.mots_cles:[e.theme]).map(m=>`<span>${esc(m)}</span>`).join('')}</div>
+<div class="tags">${e.club?(e.auteur?`<span class="tclub">${esc(e.auteur)}</span>`:''):(e.auteur?`<span class="tclub">${esc(e.auteur)}</span>`:'')}${srcTag(e)}${e.perso?'<span class="tperso">Sur cet appareil</span>':''}${(e.mots_cles&&e.mots_cles.length?e.mots_cles:[e.theme]).map(m=>`<span>${esc(m)}</span>`).join('')}</div>
 ${schemas(e,v)}${e.schema_modele?`<h4>Sur le schéma</h4><p><b>${compte(e.schema_modele).joueurs} joueurs</b> · ${txtMat(matListe(e))}</p>`:`<h4>Matériel</h4><p>${txtMat(e.materiel)}</p>`}
 <h4>Objectif</h4><p>${esc(e.objectif)}</p>
 <h4>Organisation</h4><p>${esc(e.organisation)}</p>
 <h4>Déroulement</h4><p>${esc(e.deroulement)}</p>
 <h4>Consignes</h4><ul>${e.consignes.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
-<details ${v&&v.variante!=null?'open':''}><summary>Variantes</summary><ul>${e.variantes.map(x=>`<li><b>${esc(x.nom)}</b> ${x.difficulte?'('+esc(x.difficulte)+') ':''}${x.duree?'· '+x.duree+' min ':''}: ${esc(x.change)}${x.schema_modele?' <small>(schéma)</small>':''}</li>`).join('')}</ul></details>`}
+<details ${v&&v.variante!=null?'open':''}><summary>Variantes</summary><ul>${e.variantes.map(x=>`<li><b>${esc(x.nom)}</b> ${x.difficulte?'('+esc(x.difficulte)+') ':''}${x.duree?'· '+x.duree+' min ':''}: ${esc(x.change)}${x.schema_modele?' <small>(schéma)</small>':''}</li>`).join('')}</ul></details>${srcLigne(e)}`}
 // Schémas : en base, l'exercice et ses variantes côte à côte ; en séance, seulement la version choisie.
 function schemas(e,v){const vs=(e.variantes||[]).map((x,k)=>({...x,k})).filter(x=>x.schema_svg);
  const fig=(svg,nom,tag,k)=>`<figure class="sch${v&&v.variante==nom&&k!=null?' on':''}">${nom?`<figcaption><b>${esc(nom)}</b>${tag?` <span class="vt">${esc(tag)}</span>`:''}</figcaption>`:''}${uniq2(svg)}<div class="actions noprint"><button class="pl" onclick="anim(this)">⏸ Pause</button><button class="pl" onclick="pngFiche(this,'${esc(e.titre).replace(/'/g,'')}')">Image PNG</button>${!v&&k!=null?`<button class="pl add" onclick="ajouter('${e.id}',${k})">+ Séance</button>${e.schema_modele?`<button class="pl" onclick="modifierVariante('${e.id}',${k})">✎ Modifier</button>`:''}`:''}</div></figure>`;
