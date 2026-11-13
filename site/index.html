@@ -142,7 +142,7 @@ const save=()=>{try{localStorage.setItem('seance',JSON.stringify(S))}catch(e){}$
 const ordreTheme=a=>{const o=['échauffement','physique','technique','tactique','jeu réduit'],r=x=>o.indexOf(x)<0?99:o.indexOf(x);return a.sort((x,y)=>r(x)-r(y))};
 const OPENS={},dB=e=>[10,15,20,30].reduce((a,b)=>Math.abs(b-e.duree_min)<Math.abs(a-e.duree_min)?b:a);
 const uniq=a=>[...new Set(a)].sort();
-let F={theme:'',cat:'U15',duree:'',niveau:'',auteur:'',source:'',liste:'',joueurs:'',sans:[]};
+let F={theme:'',cat:'',duree:'',niveau:'',auteur:'',source:'',liste:'',joueurs:'',sans:[]};
 const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch(e){return d}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let FAV=new Set(lsGet('favoris',[])),REC=lsGet('recents',[]);
 const MATF=['but','plot','piquet','cerceau','haie','echelle','mannequin','chasuble'];
