@@ -46,12 +46,15 @@ dialog{max-height:92vh;overflow:auto;border:0;border-radius:10px;box-shadow:0 4p
 @media screen and (max-width:700px){header{position:static;padding:5px 8px;gap:4px 8px;flex-wrap:wrap;border-bottom-width:3px}header h1{font-size:0;margin:0}header h1:first-letter{font-size:22px}#thencours{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;gap:4px}#thencours button{flex:none;padding:3px 9px;font-size:12px}nav{order:2;flex:1;min-width:0;display:flex;overflow-x:auto;gap:4px}nav button{flex:none;margin:0;padding:6px 10px;font-size:13px;white-space:nowrap}}
 .filtres>label.fo{display:inline-block;width:auto}#clubetat{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:13px;color:var(--g);margin-bottom:6px}#clubetat>*{margin:0!important}#clubetat .fo,#clubetat button,#clubetat label{display:inline-block!important;width:auto!important;padding:4px 10px!important;border:1px solid #ccd;border-radius:6px;background:#fff}
 @media screen and (min-width:1300px){main{max-width:1860px;padding:12px 20px}.layout{grid-template-columns:250px 1fr}.fiche{grid-template-columns:minmax(0,1fr) minmax(360px,640px)}#sle{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:12px;align-items:start}#sle>.vide{grid-column:1/-1}#sle .sitem{margin:0}}
+
+#fbtn{display:none}
+@media screen and (max-width:700px){#fbtn{display:block;width:100%;margin-bottom:8px;padding:12px;font-weight:700;color:var(--o);border:2px solid var(--o)}body:not(.fopen) #side{display:none}button,select,input{min-height:40px}nav button{min-height:40px}.fiche .actions button{padding:9px 12px}}
 </style></head><body>
 <header><h1>⚽ Atelier Foot</h1><div id="thencours" class="noprint"></div>
 <nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl">Séances</button><button id="nsa">Saison</button><button id="ns">Séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
 <main>
 <section id="base">
- <div class="layout"><aside id="side"></aside><div>
+ <div class="layout"><button id="fbtn" class="noprint" onclick="document.body.classList.toggle('fopen');this.textContent=document.body.classList.contains('fopen')?'✕ Masquer les filtres':'🔍 Rechercher / filtrer'">🔍 Rechercher / filtrer</button><aside id="side"></aside><div>
  <div id="clubetat"></div><div id="liste"></div></div></div>
 </section>
 <section id="seance" class="hide">
@@ -242,7 +245,7 @@ function imprimerSeance(){const L=S.map(s=>({s,e:E.find(x=>x.id==s.id)})).filter
  window.print()}
 function anim(b){const v=b.closest('figure,.sch').querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
 function mv(i,d){const j=i+d;if(j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];seance()}
-function show(s){$('#editeur').classList.toggle('hide',s!='e');ne.className=s=='e'?'on':'';$('#base').classList.toggle('hide',s!='b');$('#seance').classList.toggle('hide',s!='s');$('#seances').classList.toggle('hide',s!='l');$('#saison').classList.toggle('hide',s!='a');nsa.className=s=='a'?'on':'';nl.className=s=='l'?'on':'';nb.className=s=='b'?'on':'';ns.className=s=='s'?'on':'';if(s=='s')seance();if(s=='l'&&window.seancesCharger)seancesAff()}
+function show(s){try{({b:nb,l:nl,a:nsa,s:ns,e:ne})[s].scrollIntoView({inline:"center",block:"nearest"});scrollTo(0,0)}catch(x){}$('#editeur').classList.toggle('hide',s!='e');ne.className=s=='e'?'on':'';$('#base').classList.toggle('hide',s!='b');$('#seance').classList.toggle('hide',s!='s');$('#seances').classList.toggle('hide',s!='l');$('#saison').classList.toggle('hide',s!='a');nsa.className=s=='a'?'on':'';nl.className=s=='l'?'on':'';nb.className=s=='b'?'on':'';ns.className=s=='s'?'on':'';if(s=='s')seance();if(s=='l'&&window.seancesCharger)seancesAff()}
 
 function faireSeance(){let d=document.getElementById('fsd');if(d)d.remove();d=document.createElement('dialog');d.id='fsd';d.style.cssText='max-width:1250px;width:97vw;height:94vh;max-height:94vh;overflow:auto;border:0;border-radius:10px;padding:10px 16px;background:#f4f6fa';
  const pool=E.filter(e=>!F.cat||e.categories.includes(F.cat)),ths=ordreTheme(uniq(pool.map(e=>e.theme))),cat=F.cat?'Catégorie '+esc(F.cat)+' · ':'';
