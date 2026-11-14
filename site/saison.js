@@ -31,9 +31,10 @@ const saisonPourStock=()=>{try{return JSON.parse(lsG('periodes')||'[]')}catch(e)
 async function saisonCharger(msg){
  if(!clubOn()){PERIODES=saisonPourStock();saisonAff(msg);return}
  const code=lsG('codeclub');if(!code){saisonAff('Saisis d\'abord le code club (onglet Base).');return}
- try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_periodes',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
-  if(!r.ok)throw new Error(r.status);PERIODES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur)}));saisonAff(msg)}
- catch(e){saisonAff('Planning indisponible pour le moment (le script SQL « saison » est-il lancé ? connexion ?)')}}
+ const r=await clubLire('lire_periodes',code);
+ if(r.refus){saisonAff('Code club incorrect.');return}
+ if(r.err){saisonAff('Planning indisponible pour le moment (le script SQL « saison » est-il lancé ? connexion ?)');return}
+ PERIODES=r.d.map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur)}));saisonAff(r.copie?'Hors connexion : planning gardé sur cet appareil'+copieTxt(r.copie).replace(' · hors connexion, copie',''):msg)}
 const LH=30;
 const saD=s=>{const [y,m,d]=s.split('-');return new Date(+y,m-1,+d)};
 const saLundi=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
