@@ -55,6 +55,11 @@ nav #nf{background:var(--or);color:#1b3a73;font-weight:700}.voir{display:none}
 .tprep{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px #0002}.tprep summary{font-weight:700;margin-top:4px}.tprep label{display:flex;gap:10px;align-items:center;padding:8px 2px;font-size:17px;border-bottom:1px solid #eee}.tprep input{width:22px;height:22px;min-height:0}.tprep button{margin-top:8px}
 .tsuiv{padding:0 12px 14px}.tsuiv button{width:100%;padding:14px;font-size:17px}.tsuiv small{display:block;font-weight:400;font-size:13px}
 .terrain .fiche .tags,.terrain .fiche .srcl{display:none}
+.snote,#bil textarea{width:100%;margin-top:8px;font:inherit;resize:vertical}.mnote{display:none;background:#fff4d0;border-left:4px solid var(--or);border-radius:6px;padding:8px 10px!important;margin:6px 12px!important;font-weight:600;white-space:pre-wrap}.terrain .mnote{display:block}@media print{.mnote{display:block}}
+#bil{background:#fff;border-radius:8px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px #0002}#bil:empty{display:none}@media print{#bil{display:none}}#bil label{font-weight:700;color:var(--o)}#bil button{margin-top:8px;width:100%;padding:12px}
+#thencours .proch{background:var(--or);color:#1b3a73;font-weight:700}.sh{grid-column:1/-1;margin:14px 0 6px;color:var(--o);font-size:16px;text-transform:uppercase}.sbil{background:#fff4d0;border-radius:6px;padding:6px 10px;margin:6px 0;font-size:14px;white-space:pre-wrap}
+#sares{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}#sares:empty{display:none}#sares h4{margin:8px 0 2px;font-size:13px;text-transform:uppercase;color:var(--g)}#sares h4:first-child{margin-top:0}#sares button{display:block;width:100%;text-align:left;border:0;border-left:6px solid var(--o);margin:4px 0;padding:8px 10px;border-radius:6px}#saed,#sares{display:none}
+@media screen and (max-width:700px){#saed{display:inline-block}#sares:not(:empty){display:block}#saison:not(.ed) #spal,#saison:not(.ed) #saisonc>.hint{display:none}}
 </style></head><body>
 <header><h1>⚽ Atelier Foot</h1><div id="thencours" class="noprint"></div>
 <nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl" title="Séances enregistrées par les entraîneurs du club">Séances club</button><button id="nsa">Saison</button><button id="ns" title="La séance que tu prépares">Ma séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
@@ -71,7 +76,7 @@ nav #nf{background:var(--or);color:#1b3a73;font-weight:700}.voir{display:none}
   <label><button onclick="imp.click()">Importer</button><input type="file" id="imp" class="hide" accept=".json"></label>
   <button onclick="imprimerSeance()">Imprimer / PDF</button><button id="raz">Vider</button>
  </div>
- <div id="cover"></div><div class="tot" id="tot"></div><div id="sl"></div>
+ <div id="cover"></div><div class="tot" id="tot"></div><div id="sl"></div><div id="bil"></div>
 </section>
 <section id="seances" class="hide">
  <div class="filtres noprint"><input id="sq" placeholder="Rechercher une séance…"><select id="sa"><option value="">Tous les entraîneurs</option></select><button id="sr" onclick="seancesCharger()">Actualiser</button><label class="fo" style="cursor:pointer;padding:7px;border:1px solid #ccc;border-radius:6px;background:#fff">Importer des séances (.json)<input type="file" accept=".json" multiple class="hide" onchange="importerSeances(this.files)"></label></div>
@@ -229,11 +234,12 @@ function seance(){save();$('#nom').value=localStorage.getItem('nomseance')||$('#
  $('#tot').innerHTML=`<ol style="margin:0 0 8px;padding-left:20px">${S.map(s=>{const e=E.find(x=>x.id==s.id);return e?`<li>${s.bloc?'<b style="color:var(--o)">'+esc(s.bloc)+' :</b> ':''}${esc(e.titre)} <small>(${e.theme}${s.variante?' · '+esc(s.variante):''}) · ${s.duree} min</small></li>`:''}).join('')}</ol>Exercices : ${tot} min · transitions et pauses ~${tr} min (<input type="number" min="0" max="15" id="trans" class="noprint" value="${ktr}" style="width:48px" onchange="lsSet('trans',+this.value||0);seance()"> min par exercice) = <b>${tot+tr} min</b><br>Séance prévue sur <input type="number" min="0" id="cible" class="noprint" value="${cible()}" style="width:64px" onchange="lsSet('cible',+this.value||0);seance()"> min <span class="noprint"><button onclick="lsSet('cible',75);seance()">Vendredi 1h15</button> <button onclick="lsSet('cible',90);seance()">Mardi 1h30</button></span>${cible()?` · <b style="color:${tot+tr>cible()?'#c0392b':'inherit'}">${tot+tr>cible()?'dépassement de '+(tot+tr-cible()):'reste '+(cible()-tot-tr)+' min à remplir'}</b>`:''}<br>Joueurs (schéma le plus grand) : ${jmax||'—'}<br>Matériel à prévoir : ${Object.entries(mat).map(([k,v])=>v+' '+esc(nomMat(k,v))).join(', ')||'—'}`;
  $('#sl').innerHTML=S.length?S.map((s,i)=>{const e=E.find(x=>x.id==s.id);
  if(!e)return noFiche(s.id);
- if(TERRAIN)return (i==0?tPrep(mat,tot+tr):'')+`<details class="tstep"${i==0?' open':''}><summary>${i+1} · ${esc(e.titre)}<span class="d" id="td${i}">${tmTxt(i,s.duree)}</span></summary>${tmHtml(i,s.duree)}${fiche(e,{duree:s.duree,variante:s.variante||null})}${s.variante?`<p style="padding:0 12px 12px"><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}<div class="tsuiv"><button class="add" onclick="tSuiv(${i})">${i<S.length-1?'Exercice suivant →<small>'+esc((E.find(x=>x.id==S[i+1].id)||{}).titre||'')+'</small>':'✓ Séance terminée'}</button></div></details>`;
+ if(TERRAIN)return (i==0?tPrep(mat,tot+tr):'')+`<details class="tstep"${i==0?' open':''}><summary>${i+1} · ${esc(e.titre)}<span class="d" id="td${i}">${tmTxt(i,s.duree)}</span></summary>${tmHtml(i,s.duree)}${s.note?`<p class="mnote">📝 ${esc(s.note)}</p>`:''}${fiche(e,{duree:s.duree,variante:s.variante||null})}${s.variante?`<p style="padding:0 12px 12px"><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}<div class="tsuiv"><button class="add" onclick="tSuiv(${i})">${i<S.length-1?'Exercice suivant →<small>'+esc((E.find(x=>x.id==S[i+1].id)||{}).titre||'')+'</small>':'✓ Séance terminée'}</button></div></details>`;
  return fiche(e,{duree:s.duree,variante:s.variante||null})+`<div class="actions noprint"><button onclick="mv(${i},-1)">▲</button><button onclick="mv(${i},1)">▼</button>
  Durée <input type="number" min="1" value="${s.duree}" style="width:70px" onchange="S[${i}].duree=this.value;seance()"> min
  <select onchange="S[${i}].variante=this.value;const x=e.variantes.find(y=>y.nom==this.value);if(x&&x.duree)S[${i}].duree=x.duree;seance()"><option value="">Variante…</option>${e.variantes.map(x=>`<option ${s.variante==x.nom?'selected':''}>${esc(x.nom)}</option>`).join('')}</select>
- <button onclick="autreExo(${i})" title="Remplacer par un autre exercice du même type">🔁 Autre exercice</button><button onclick="S.splice(${i},1);seance()">Retirer</button></div>${s.variante?`<p><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}</div>`}).join(''):'<div class="vide">Séance vide : ajoute des exercices depuis la base.</div>'}
+ <button onclick="autreExo(${i})" title="Remplacer par un autre exercice du même type">🔁 Autre exercice</button><button onclick="S.splice(${i},1);seance()">Retirer</button></div>${s.variante?`<p><b>Variante choisie :</b> ${esc(s.variante)}</p>`:''}${s.note?`<p class="mnote">📝 ${esc(s.note)}</p>`:''}<textarea class="snote noprint" rows="2" placeholder="📝 Ma consigne pour cet exercice (adaptation, point à surveiller, groupes…)" onchange="S[${i}].note=this.value.trim();save()">${esc(s.note||'')}</textarea></div>`}).join(''):'<div class="vide">Séance vide : ajoute des exercices depuis la base.</div>';
+ $('#bil').innerHTML=S.length?`<label for="bilan">📝 Bilan après la séance</label><textarea id="bilan" rows="3" placeholder="Ce qui a bien marché, ce qui est à revoir, les absents… Enregistré avec la séance, visible par les entraîneurs du club." onchange="lsSet2('bilanseance',this.value.trim())">${esc(localStorage.getItem('bilanseance')||'')}</textarea>${TERRAIN&&window.enregistrerSeance&&$('#dat').value&&$('#nom').value?'<button class="add" onclick="enregistrerSeance()">Enregistrer le bilan au club</button>':''}`:''}
 // Fiches proches (même thème, titres voisins) : à relire pour fusionner en variantes.
 const STOPD=new Set('les des une avec sans pour sur sous dans contre puis apres face entre vers'.split(' '));
 const tokD=e=>new Set(((e.titre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').match(/[a-z0-9]+/g)||[]).filter(w=>(w.length>3||/^\d+$/.test(w))&&!STOPD.has(w)));
@@ -247,7 +253,7 @@ function imprimerSeance(){const L=S.map(s=>({s,e:E.find(x=>x.id==s.id)})).filter
  L.forEach(({e})=>{if(e.schema_modele)jmax=Math.max(jmax,compte(e.schema_modele).joueurs);matListe(e).forEach(m=>{const k=m.cle||m.nom;mat[k]=Math.max(mat[k]||0,m.quantite)})});
  let t=0;const d=$('#dat').value;
  $('#cover').innerHTML=`<h2>${esc($('#nom').value||'Séance d\'entraînement')}</h2><div style="color:#555">${d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · ':''}ESGA Foot Genas Azieu</div>
- <table><tr><th>Début</th><th>Exercice</th><th>Thème</th><th>Durée</th></tr>${L.map(({s,e})=>{const h=t;t+=+s.duree;return `<tr><td>+${h}'</td><td><b>${esc(e.titre)}</b>${s.variante?'<br><small>Variante : '+esc(s.variante)+'</small>':''}</td><td>${esc(e.theme)}</td><td>${s.duree} min</td></tr>`}).join('')}</table>
+ <table><tr><th>Début</th><th>Exercice</th><th>Thème</th><th>Durée</th></tr>${L.map(({s,e})=>{const h=t;t+=+s.duree;return `<tr><td>+${h}'</td><td><b>${esc(e.titre)}</b>${s.variante?'<br><small>Variante : '+esc(s.variante)+'</small>':''}${s.note?'<br><small>📝 '+esc(s.note)+'</small>':''}</td><td>${esc(e.theme)}</td><td>${s.duree} min</td></tr>`}).join('')}</table>
  <p><b>Durée totale :</b> ${tot} min<br><b>Joueurs (schéma le plus grand) :</b> ${jmax||'—'}<br><b>Matériel à prévoir :</b> ${Object.entries(mat).map(([k,v])=>v+' '+esc(nomMat(k,v))).join(', ')||'—'}</p>`;
  window.print()}
 function anim(b){const v=b.closest('figure,.sch').querySelector('svg');if(b.dataset.p){v.unpauseAnimations();b.textContent='⏸ Pause';delete b.dataset.p}else{v.pauseAnimations();b.textContent='▶ Lecture';b.dataset.p=1}}
@@ -280,8 +286,8 @@ nf.onclick=faireSeance;
 ne.onclick=()=>show('e');nl.onclick=()=>show('l');mt.onclick=()=>{TERRAIN=!TERRAIN;TM={};seance()};nb.onclick=()=>show('b');ns.onclick=()=>show('s');
 
 nom.oninput=()=>{try{localStorage.setItem('nomseance',nom.value)}catch(e){}};dat.oninput=()=>{try{localStorage.setItem('dateseance',dat.value)}catch(e){}};
-cln.onclick=()=>{if(!S.length){alert('La séance est vide.');return}const n=(nom.value||'Séance').replace(/^Copie de /,'');nom.value='Copie de '+n;dat.value='';['seanceid'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});lsS('nomseance',nom.value);lsS('dateseance','');seance();scrollTo(0,0);alert('Nouvelle séance créée à partir de celle-ci : change le nom et la date, puis enregistre.')};
-raz.onclick=()=>{if(confirm('Vider la séance ?')){S=[];nom.value='';dat.value='';['nomseance','dateseance','seanceid'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});seance()}};
+cln.onclick=()=>{if(!S.length){alert('La séance est vide.');return}const n=(nom.value||'Séance').replace(/^Copie de /,'');nom.value='Copie de '+n;dat.value='';['seanceid','bilanseance'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});lsS('nomseance',nom.value);lsS('dateseance','');seance();scrollTo(0,0);alert('Nouvelle séance créée à partir de celle-ci : change le nom et la date, puis enregistre.')};
+raz.onclick=()=>{if(confirm('Vider la séance ?')){S=[];nom.value='';dat.value='';['nomseance','dateseance','seanceid','bilanseance'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});seance()}};
 exp.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({nom:nom.value,exercices:S})],{type:'application/json'}));a.download=(nom.value||'seance').replace(/[^a-z0-9_-]/gi,'_')+'.json';a.click()};
 imp.onchange=()=>{const f=imp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);S=d.exercices||[];nom.value=d.nom||'';seance()})};
 
@@ -292,18 +298,18 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 function tPrep(mat,total){const L=Object.entries(mat),ok=lsGet('matok',{}),n=L.filter(([k])=>ok[k]).length;
  return `<div class="tprep"><b>${S.length} exercice${S.length>1?'s':''} · ${total} min</b> avec les transitions${L.length?`<details${n&&n<L.length?' open':''}><summary>🎒 Matériel à préparer <span id="tmatn">${n}/${L.length}</span></summary>${L.map(([k,v])=>`<label><input type="checkbox" ${ok[k]?'checked':''} onchange="matCoche('${esc(k).replace(/'/g,'')}',this.checked,${L.length})"> ${v} ${esc(nomMat(k,v))}</label>`).join('')}<button onclick="lsSet('matok',{});seance()">Tout décocher</button></details>`:''}</div>`}
 function matCoche(k,v,n){const o=lsGet('matok',{});if(v)o[k]=1;else delete o[k];lsSet('matok',o);const e=document.getElementById('tmatn');if(e)e.textContent=Object.keys(o).length+'/'+n}
-function tSuiv(i){const D=[...document.querySelectorAll('#sl .tstep')];if(!D[i])return;D[i].open=false;if(D[i+1]){D[i+1].open=true;D[i+1].scrollIntoView({block:'start'})}else scrollTo(0,0)}
+function tSuiv(i){const D=[...document.querySelectorAll('#sl .tstep')];if(!D[i])return;D[i].open=false;if(D[i+1]){D[i+1].open=true;D[i+1].scrollIntoView({block:'start'})}else{const b=$('#bilan');if(b){b.scrollIntoView({block:'center'});b.focus()}else scrollTo(0,0)}}
 // ---- Partage d'une séance par lien : la séance voyage dans l'adresse (rien n'est stocké en ligne).
 const b64e=t=>btoa(String.fromCharCode(...new TextEncoder().encode(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)));
-function lienSeance(){return location.origin+location.pathname+'#s='+b64e(JSON.stringify({n:nom.value.trim(),d:dat.value,x:S.map(s=>[s.id,+s.duree,s.variante||'',s.bloc||''])}))}
+function lienSeance(){return location.origin+location.pathname+'#s='+b64e(JSON.stringify({n:nom.value.trim(),d:dat.value,x:S.map(s=>[s.id,+s.duree,s.variante||'',s.bloc||'',s.note||''])}))}
 lien.onclick=async()=>{if(!S.length){alert('La séance est vide.');return}const u=lienSeance(),t=(nom.value.trim()||'Séance d\'entraînement');
  try{if(navigator.share){await navigator.share({title:t,text:t+' (Atelier Foot)',url:u});return}}catch(e){if(e&&e.name=='AbortError')return}
  try{await navigator.clipboard.writeText(u);alert('Lien copié. Colle-le dans un message (WhatsApp, SMS, mail).\nLa personne doit connaître le code club pour voir les fiches.')}catch(e){prompt('Copie ce lien :',u)}};
 function lienOuvrir(){const m=location.hash.match(/^#s=([\w-]+)/);if(!m)return;let d;try{d=JSON.parse(b64d(m[1]))}catch(e){alert('Lien de séance illisible.');return}
  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
- const x=(d.x||[]).map(a=>({id:a[0],duree:a[1],variante:a[2]||'',...(a[3]?{bloc:a[3]}:{})}));if(!x.length)return;
+ const x=(d.x||[]).map(a=>({id:a[0],duree:a[1],variante:a[2]||'',...(a[3]?{bloc:a[3]}:{}),...(a[4]?{note:a[4]}:{})}));if(!x.length)return;
  if(S.length&&JSON.stringify(S.map(s=>s.id))!=JSON.stringify(x.map(s=>s.id))&&!confirm('Ouvrir la séance reçue « '+(d.n||'sans nom')+' » ?\nElle remplace la séance en cours sur cet appareil.'))return;
- S=x;nom.value=d.n||'';dat.value=d.d||'';lsSet2('nomseance',nom.value);lsSet2('dateseance',dat.value);lsSet2('seanceid','');TERRAIN=matchMedia('(max-width:700px)').matches;TM={};save();show('s')}
+ S=x;nom.value=d.n||'';dat.value=d.d||'';lsSet2('nomseance',nom.value);lsSet2('dateseance',dat.value);lsSet2('seanceid','');lsSet2('bilanseance','');TERRAIN=matchMedia('(max-width:700px)').matches;TM={};save();show('s')}
 function lsSet2(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
 addEventListener('hashchange',lienOuvrir);
 
@@ -340,9 +346,9 @@ function proposerSeance(){let d=document.getElementById('psd');if(d)d.remove();d
  d.querySelector('form').onsubmit=ev=>{const cat=d.querySelector('#pc').value,th=d.querySelector('#pt').value,g=ths.find(x=>x[0]==th),duree=+d.querySelector('#pd').value,nb=+d.querySelector('#pn').value||0;
   if(S.length&&!confirm('Remplacer la séance en cours par la proposition ?')){ev.preventDefault();return}
   const R=composer({cat,mots:g?g[2]:'',duree,nb});if(!R.length){ev.preventDefault();alert('Aucune fiche pour cette catégorie'+(nb?' et ce nombre de joueurs':'')+'. Vérifie que les fiches du club sont chargées (code club).');return}
-  lsSet('propcat',cat);lsSet('propth',th);lsSet('cible',duree);S=R;nom.value=cat+' · '+th;lsSet2('nomseance',nom.value);lsSet2('seanceid','');TERRAIN=false;TM={};save();show('s');
+  lsSet('propcat',cat);lsSet('propth',th);lsSet('cible',duree);S=R;nom.value=cat+' · '+th;lsSet2('nomseance',nom.value);lsSet2('seanceid','');lsSet2('bilanseance','');TERRAIN=false;TM={};save();show('s');
   const manq=TRAMES[trameDe(cat)].length-R.length;if(manq>0)setTimeout(()=>alert('Séance composée, mais '+manq+' partie(s) sans fiche adaptée dans la base : complète avec « Base ».'),50)};
  d.showModal()}
 majFiltres();base();save();lienOuvrir();
 </script>
-<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=46"></script><script src="club.js?v=25"></script><script src="saison.js?v=16"></script></body></html>
+<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="editeur.js?v=46"></script><script src="club.js?v=26"></script><script src="saison.js?v=17"></script></body></html>
