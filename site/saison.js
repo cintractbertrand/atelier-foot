@@ -45,7 +45,7 @@ async function periodeSauver(id,o){const pid=id||('p'+Date.now().toString(36)+Ma
  else{const l=saisonPourStock().filter(x=>x.id!=pid);l.push({...o,id:pid});lsS('periodes',JSON.stringify(l))}return true}
 function themesEnCours(){const e=document.getElementById('thencours');if(!e)return;const auj=saIso(new Date());
  const l=PERIODES.filter(p=>p.debut<=auj&&p.fin>=auj);
- e.innerHTML=l.map(p=>`<button onclick="filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')" title="Voir les exercices de ce thème (en cours jusqu'au ${dateFr(p.fin)})">🎯 ${esc(p.theme)}${p.cat?' · '+esc(p.cat):''}</button>`).join('')}
+ e.innerHTML=(window.prochHtml?prochHtml():'')+l.map(p=>`<button onclick="filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')" title="Voir les exercices de ce thème (en cours jusqu'au ${dateFr(p.fin)})">🎯 ${esc(p.theme)}${p.cat?' · '+esc(p.cat):''}</button>`).join('')}
 let SEL_SEANCE='',SEL_PER='',SA_G=null;
 function saisonSel(id){SEL_SEANCE=SEL_SEANCE==id?'':id;SEL_PER='';saisonAff()}
 function perSel(id){SEL_PER=id;SEL_SEANCE='';saisonAff()}
@@ -59,7 +59,11 @@ async function periodeDecaler(id,da,db){const p=PERIODES.find(x=>x.id==id);if(!p
 async function saisonRetirerSeance(id){await retirerSeance(id);SEL_SEANCE='';saisonAff()}
 document.addEventListener('keydown',e=>{const sec=document.getElementById('saison');if(!(SEL_SEANCE||SEL_PER)||!sec||sec.classList.contains('hide'))return;
  if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;if(e.key=='Escape'){SEL_PER=SEL_SEANCE='';saisonAff();return}if(e.key=='Delete'||e.key=='Backspace'){e.preventDefault();if(SEL_SEANCE)saisonRetirerSeance(SEL_SEANCE);else periodeRetirer(SEL_PER)}}); // géométrie courante du calendrier
-function saisonAff(msg){themesEnCours();const L=document.getElementById('saisonc');if(!L)return;
+function saisonResume(){const e=document.getElementById('sares');if(!e)return;const cat=document.getElementById('scat').value,auj=saIso(new Date()),ok=p=>!cat||!p.cat||p.cat==cat;
+ const b=p=>`<button style="background:${coulTheme(p.theme)}" onclick="filtrerTheme('${esc(p.theme).replace(/'/g,'’')}','${p.cat||''}')" title="Voir les exercices de ce thème"><b>${esc(p.theme)}</b>${p.cat?' · '+esc(p.cat):''}<br><small>du ${dateFr(p.debut).slice(0,5)} au ${dateFr(p.fin).slice(0,5)}${p.note?' · '+esc(p.note):''}</small></button>`;
+ const en=PERIODES.filter(p=>ok(p)&&p.debut<=auj&&p.fin>=auj),av=PERIODES.filter(p=>ok(p)&&p.debut>auj).sort((x,y)=>x.debut.localeCompare(y.debut)).slice(0,3);
+ e.innerHTML=(en.length?'<h4>🎯 En ce moment</h4>'+en.map(b).join(''):'')+(av.length?'<h4>Ensuite</h4>'+av.map(b).join(''):'')}
+function saisonAff(msg){themesEnCours();saisonResume();const L=document.getElementById('saisonc');if(!L)return;
  const an=SAISON_AN,cat=document.getElementById('scat').value;document.getElementById('san').textContent='Saison '+an+'-'+(an+1)+' (août → juin)';
  const d0=saLundi(new Date(an,7,1)),W=Math.floor((new Date(an+1,5,30)-d0)/6048e5)+1;
  const idx=s=>Math.floor((saD(s)-d0)/6048e5);
@@ -132,7 +136,7 @@ function periodeEditer(id,debut,fin){const p=PERIODES.find(x=>x.id==id)||{theme:
   if(!await periodeSauver(id,o))return;
   d.close();saisonCharger()};d.showModal()}
 (function(){const sec=document.getElementById('saison');if(!sec)return;
- sec.innerHTML='<div class="filtres noprint"><button onclick="SAISON_AN--;saisonAff()">◀</button><b id="san" style="padding:7px"></b><button onclick="SAISON_AN++;saisonAff()">▶</button><select id="scat" onchange="saisonAff()"><option value="">Toutes catégories</option>'+SA_CATS.map(c=>'<option>'+c+'</option>').join('')+'</select><button class="add" onclick="periodeEditer(\'\')">+ Thème sur une période</button><button onclick="saisonCharger()">Actualiser</button><button onclick="window.print()">Imprimer</button></div><div id="spal" class="noprint"></div><div id="saisonc"></div>';
+ sec.innerHTML='<div class="filtres noprint"><button onclick="SAISON_AN--;saisonAff()">◀</button><b id="san" style="padding:7px"></b><button onclick="SAISON_AN++;saisonAff()">▶</button><select id="scat" onchange="saisonAff()"><option value="">Toutes catégories</option>'+SA_CATS.map(c=>'<option>'+c+'</option>').join('')+'</select><button class="add" onclick="periodeEditer(\'\')">+ Thème sur une période</button><button onclick="saisonCharger()">Actualiser</button><button onclick="window.print()">Imprimer</button><button id="saed" onclick="this.textContent=document.getElementById(\'saison\').classList.toggle(\'ed\')?\'✕ Fermer les outils\':\'✏️ Modifier le planning\'">✏️ Modifier le planning</button></div><div id="sares" class="noprint"></div><div id="spal" class="noprint"></div><div id="saisonc"></div>';
  const st=document.createElement('style');st.textContent='.pbar{position:absolute;height:26px;border-radius:6px;border:1px solid #0003;cursor:grab;display:flex;align-items:center;overflow:hidden;user-select:none;touch-action:none}.pbar span{flex:1;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:600;color:#1b3a73;pointer-events:none}.ged{padding:0 4px;font-style:normal;cursor:pointer;font-size:12px}.gh{width:8px;height:100%;cursor:ew-resize;background:#0002;flex:none}.slanes{touch-action:pan-y;cursor:crosshair}.srow{margin:0 0 12px}.swk{border-radius:4px;cursor:pointer}.swk:hover{background:#e8b92333}.pbar.sel{outline:3px solid var(--or);outline-offset:1px;z-index:2}.ssea.sel{outline:3px solid var(--or);background:#c0392b}.ssea{background:var(--o);color:#fff;border-radius:4px;font-size:11px;margin:2px;padding:2px 3px;text-align:center}';document.head.appendChild(st);
  saisonPalette();document.getElementById('nsa').onclick=async()=>{show('a');saisonCharger();if(clubOn()&&lsG('codeclub')){await seancesCharger();saisonAff()}};
  if(clubOn()&&lsG('codeclub'))saisonCharger();})();
