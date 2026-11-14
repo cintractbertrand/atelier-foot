@@ -9,11 +9,23 @@ const clubEtat=(t,btn)=>{const s=document.getElementById('clubetat');if(!s)retur
 const lsG=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}},lsS=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 async function clubCharger(){if(!clubOn())return;
  const code=lsG('codeclub')||(window.EXERCICES.length?'':clubCode());if(!code){clubEtat('Fiches du club verrouillées.',1);boutonEnvoi();return}
- clubEtat('Chargement des fiches du club…');window.clubOk=false;
- try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_fiches',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
-  if(!r.ok){const t=await r.text();if(t.includes('code club')){lsS('codeclub','');clubEtat('Code club incorrect.',1);return}throw new Error(r.status)}
-  lsS('codeclub',code);window.clubOk=true;CLUBF=(await r.json()).map(x=>({...x.data,club:true,auteur:nomAut(x.auteur),maj:x.maj}));majE();clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club');boutonEnvoi()}
- catch(e){clubEtat('Fiches du club indisponibles pour le moment (connexion ?)')}}
+ window.clubOk=false;const maj=d=>{CLUBF=d.map(x=>({...x.data,club:true,auteur:nomAut(x.auteur),maj:x.maj}));majE()};
+ // Démarrage immédiat avec la copie gardée sur l'appareil, puis mise à jour par le réseau.
+ let vu='';if(!CLUBF.length&&lsG('codeclub')==code){const c=await idbGet('copie_lire_fiches');if(c&&c.d){vu=JSON.stringify(c.d);maj(c.d);clubEtat(CLUBF.length+' fiches du club · mise à jour…')}}
+ if(!vu)clubEtat('Chargement des fiches du club…');
+ const r=await clubLire('lire_fiches',code);
+ if(r.refus){lsS('codeclub','');if(vu){CLUBF=[];majE()}clubEtat('Code club incorrect.',1);return}
+ if(r.err){clubEtat('Fiches du club indisponibles pour le moment (connexion ?)');return}
+ if(!r.copie){lsS('codeclub',code);window.clubOk=true}
+ if(JSON.stringify(r.d)!=vu)maj(r.d);
+ clubEtat(CLUBF.length+' fiche'+(CLUBF.length>1?'s':'')+' du club'+(r.copie?copieTxt(r.copie):''));boutonEnvoi()}
+// Lecture avec copie de secours sur l'appareil : au stade sans réseau, on retrouve les dernières données reçues.
+// La copie n'est rendue que si le code club a déjà été validé sur cet appareil.
+async function clubLire(fn,code){let r=null;try{r=await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify({code}),...(window.AbortSignal&&AbortSignal.timeout?{signal:AbortSignal.timeout(12000)}:{})})}catch(e){}
+ if(r&&r.ok){const d=await r.json();idbSet('copie_'+fn,{t:Date.now(),d});return{d}}
+ if(r){let t='';try{t=await r.text()}catch(e){}if(t.includes('code club')){idbSet('copie_'+fn,null);return{refus:true}}}
+ const c=lsG('codeclub')==code?await idbGet('copie_'+fn):null;return c&&c.d?{d:c.d,copie:c.t}:{err:true}}
+const copieTxt=t=>{const d=new Date(t);return' · hors connexion, copie du '+d.toLocaleDateString('fr-FR',{day:'numeric',month:'numeric'})+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
 async function clubRpc(fn,body){const r=await fetch(CLUB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:clubH(),body:JSON.stringify(body)});
  if(r.ok)return true;const t=await r.text();if(t.includes('code club')){lsS('codeclub','');alert('Code club incorrect.')}else alert('Envoi impossible ('+r.status+'). Réessaie plus tard ou exporte la fiche.');return false}
 const clubCode=()=>(lsG('codeclub')||prompt('Code club :')||'').trim();
@@ -79,11 +91,14 @@ clubCharger();
 window.SEANCES=[];
 const dateFr=d=>d?d.split('-').reverse().join('/'):'';
 async function seancesCharger(){if(!clubOn())return;const code=lsG('codeclub');if(!code){seancesAff('Saisis d\'abord le code club (onglet Base).');return}
- seancesAff('Chargement des séances…');
- try{const r=await fetch(CLUB_URL+'/rest/v1/rpc/lire_seances',{method:'POST',headers:clubH(),body:JSON.stringify({code})});
-  if(!r.ok)throw new Error(r.status);SEANCES=(await r.json()).map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur),date:x.date_seance||'',maj:x.maj}));seancesAff()}
- catch(e){seancesAff('Séances indisponibles pour le moment (le script SQL séances est-il lancé ? connexion ?)')}}
-function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;
+ const maj=d=>{SEANCES=d.map(x=>({...x.data,id:x.id,auteur:nomAut(x.auteur),date:x.date_seance||'',maj:x.maj}))};
+ if(!SEANCES.length){const c=await idbGet('copie_lire_seances');if(c&&c.d){maj(c.d);seancesAff()}else seancesAff('Chargement des séances…')}
+ const r=await clubLire('lire_seances',code);
+ if(r.refus){SEANCES=[];seancesAff('Code club incorrect.');return}
+ if(r.err){seancesAff('Séances indisponibles pour le moment (le script SQL séances est-il lancé ? connexion ?)');return}
+ maj(r.d);SE_COPIE=r.copie?'Hors connexion : séances gardées sur cet appareil'+copieTxt(r.copie).replace(' · hors connexion, copie',''):'';seancesAff();if(window.prochaineSeance)prochaineSeance()}
+let SE_COPIE='';
+function seancesAff(msg){const L=document.getElementById('sle');if(!L)return;msg=msg||SE_COPIE;
  const sa=document.getElementById('sa'),cur=sa.value,au=[...new Set(SEANCES.map(x=>x.auteur).filter(Boolean))].sort();
  sa.innerHTML='<option value="">Tous les entraîneurs</option>'+au.map(a=>`<option${a==cur?' selected':''}>${esc(a)}</option>`).join('');sa.onchange=()=>seancesAff();document.getElementById('sq').oninput=()=>seancesAff();
  const q=document.getElementById('sq').value.toLowerCase(),a=sa.value;
