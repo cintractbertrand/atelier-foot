@@ -53,7 +53,7 @@ nav #nf{background:var(--or);color:#1b3a73;font-weight:700}.voir{display:none}
 @media screen and (max-width:700px){nav{display:grid!important;grid-template-columns:repeat(3,1fr);overflow:visible!important;flex:1 1 100%!important}nav button{padding:6px 2px!important;overflow:hidden;text-overflow:ellipsis}header h1{display:none}.voir{display:inline-block}#liste .fiche:not(.ouv)>h4,#liste .fiche:not(.ouv)>p,#liste .fiche:not(.ouv)>ul,#liste .fiche:not(.ouv)>details{display:none}#liste .fiche:not(.ouv)>.actions>button:not(.add):not(.voir){display:none}body:not(.fopen) #clubetat .fo{display:none!important}}
 </style></head><body>
 <header><h1>⚽ Atelier Foot</h1><div id="thencours" class="noprint"></div>
-<nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl" title="Séances enregistrées par les entraîneurs du club">Séances du club</button><button id="nsa">Saison</button><button id="ns" title="La séance que tu prépares">Ma séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
+<nav><button id="nf">Faire une séance</button><button id="nb" class="on">Base</button><button id="nl" title="Séances enregistrées par les entraîneurs du club">Séances club</button><button id="nsa">Saison</button><button id="ns" title="La séance que tu prépares">Ma séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
 <main>
 <section id="base">
  <div class="layout"><button id="fbtn" class="noprint" onclick="document.body.classList.toggle('fopen');this.textContent=document.body.classList.contains('fopen')?'✕ Masquer filtres et outils':'🔍 Rechercher / filtrer'">🔍 Rechercher / filtrer</button><aside id="side"></aside><div>
