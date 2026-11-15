@@ -72,7 +72,7 @@
   else fr=[{p:phF(P[Math.min(o.pose||0,P.length-1)])}];
   const c=cam(m),dec=(m.decor||[]).map(d=>m.plan?decorPlan(d):PH_DECOR[d.t]&&d.t!='ballon'?PH_DECOR[d.t].s(d.x):'').join('');
   const pts=fr.map(f=>absFace(f.p,m.plan));
-  return`<g transform="translate(${phR(c.tx)} ${phR(c.ty)}) scale(${phR(c.s*100)/100})">${dec}${objets(m.obj,pts,an,'face',0)}${body(fr,an,m.plan)}${objets(m.obj,pts,an,'face',1)}</g>`}
+  return`<g transform="translate(${phR(c.tx)} ${phR(c.ty)}) scale(${phR(c.s*100)/100})">${dec}${objets(m.obj,pts,an,'face',0)}${(window.phCorpsFace&&phCorpsFace(fr,an,m.plan,{fk,place:(p,pl)=>place(p,pl)}))||body(fr,an,m.plan)}${objets(m.obj,pts,an,'face',1)}</g>`}
  // ---------- objets ----------
  const av=(name,vals,an)=>an&&!vals.every(v=>v==vals[0])?`<animate attributeName="${name}" values="${vals.join(';')}" ${an}/>`:'';
  const circ=(P,r,fill,stroke,an,sw=.8)=>`<circle cx="${phR(P[0][0])}" cy="${phR(P[0][1])}" r="${r}" fill="${fill}"${stroke?` stroke="${stroke}" stroke-width="${sw}"`:''}>${av('cx',P.map(q=>phR(q[0])),an)}${av('cy',P.map(q=>phR(q[1])),an)}</circle>`;
