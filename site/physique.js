@@ -54,6 +54,7 @@ const PH_DECOR={haie:{n:'Haie',s:phHaieP},
  ballon:{n:'Ballon',s:x=>`<g transform="translate(${x} ${PH_SOL-6})"><circle r="6" fill="#fff" stroke="#222" stroke-width="1.1"/><path d="M0 -2.6L2.5 -.8L1.5 2.1H-1.5L-2.5 -.8z" fill="#222"/></g>`},
  demi:{n:'Demi-sphère',s:x=>`<path d="M${x-24} ${PH_SOL}a24 13 0 0 1 48 0z" fill="#e8731a" stroke="#a84f0e" stroke-width=".8"/>`},
  med:{n:'Médecine-ball',s:x=>`<g transform="translate(${x} ${PH_SOL-8})"><circle r="8" fill="#b3392a" stroke="#6b1f16" stroke-width="1"/><path d="M-8 0H8M0 -8V8" stroke="#6b1f16" stroke-width=".7" fill="none"/></g>`},
+ corde:{n:'Corde à sauter',s:x=>{const H=[x+22,97],bx=x-15,L=M=>{const dx=M[0]-H[0],dy=M[1]-H[1],l=Math.hypot(dx,dy)||1,n=[-dy/l*20,dx/l*20],c=[(H[0]+M[0])/2,(H[1]+M[1])/2];return`M${H[0]} ${H[1]}Q${phR(c[0]+n[0])} ${phR(c[1]+n[1])} ${M[0]} ${M[1]}Q${phR(c[0]-n[0])} ${phR(c[1]-n[1])} ${H[0]} ${H[1]}Z`},V=[L([bx,180]),L([bx+70,110]),L([bx,10]),L([bx-60,110])];return`<path d="${V[0]}" fill="none" stroke="#b3392a" stroke-width="1.6" stroke-linejoin="round"><animate attributeName="d" values="${V.concat(V[0]).join(';')}" dur=".6s" begin="-.25s" repeatCount="indefinite"/></path>`}},
  plot:{n:'Plot',s:x=>`<path d="M${x-1.5} ${PH_SOL-12}h3l4 12h-11z" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/>`}};
 // Un membre = chaîne de groupes emboîtés ; chaque articulation tourne (animateTransform) avec les valeurs de chaque image.
 function phRot(vals,an){const v0=vals[0];if(!an||vals.every(v=>Math.abs(v-v0)<.05))return`<g transform="rotate(${phR(v0)})">`;return`<g transform="rotate(${phR(v0)})"><animateTransform attributeName="transform" type="rotate" values="${vals.map(phR).join(';')}" ${an}/>`}
@@ -335,7 +336,7 @@ function phDraw(lite){const box=$p('phys');if(!box||!PHMODE)return;
  else{$p('phcv').innerHTML=PH.vue=='dessus'?phEditDessus():phEditProfil();phBind();if(!lite)$p('phprops').innerHTML=phProps()}
  $p('phprops').classList.toggle('hide',phEt!=2);$p('phvue').classList.toggle('hide',PH.vue!='dessus');$p('phsuiv').textContent=phEt==2?'Suivant : voir l’animation →':'Enregistrer la fiche →';$p('phsuiv').classList.remove('hide');
  $p('phundo').disabled=!phHist.length;$p('phredo').disabled=!phRedo.length;phBrouillon()}
-function phBascule(b,id){const e=E.find(x=>x.id==id);if(!e||!e.schema_physique)return;const cur=b.dataset.i!=null?b.dataset.i=='1':!!e.schema_physique.incl,nv=!cur,sv=b.closest('figure').querySelector('svg');if(sv)sv.outerHTML=renderPhys({...e.schema_physique,incl:nv?1:0},{anim:true});b.dataset.i=nv?'1':'0';b.textContent=nv?'Vue de dessus':'Vue inclinée'}
+function phBascule(b,id,i){const e=E.find(x=>x.id==id),M=e&&(i!=null?(e.schemas_physique||[])[i]&&e.schemas_physique[i].m:e.schema_physique);if(!M)return;const cur=b.dataset.i!=null?b.dataset.i=='1':!!M.incl,nv=!cur,sv=b.closest('figure').querySelector('svg');if(sv)sv.outerHTML=renderPhys({...M,incl:nv?1:0},{anim:true});b.dataset.i=nv?'1':'0';b.textContent=nv?'Vue de dessus':'Vue inclinée'}
 function phSuivant(){if(phEt==1&&PH)return phAller(2);if(phEt==2)return phAller(3);phFiche()}
 // Étape ④ : on réutilise le formulaire de fiche de l'éditeur de terrain (PHMODE = le schéma enregistré est PH).
 function phFiche(){if(!PH)return;editingId=phEditId&&E.find(x=>x.id==phEditId)?phEditId:null;varEdit=null;etapeFiche()}
