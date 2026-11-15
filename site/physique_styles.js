@@ -57,13 +57,15 @@ function drawC(j,p){const CL='#d7dbe3',CLD='#aab1bf';
 function drawD(j,p){const CY='#6ee7ff',CYD='#2a8fb0',GL='#ffd76a';
  const ln=(a,b,c,w)=>`<line x1="${r(a[0])}" y1="${r(a[1])}" x2="${r(b[0])}" y2="${r(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
  const jt=(q,c)=>circ(q,2.6,'#0a1631',`stroke="${c}" stroke-width="1.6"`);
- const arm=(A,c,w)=>ln(j.S,A.e,c,w)+ln(A.e,A.w,c,w)+jt(A.e,c)+jt(A.w,c);
+ const arm=(A,c,w)=>ln(j.S,A.e,c,w)+ln(A.e,A.w,c,w)+jt(A.e,c)+circ(lp(A.w,A.m,.7),3.2,c);
  const leg=(L,c,w)=>ln(j.H,L.k,c,w)+ln(L.k,L.a,c,w)+ln(L.a,L.to,c,w)+ln(L.a,L.he,c,w)+jt(L.k,c)+jt(L.a,c);
  const k=j.ln.k,v1=unit(k,j.H),v2=unit(k,j.ln.a),R=11,p1=[k[0]+v1[0]*R,k[1]+v1[1]*R],p2=[k[0]+v2[0]*R,k[1]+v2[1]*R],sw=(v1[0]*v2[1]-v1[1]*v2[0])>0?1:0,ang=Math.round(180-Math.abs(phW(p.sn-p.tn))),lab=[k[0]+14,k[1]-5];
- return `<g filter="url(#glow)">`+arm(j.af,CYD,2.4)+leg(j.lf,CYD,2.6)
+ const sl=(A,Lg,o)=>`<g opacity="${o}">`+cap(j.S,A.e,8.4,6.8,'#ff9d3a')+cap(A.e,A.w,6.8,4.8,'#ff9d3a')+cap(j.H,Lg.k,14,10,CY)+cap(Lg.k,Lg.a,10,7,CY)+cap(Lg.a,Lg.to,6,4.5,CY)+`</g>`;
+ const silh=sl(j.af,j.lf,.14)+`<path d="${shape(j.H,j.N,17,17,20,.5)}" fill="${GO}" opacity=".5"/>`+circ(j.Hd,9.2,GL,'opacity=".45"')+sl(j.an,j.ln,.3);
+ return silh+`<g filter="url(#glow)">`+leg(j.lf,CYD,2.6)
   +`<path d="${shape(j.H,j.N,15,15,17,.5)}" fill="${GO}" opacity=".3"/>`+ln(j.H,j.S,GL,4.2)+ln(j.N,lp(j.N,j.Hd,.4),GL,2.4)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+jt(j.H,GL)+jt(j.S,GL)
-  +leg(j.ln,CY,3.2)+arm(j.an,CY,3)+`</g>`
-  +`<path d="M${f2(k)}L${f2(p1)}A${R} ${R} 0 0 ${sw} ${f2(p2)}Z" fill="${GL}" opacity=".3"/><text x="${r(lab[0])}" y="${r(lab[1])}" font-size="8.5" font-weight="700" fill="${GL}" font-family="system-ui,sans-serif">${ang}°</text>`}
+  +leg(j.ln,CY,3.2)+arm(j.af,'#c9701c',3.4)+arm(j.an,'#ff9d3a',4)+`</g>`
+  +`<path d="M${f2(k)}L${f2(p1)}A${R} ${R} 0 0 ${sw} ${f2(p2)}Z" fill="${GL}" opacity=".3"/><text x="${r(lab[0])}" y="${r(lab[1])}" font-size="9.5" font-weight="800" fill="#fff" stroke="#0a1631" stroke-width=".5" font-family="system-ui,sans-serif">${ang}°</text>`}
 
 
 // ---------- animation : transforme N dessins successifs (même structure) en un dessin animé SMIL ----------
@@ -112,8 +114,10 @@ function faceC(j){const CL='#d7dbe3',T=tronc(j);
   +`<g transform="translate(${f2(j.Hd)})"><g transform="rotate(${r(headRot(j))})"><ellipse rx="7.6" ry="9.4" fill="url(#jb)"/></g></g>`}
 function faceD(j){const CY='#6ee7ff',GL='#ffd76a',T=tronc(j);
  const ln=(a,b,c,w)=>`<line x1="${r(a[0])}" y1="${r(a[1])}" x2="${r(b[0])}" y2="${r(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,jt=(q,c)=>circ(q,2.6,'#0a1631',`stroke="${c}" stroke-width="1.6"`);
- const leg=L=>ln(L.P,L.k,CY,3)+ln(L.k,L.a,CY,3)+ln(L.a,L.b,CY,3)+jt(L.k,CY)+jt(L.a,CY),arm=A=>ln(A.S,A.e,CY,2.8)+ln(A.e,A.w,CY,2.8)+jt(A.e,CY)+jt(A.w,CY);
- return`<g filter="url(#glow)"><path d="${T.poly}" fill="${GO}" opacity=".3"/>`+leg(j.Ld)+leg(j.Lg)+ln(j.Ag.S,j.Ad.S,GL,3)+ln(j.H,j.N,GL,3.2)+ln(j.Lg.P,j.Ld.P,GL,3)+arm(j.Ad)+arm(j.Ag)+jt(j.H,GL)+jt(j.Ag.S,GL)+jt(j.Ad.S,GL)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+`</g>`}
+ const leg=L=>ln(L.P,L.k,CY,3)+ln(L.k,L.a,CY,3)+ln(L.a,L.b,CY,3)+jt(L.k,CY)+jt(L.a,CY),OR='#ff9d3a',armO=A=>ln(A.S,A.e,OR,4)+ln(A.e,A.w,OR,4)+circ(A.w,3.4,OR)+jt(A.e,OR);
+ const sf=A=>cap(A.S,A.e,8.6,7,'#ff9d3a')+cap(A.e,A.w,7,5,'#ff9d3a'),sg=L=>cap(L.P,L.k,14,10,CY)+cap(L.k,L.a,10,7,CY)+cap(L.a,L.b,8,6,CY);
+ const silh=`<g opacity=".28">`+sf(j.Ag)+sf(j.Ad)+sg(j.Lg)+sg(j.Ld)+`</g>`+circ(j.Hd,9.2,GL,'opacity=".45"');
+ return silh+`<g filter="url(#glow)"><path d="${T.poly}" fill="${GO}" opacity=".55"/>`+leg(j.Ld)+leg(j.Lg)+ln(j.Ag.S,j.Ad.S,GL,3)+ln(j.H,j.N,GL,3.2)+ln(j.Lg.P,j.Ld.P,GL,3)+armO(j.Ad)+armO(j.Ag)+jt(j.H,GL)+jt(j.Ag.S,GL)+jt(j.Ad.S,GL)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+`</g>`}
 const FACE={realiste:faceB,mannequin:faceC,analyse:faceD};
 
 // ---------- appuis (dessus et inclinée) : chaussures de dessus selon le rendu, palette du joueur ----------
