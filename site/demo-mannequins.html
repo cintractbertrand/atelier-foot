@@ -29,18 +29,19 @@ table{border-collapse:collapse;width:100%;background:var(--c);border-radius:8px;
 
 <h2>Comparatif</h2>
 <table>
-<tr><th></th><th>A · Silhouette</th><th>B · Réaliste</th><th>C · Mannequin 3D</th><th>D · Analyse</th><th>E · Jeu vidéo</th></tr>
-<tr><td>Réalisme</td><td>Faible, pictogramme</td><td>Élevé</td><td>Moyen, volumes</td><td>Faible, technique</td><td>Moyen, stylisé</td></tr>
-<tr><td>Lisibilité sur téléphone</td><td>Excellente</td><td>Bonne</td><td>Très bonne</td><td>Très bonne (fond sombre)</td><td>Très bonne</td></tr>
-<tr><td>Impression A4 noir et blanc</td><td>Excellente</td><td>Moyenne</td><td>Bonne</td><td>Fond clair à prévoir</td><td>À éviter (fond sombre)</td></tr>
-<tr><td>Intérêt pédagogique</td><td>Posture générale</td><td>Muscles, tenue du maillot</td><td>Articulations visibles</td><td>Angles chiffrés (genou…)</td><td>Motivant, attire les jeunes</td></tr>
-<tr><td>Poids / vitesse</td><td>Très léger</td><td>Le plus lourd (reste modéré)</td><td>Léger</td><td>Léger</td><td>Moyen</td></tr>
-<tr><td>Couleurs du club</td><td>Bleu + or</td><td>Maillot bleu, chaussettes or</td><td>Buste bleu, accents or</td><td>Or + cyan</td><td>Bleu + or, halo or</td></tr>
+<tr><th></th><th>A · Silhouette</th><th>B · Réaliste</th><th>C · Mannequin 3D</th><th>D · Analyse</th><th>E · Jeu vidéo</th><th>F · Rendu 3D</th></tr>
+<tr><td>Réalisme</td><td>Faible, pictogramme</td><td>Élevé</td><td>Moyen, volumes</td><td>Faible, technique</td><td>Moyen, stylisé</td><td>Élevé, façon console</td></tr>
+<tr><td>Lisibilité sur téléphone</td><td>Excellente</td><td>Bonne</td><td>Très bonne</td><td>Très bonne (fond sombre)</td><td>Très bonne</td><td>Bonne</td></tr>
+<tr><td>Impression A4 noir et blanc</td><td>Excellente</td><td>Moyenne</td><td>Bonne</td><td>Fond clair à prévoir</td><td>À éviter (fond sombre)</td><td>À éviter (fond sombre)</td></tr>
+<tr><td>Intérêt pédagogique</td><td>Posture générale</td><td>Muscles, tenue du maillot</td><td>Articulations visibles</td><td>Angles chiffrés (genou…)</td><td>Motivant, attire les jeunes</td><td>Le plus spectaculaire</td></tr>
+<tr><td>Poids / vitesse</td><td>Très léger</td><td>Le plus lourd (reste modéré)</td><td>Léger</td><td>Léger</td><td>Moyen</td><td>Le plus lourd</td></tr>
+<tr><td>Couleurs du club</td><td>Bleu + or</td><td>Maillot bleu, chaussettes or</td><td>Buste bleu, accents or</td><td>Or + cyan</td><td>Bleu + or, halo or</td><td>Bleu + or, liserés or</td></tr>
 </table>
 <p class="leg">Vues de dessus et inclinée : seule la vue de dessus (échelle) est montrée ici. Les vues de face et inclinée suivraient le même style une fois choisi.</p>
 </main>
 
 <svg width="0" height="0" style="position:absolute"><defs>
+<radialGradient id="skR" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#f4c9a5"/><stop offset=".55" stop-color="#c98a5e"/><stop offset="1" stop-color="#7a4a2d"/></radialGradient>
 <radialGradient id="jb" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#d7dbe3"/><stop offset="1" stop-color="#8d95a6"/></radialGradient>
 <radialGradient id="jbd" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e3e6ec"/><stop offset=".5" stop-color="#aab1bf"/><stop offset="1" stop-color="#6b7384"/></radialGradient>
 <radialGradient id="jn" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6c92d8"/><stop offset=".5" stop-color="#274b8f"/><stop offset="1" stop-color="#0d2349"/></radialGradient>
@@ -131,6 +132,26 @@ function drawE(j,p){const sk='#d99a6c',skD='#b07650',O='#06122b';
   +vol(j.N,lp(j.N,j.Hd,.5),6,5.6,5.6,.5,sk,.3,.15)+circ(j.N,5,'none',`stroke="${GO}" stroke-width="2"`)+head
   +leg(j.ln,0)+arm(j.an,0)+`</g>`}
 
+/* ---------- F · Rendu 3D : dégradés de volume sur chaque segment, muscles, lumière de contour ---------- */
+let GN=0;
+const PAL={sk:['#f4c9a5','#c98a5e','#6e4128'],skF:['#c9966f','#9a6340','#4a2a18'],je:['#4a78d0','#1b3a73','#07122b'],jeF:['#2e55a0','#122a57','#050d20'],sh:['#3a62b4','#15306a','#060f26'],so:['#fbe27a','#e8b923','#7a5c08'],hair:['#4a3426','#1c130c','#0a0604']};
+function gseg(a,b,w0,wm,w1,tm,pal,defs){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,sg=(nx*LIGHT[0]+ny*LIGHT[1])>0?1:-1,m=Math.max(w0,wm,w1)/2,c=lp(a,b,.5),id='gF'+(GN++);
+ defs.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${r(c[0]+nx*sg*m)}" y1="${r(c[1]+ny*sg*m)}" x2="${r(c[0]-nx*sg*m)}" y2="${r(c[1]-ny*sg*m)}"><stop offset="0" stop-color="${pal[0]}"/><stop offset=".22" stop-color="${pal[0]}"/><stop offset=".5" stop-color="${pal[1]}"/><stop offset="1" stop-color="${pal[2]}"/></linearGradient>`);
+ return`<path d="${shape(a,b,w0,wm,w1,tm)}" fill="url(#${id})"/>`}
+function drawF(j,p){const D=[],O=null,sw=(a,b,w0,wm,w1,tm,pal)=>gseg(a,b,w0,wm,w1,tm,pal,D);
+ const arm=(A,ff)=>{const sk=ff?PAL.skF:PAL.sk,je=ff?PAL.jeF:PAL.je;return sw(j.S,A.e,9.2,9.8,7,.3,sk)+sw(j.S,lp(j.S,A.e,.48),12,12,11,.5,je)+`<path d="${shape(lp(j.S,A.e,.44),lp(j.S,A.e,.5),11.6,11.6,11.2)}" fill="${GO}" opacity=".9"/>`+sw(A.e,A.w,7,7.8,4.6,.28,sk)+`<ellipse cx="${r(lp(A.w,A.m,.55)[0])}" cy="${r(lp(A.w,A.m,.55)[1])}" rx="3.3" ry="4.1" fill="${ff?'#9a6340':'#c98a5e'}"/>`};
+ const leg=(L,ff)=>{const sk=ff?PAL.skF:PAL.sk,sh=ff?PAL.jeF:PAL.sh,so=PAL.so;return sw(j.H,L.k,15,16,9.8,.32,sk)+sw(j.H,lp(j.H,L.k,.68),17.6,17,15.4,.5,sh)+`<path d="${shape(lp(j.H,L.k,.04),lp(j.H,L.k,.66),3,3,3,.5,-6.8)}" fill="${GO}"/>`+sw(L.k,L.a,9.8,11.2,6.4,.3,sk)+sw(lp(L.k,L.a,.38),L.a,9,8.8,6.6,.5,so)+`<path d="${shape(lp(L.k,L.a,.5),lp(L.k,L.a,.56),9,9,8)}" fill="${NV}"/>`+botte(L,ff?'#1d2028':'#101218',GO)};
+ const th=headRot(j),c=lp(j.H,j.S,.5);
+ const folds=[.2,.38,.55].map(u=>{const q=lp(j.H,j.S,u),n=unit(j.H,j.S);return`<path d="M${f2([q[0]-n[1]*7,q[1]+n[0]*7])}Q${f2([q[0]+n[0]*1.5,q[1]+n[1]*1.5])} ${f2([q[0]+n[1]*7,q[1]-n[0]*7])}" stroke="#000" stroke-opacity=".28" fill="none" stroke-width=".8"/>`}).join('');
+ const head=`<g transform="translate(${f2(j.Hd)}) rotate(${r(th)})"><circle cx="-6.4" cy="-10" r="3.6" fill="${PAL.hair[1]}"/><ellipse cx="-.4" cy="0" rx="9.4" ry="10.6" fill="url(#skR)"/><path d="M-10 -1C-10 -10 -2 -13 6 -10C9 -9 10 -5 9.4 -3C6 -6 0 -6.5 -4 -3C-6 -1.5 -8 1 -10 4Z" fill="${PAL.hair[1]}"/><path d="M-5 5Q0 13 8 7L9.4 3Q5 9 -3 6Z" fill="#1c130c" opacity=".7"/><ellipse cx="9.6" cy="1.2" rx="2.1" ry="2.7" fill="#c98a5e"/><path d="M4 -3Q8 -4.4 10 -3" stroke="#1c130c" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="6.4" cy="-.7" r="1.05" fill="#111"/><ellipse cx="-3.2" cy="1" rx="1.8" ry="2.6" fill="#a86f48"/><path d="M5 5.5Q7.5 6.4 9 5.4" stroke="#5a2a1e" stroke-width="1" fill="none" stroke-linecap="round"/></g>`;
+ const out=ombre(j,p,'#000',.5)+arm(j.af,1)+leg(j.lf,1)
+  +sw(j.H,j.N,17.6,17.2,21,.5,PAL.je)+`<path d="${shape(lp(j.H,j.S,.9),lp(j.H,j.S,.98),12,12,14)}" fill="${GO}"/>`+folds
+  +`<circle cx="${r(j.H[0])}" cy="${r(j.H[1])}" r="9.4" fill="${NV}"/>`
+  +sw(j.N,lp(j.N,j.Hd,.5),6.4,6,6,.5,PAL.sk)+`<path d="M${f2(lp(j.N,j.S,.1))}" fill="none"/>`+circ(j.N,5.2,'none',`stroke="${GO}" stroke-width="2"`)+head
+  +leg(j.ln,0)+arm(j.an,0)
+  +`<g filter="url(#blur)" opacity=".28">${circ(j.S,4,'#000')}${circ(j.H,4,'#000')}</g>`;
+ return`<defs>${D.join('')}</defs>`+out}
+
 /* ---------- D · Analyse : squelette lumineux, angle du genou ---------- */
 function drawD(j,p){const CY='#6ee7ff',CYD='#2a8fb0',GL='#ffd76a';
  const ln=(a,b,c,w)=>`<line x1="${r(a[0])}" y1="${r(a[1])}" x2="${r(b[0])}" y2="${r(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
@@ -151,6 +172,7 @@ const BG={
  C:'<rect width="300" height="200" fill="url(#bgC)"/><rect y="'+SOL+'" width="300" height="18" fill="url(#flC)"/>',
  D:'<rect width="300" height="200" fill="#0a1631"/>'+[0,1,2,3,4].map(i=>`<line x1="0" x2="300" y1="${SOL+i*4.5}" y2="${SOL+i*4.5}" stroke="#2a8fb0" stroke-opacity="${.5-i*.09}"/>`).join('')+[...Array(13)].map((_,i)=>`<line x1="${i*25}" x2="${150+(i*25-150)*1.5}" y1="${SOL}" y2="${SOL+18}" stroke="#2a8fb0" stroke-opacity=".25"/>`).join('')+`<line x1="0" x2="300" y1="${SOL}" y2="${SOL}" stroke="#6ee7ff" stroke-width="1.4"/>`};
 BG.E='<rect width="300" height="200" fill="url(#bgE)"/><rect y="'+SOL+'" width="300" height="18" fill="#0a1a3d"/><line x1="0" x2="300" y1="'+SOL+'" y2="'+SOL+'" stroke="#e8b923" stroke-width="1.4"/>';
+BG.F='<rect width="300" height="200" fill="url(#bgE)"/><g filter="url(#blur)" opacity=".5">'+[[30,40,9],[90,28,7],[160,50,10],[230,30,8],[275,60,9]].map(([x,y,q])=>`<circle cx="${x}" cy="${y}" r="${q}" fill="#9fc3ff"/>`).join('')+'</g><rect y="'+SOL+'" width="300" height="18" fill="#17562a"/><line x1="0" x2="300" y1="'+SOL+'" y2="'+SOL+'" stroke="#fff" stroke-opacity=".7" stroke-width="1.2"/>';
 const decorD={haie:x=>`<g transform="translate(${x} ${SOL})" stroke="#ff9d3a" stroke-linecap="round" stroke-width="2.4" fill="none" filter="url(#glow)"><path d="M-7 0H7M0 0V-24M-6 -26H6"/></g>`};
 const decor=(st,d)=>st=='D'&&decorD[d.t]?decorD[d.t](d.x):PH_DECOR[d.t].s(d.x);
 
@@ -167,11 +189,13 @@ function ladder(st,G){const {n,c,W}=G,a=W(0,-.5),b=W(n,.5),w=b[0]-a[0],h=b[1]-a[
  if(st=='C'){s+=`<rect width="300" height="200" fill="url(#flC)"/><rect x="${r(a[0]+2)}" y="${r(a[1]+4)}" width="${r(w)}" height="${r(h)}" fill="#556" opacity=".28" filter="url(#blur)"/><rect x="${r(a[0])}" y="${r(a[1])}" width="${r(w)}" height="${r(h)}" fill="#f6f7fa" stroke="#8d95a6" stroke-width="${r(c*.07)}" rx="${r(c*.05)}"/>`;
   for(let i=0;i<=n;i++){const p=W(i,-.5);s+=`<line x1="${r(p[0])}" y1="${r(p[1])}" x2="${r(p[0])}" y2="${r(p[1]+h)}" stroke="#8d95a6" stroke-width="${r(c*.06)}"/>`}
   s+=`<rect x="${r(a[0]-c*.05)}" y="${r(a[1]-c*.05)}" width="${r(c*.14)}" height="${r(h+c*.1)}" fill="${NV}" rx="2"/><rect x="${r(b[0]-c*.09)}" y="${r(a[1]-c*.05)}" width="${r(c*.14)}" height="${r(h+c*.1)}" fill="${GO}" rx="2"/>`}
+ if(st=='F'){s+=[...Array(10)].map((_,i)=>`<rect x="${i*30}" width="30" height="200" fill="${i%2?'#1c6a2e':'#237a37'}"/>`).join('')+`<g filter="url(#glow)" stroke="#fff" stroke-width="${r(c*.08)}" fill="none"><rect x="${r(a[0])}" y="${r(a[1])}" width="${r(w)}" height="${r(h)}"/>`;for(let i=1;i<n;i++){const p=W(i,-.5);s+=`<line x1="${r(p[0])}" y1="${r(p[1])}" x2="${r(p[0])}" y2="${r(p[1]+h)}"/>`}s+='</g>'}
  if(st=='E'){s+=`<rect width="300" height="200" fill="url(#bgE)"/>`+`<g filter="url(#glow)" stroke="#fff" stroke-width="${r(c*.08)}" fill="none"><rect x="${r(a[0])}" y="${r(a[1])}" width="${r(w)}" height="${r(h)}"/>`;for(let i=1;i<n;i++){const p=W(i,-.5);s+=`<line x1="${r(p[0])}" y1="${r(p[1])}" x2="${r(p[0])}" y2="${r(p[1]+h)}"/>`}s+='</g>'}
  if(st=='D'){s+=`<rect width="300" height="200" fill="#0a1631"/>`+[...Array(12)].map((_,i)=>`<line x1="${i*26}" x2="${i*26}" y1="0" y2="200" stroke="#2a8fb0" stroke-opacity=".15"/>`).join('')+[...Array(8)].map((_,i)=>`<line y1="${i*26}" y2="${i*26}" x1="0" x2="300" stroke="#2a8fb0" stroke-opacity=".15"/>`).join('')+`<g filter="url(#glow)" stroke="#ff9d3a" stroke-width="${r(c*.06)}" fill="none"><rect x="${r(a[0])}" y="${r(a[1])}" width="${r(w)}" height="${r(h)}"/>`;
   for(let i=1;i<n;i++){const p=W(i,-.5);s+=`<line x1="${r(p[0])}" y1="${r(p[1])}" x2="${r(p[0])}" y2="${r(p[1]+h)}"/>`}s+='</g>'}
  return s}
-const FOOT={E:(c,g)=>{const k=g?-1:1,ac=g?'#7fd1ff':GO;return`<g transform="scale(${c/34})"><path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="#f4f4f4" stroke="#06122b" stroke-width="1.1"/><path d="M-3 ${-2*k}L3 ${2*k}" stroke="${ac}" stroke-width="2"/></g>`},
+const FOOT={F:(c,g)=>{const k=g?-1:1,ac=g?'#7fd1ff':GO;return`<g transform="scale(${c/34})"><path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="#13151b" stroke="#000" stroke-width="1"/><path d="M-6 ${-2.4*k}Q2 ${-3.4*k} 9 ${-1.6*k}" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" fill="none"/><path d="M-3 ${-2*k}L3 ${2*k}" stroke="${ac}" stroke-width="2"/></g>`},
+E:(c,g)=>{const k=g?-1:1,ac=g?'#7fd1ff':GO;return`<g transform="scale(${c/34})"><path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="#f4f4f4" stroke="#06122b" stroke-width="1.1"/><path d="M-3 ${-2*k}L3 ${2*k}" stroke="${ac}" stroke-width="2"/></g>`},
 A:(c,g)=>dsPied(c,g,g?NV:GO,'#0003'),
  B:(c,g)=>{const k=g?-1:1,col=g?'#161616':'#2b2b2b';return`<g transform="scale(${c/34})"><path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="${col}" stroke="#f2f2f2" stroke-width="1"/><path d="M-3 ${-2*k}L2 ${2*k}M0 ${-3*k}L5 ${.6*k}" stroke="${g?'#e8b923':'#888'}" stroke-width=".9"/><circle cx="-6" cy="${-2*k}" r="1" fill="#ddd"/><circle cx="-6" cy="${2*k}" r="1" fill="#ddd"/><circle cx="6" cy="${-2*k}" r="1" fill="#ddd"/><circle cx="6.4" cy="${1.8*k}" r="1" fill="#ddd"/></g>`},
  C:(c,g)=>dsPied(c,g,'#d7dbe3','#8d95a6')+`<circle r="${r(c*.07)}" fill="${g?NV:GO}" stroke="#fff" stroke-width=".8"/>`,
@@ -182,13 +206,14 @@ function drawDessus(st,fig,tt){const {G,fr}=fig,{W,c}=G,s=sampDessus(fr,tt);
   return sh+`<g transform="translate(${f2(P)}) scale(${r(sc)})">${FOOT[st](c,gch)}</g>`};
  let trail='';
  if(st=='D'){for(let k=1;k<=5;k++){const q=sampDessus(fr,Math.max(0,tt-k*.07));[[q.g,'#6ee7ff'],[q.d,'#ff9d3a']].forEach(([f,col])=>{const P=W(f[0],f[1]);trail+=circ(P,2.2,col,`opacity="${r(.5-k*.08)}"`)})}}
- return `<g opacity="${s.op}">`+trail+foot(s.g,s.sg,1)+foot(s.d,s.sd,0)+`</g>`+`<g font-size="9" font-weight="700" font-family="system-ui,sans-serif">`+(st=='D'?`<text x="12" y="143" fill="#6ee7ff">● gauche</text><text x="82" y="143" fill="#ff9d3a">● droit</text>`:st=='E'?`<text x="12" y="143" fill="#fff"><tspan fill="#7fd1ff">●</tspan> gauche</text><text x="82" y="143" fill="#fff"><tspan fill="${GO}">●</tspan> droit</text>`:st=='B'?`<text x="12" y="143" fill="#fff" stroke="#0006" stroke-width=".4">gauche : lacets or · droit : lacets gris</text>`:`<text x="12" y="143" fill="#1b3a73"><tspan fill="${NV}">●</tspan> gauche</text><text x="82" y="143" fill="#1b3a73"><tspan fill="#d9a406">●</tspan> droit</text>`)+`</g>`}
+ return `<g opacity="${s.op}">`+trail+foot(s.g,s.sg,1)+foot(s.d,s.sd,0)+`</g>`+`<g font-size="9" font-weight="700" font-family="system-ui,sans-serif">`+(st=='D'?`<text x="12" y="143" fill="#6ee7ff">● gauche</text><text x="82" y="143" fill="#ff9d3a">● droit</text>`:(st=='E'||st=='F')?`<text x="12" y="143" fill="#fff"><tspan fill="#7fd1ff">●</tspan> gauche</text><text x="82" y="143" fill="#fff"><tspan fill="${GO}">●</tspan> droit</text>`:st=='B'?`<text x="12" y="143" fill="#fff" stroke="#0006" stroke-width=".4">gauche : lacets or · droit : lacets gris</text>`:`<text x="12" y="143" fill="#1b3a73"><tspan fill="${NV}">●</tspan> gauche</text><text x="82" y="143" fill="#1b3a73"><tspan fill="#d9a406">●</tspan> droit</text>`)+`</g>`}
 
 /* ---------- assemblage ---------- */
 const STY=[
  {k:'A',nom:'Silhouette club',txt:'Aplats bleu et or, lisible de loin, très léger, s’imprime bien en noir et blanc.',draw:drawA},
  {k:'B',nom:'Réaliste',txt:'Peau, maillot, short, chaussettes, crampons, ombres et reflets. Le plus proche d’un vrai joueur.',draw:drawB},
  {k:'C',nom:'Mannequin 3D',txt:'Mannequin d’atelier en argile avec articulations en boule, buste bleu club. Montre bien les angles.',draw:drawC},
+ {k:'F',nom:'Rendu 3D',txt:'Le plus proche d’EA FC : volumes en dégradé, muscles, lumière de contour, maillot à liserés or.',draw:drawF},
  {k:'E',nom:'Jeu vidéo',txt:'Joueur façon jeu vidéo (FIFA) : contours nets, maillot bleu et or, chaussures blanches, reflets marqués.',draw:drawE},
  {k:'D',nom:'Analyse',txt:'Squelette lumineux sur fond sombre, avec l’angle du genou en direct. Style outil d’analyse sportive.',draw:drawD}];
 const PRE=phPresets(),get=id=>PRE.find(x=>x.id==id).m;
