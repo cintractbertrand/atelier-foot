@@ -21,3 +21,8 @@ Demande de Bertrand : un éditeur sur le modèle de l'éditeur de terrain, avec 
 - 13 nouvelles fiches (`site/fiches_repertoire.js`, 2 lots) : relevé de bassin, canif, bateau, adducteurs couché, fessiers et ischios en quadrupédie, lombaires (superman), montées sur pointes.
 - Variantes ajoutées aux fiches existantes (squat ouvert/serré, pompes sur genoux/coudes serrés, crunch, abduction), pour éviter les doublons.
 - Écartés : dips (pose du joueur peu lisible), oiseau, pectoraux au ballon, enchaînements sur musique (pas de valeur pour le foot).
+
+## Lot 3 du répertoire fitness (15/11/2026)
+- Bertrand : « on prend tout et on filtre sur le site » → exercices avec charge légère (haltères, barre, bâton) repris aussi, matériel indiqué sur la fiche ; filtre « Muscle » (champ `muscle`) dans la colonne de gauche de la Base : abdominaux, adducteurs, biceps, cuisses, dos, épaules, fessiers, ischio-jambiers, mollets, pectoraux, triceps (rubriques du sommaire du PDF).
+- 26 fiches de plus (68 fiches physiques au total) : 16 avec schéma animé, 10 sans schéma (mouvements de face : inclinaisons, rotations avec bâton, élévations latérales, oiseau, abductions et adductions) car le joueur de profil ne les montre pas.
+- Non repris : épaulé-jeté, écarté couché aux haltères, enchaînements sur musique (combinaisons de gestes déjà couvertes par les fiches).
