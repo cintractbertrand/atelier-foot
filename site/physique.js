@@ -52,6 +52,8 @@ const PH_DECOR={haie:{n:'Haie',s:phHaieP},
  mur:{n:'Mur',s:x=>`<rect x="${x-4}" y="30" width="8" height="${PH_SOL-30}" fill="#c9d3e0" stroke="#8796ad"/>`+[50,80,110,140].map(y=>`<line x1="${x-4}" y1="${y}" x2="${x+4}" y2="${y-6}" stroke="#8796ad" stroke-width=".8"/>`).join('')},
  tapis:{n:'Tapis',s:x=>`<rect x="${x-60}" y="${PH_SOL-1.5}" width="120" height="4" rx="2" fill="#2fa84f" opacity=".8"/>`},
  ballon:{n:'Ballon',s:x=>`<g transform="translate(${x} ${PH_SOL-6})"><circle r="6" fill="#fff" stroke="#222" stroke-width="1.1"/><path d="M0 -2.6L2.5 -.8L1.5 2.1H-1.5L-2.5 -.8z" fill="#222"/></g>`},
+ demi:{n:'Demi-sphère',s:x=>`<path d="M${x-24} ${PH_SOL}a24 13 0 0 1 48 0z" fill="#e8731a" stroke="#a84f0e" stroke-width=".8"/>`},
+ med:{n:'Médecine-ball',s:x=>`<g transform="translate(${x} ${PH_SOL-8})"><circle r="8" fill="#b3392a" stroke="#6b1f16" stroke-width="1"/><path d="M-8 0H8M0 -8V8" stroke="#6b1f16" stroke-width=".7" fill="none"/></g>`},
  plot:{n:'Plot',s:x=>`<path d="M${x-1.5} ${PH_SOL-12}h3l4 12h-11z" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/>`}};
 // Un membre = chaîne de groupes emboîtés ; chaque articulation tourne (animateTransform) avec les valeurs de chaque image.
 function phRot(vals,an){const v0=vals[0];if(!an||vals.every(v=>Math.abs(v-v0)<.05))return`<g transform="rotate(${phR(v0)})">`;return`<g transform="rotate(${phR(v0)})"><animateTransform attributeName="transform" type="rotate" values="${vals.map(phR).join(';')}" ${an}/>`}
@@ -84,12 +86,15 @@ function phCam(m){let x0=1e9,x1=-1e9,y0=1e9;(m.poses||[]).forEach(p=>{Object.val
  (m.decor||[]).forEach(d=>{if(d.t=='tapis')return;const w=d.t=='banc'?32:d.t=='step'?24:10;x0=Math.min(x0,d.x-w);x1=Math.max(x1,d.x+w);if(d.t=='haie')y0=Math.min(y0,PH_SOL-36)});
  if(x0>x1)return{s:1,tx:0,ty:0};const s=Math.max(.6,Math.min(1.5,280/(x1-x0),(PH_SOL-26)/(PH_SOL-y0))),cx=(x0+x1)/2;return{s:phR(s*100)/100,tx:phR(150-s*cx),ty:phR(PH_SOL*(1-s))}}
 // ---------- dessus : appuis ----------
-const PH_DISP={echelle:{n:'Échelle de rythme',e:1,mat:'echelle'},haies:{n:'Haies basses',e:2,mat:'haie'},cerceaux:{n:'Cerceaux',e:1.5,mat:'cerceau'},plots:{n:'Plots',e:2,mat:'plot'},aucun:{n:'Rien (sol)',e:1}};
+const PH_DISP={echelle:{n:'Échelle de rythme',e:1,mat:'echelle'},haies:{n:'Haies basses',e:2,mat:'haie'},cerceaux:{n:'Cerceaux',e:1.5,mat:'cerceau'},plots:{n:'Plots',e:2,mat:'plot'},barre:{n:'Barre au sol',e:1,mat:'baton',q:1},croix:{n:'Croix de 4 plots',e:1,mat:'plot',q:4},aucun:{n:'Rien (sol)',e:1}};
 function dsGeo(m){const d=m.disp||{t:'echelle',n:6},e=(PH_DISP[d.t]||PH_DISP.echelle).e,n=Math.max(1,d.n||1),xs=[].concat(...(m.pas||[]).map(q=>[q.g[0],q.d[0]])),lo=Math.min(0,...xs)-.8,hi=Math.max(n*e,...xs)+.8,c=Math.min(44,276/(hi-lo));
  const x0=150-(lo+hi)/2*c;return{c,e,n,t:d.t,W:(x,y)=>[phR(x0+x*c),phR(104+y*c)],x0}}
+const DS_CROIX=n=>{const m=n/2;return[[m+1,0],[m,1],[m-1,0],[m,-1]]};
 function dsDisp(G){const {c,e,n,t,W}=G;let s='';
+ if(t=='barre'){const a=W(0,0),b=W(n*e,0);s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#e8731a" stroke-width="${phR(c*.12)}" stroke-linecap="round"/>`}
+ if(t=='croix')DS_CROIX(n).forEach((q,i)=>{const [x,y]=W(q[0],q[1]);s+=`<circle cx="${x}" cy="${y}" r="${phR(c*.2)}" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/><text x="${x}" y="${phR(y+c*.07)}" font-size="${phR(Math.max(4,c*.2))}" font-weight="700" text-anchor="middle" fill="#5a4200" font-family="sans-serif">${i+1}</text>`});
  if(t=='echelle'){const [a,b]=[W(0,-.5),W(n,.5)];s+=`<rect x="${a[0]}" y="${a[1]}" width="${phR(b[0]-a[0])}" height="${phR(b[1]-a[1])}" fill="#fff8e0"/>`;for(let i=0;i<=n;i++){const p=W(i,-.5);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${p[0]}" y2="${phR(p[1]+c)}" stroke="#e8b923" stroke-width="${phR(c*.12)}"/>`}s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${a[1]}" stroke="#333" stroke-width="1.2"/><line x1="${a[0]}" y1="${b[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#333" stroke-width="1.2"/>`}
- for(let i=0;i<n&&t!='echelle';i++){const [x,y]=W((i+.5)*e,0);
+ for(let i=0;i<n&&t!='echelle'&&t!='barre'&&t!='croix';i++){const [x,y]=W((i+.5)*e,0);
   if(t=='haies')s+=`<rect x="${phR(x-c*.09)}" y="${phR(y-c*.75)}" width="${phR(c*.18)}" height="${phR(c*1.5)}" rx="${phR(c*.09)}" fill="#e8731a" stroke="#a84f0e" stroke-width=".6"/><rect x="${phR(x-c*.14)}" y="${phR(y-c*.82)}" width="${phR(c*.28)}" height="${phR(c*.16)}" fill="#555"/><rect x="${phR(x-c*.14)}" y="${phR(y+c*.66)}" width="${phR(c*.28)}" height="${phR(c*.16)}" fill="#555"/>`;
   if(t=='cerceaux')s+=`<circle cx="${x}" cy="${y}" r="${phR(c*.62)}" fill="none" stroke="#2fa84f" stroke-width="${phR(c*.1)}"/>`;
   if(t=='plots')s+=`<circle cx="${x}" cy="${y}" r="${phR(c*.2)}" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/><circle cx="${x}" cy="${y}" r="${phR(c*.07)}" fill="#9a7000"/>`}
@@ -127,7 +132,9 @@ function dsIncline(m,o={}){const G=dsGeo(m),P=m.pas||[],face=(m.face||0)*Math.PI
  const {n,e,t}=G;let b='';
  if(t=='echelle'){b+=`<path d="M${pts([Pr(0,-.5),Pr(n,-.5),Pr(n,.5),Pr(0,.5)])}Z" fill="#fff8e0"/>`;for(let i=0;i<=n;i++)b+=`<line x1="${Pr(i,-.5)[0]}" y1="${Pr(i,-.5)[1]}" x2="${Pr(i,.5)[0]}" y2="${Pr(i,.5)[1]}" stroke="#e8b923" stroke-width="${phR(c*.1)}"/>`;
   b+=`<path d="M${pts([Pr(0,-.5),Pr(n,-.5)])}M${pts([Pr(0,.5),Pr(n,.5)])}" stroke="#333" stroke-width="1.2" fill="none"/>`}
- const pr=[];for(let i=0;i<n&&t!='echelle';i++)pr.push((i+.5)*e);
+ const pr=[];for(let i=0;i<n&&t!='echelle'&&t!='barre'&&t!='croix';i++)pr.push((i+.5)*e);
+ if(t=='barre')b+=`<path d="M${pts([Pr(0,0),Pr(n*e,0)])}" stroke="#e8731a" stroke-width="${phR(c*.11)}" stroke-linecap="round" fill="none"/>`;
+ if(t=='croix')DS_CROIX(n).forEach(q=>{const p=Pr(q[0],q[1]);b+=`<path d="M${phR(p[0]-c*.17)} ${p[1]}L${phR(p[0]-c*.03)} ${phR(p[1]-c*.38)}h${phR(c*.06)}L${phR(p[0]+c*.17)} ${p[1]}Z" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/>`});
  const elt=(x,front)=>{if(t=='haies'){const H=.5,y0=-.7,y1=.7,q=(y,h)=>Pr(x,y,h);return front?`<line x1="${q(y1,0)[0]}" y1="${q(y1,0)[1]}" x2="${q(y1,H)[0]}" y2="${q(y1,H)[1]}" stroke="#555" stroke-width="1.6"/><line x1="${q(y0,H)[0]}" y1="${q(y0,H)[1]}" x2="${q(y1,H)[0]}" y2="${q(y1,H)[1]}" stroke="#e8731a" stroke-width="${phR(c*.13)}" stroke-linecap="round"/>`:`<ellipse cx="${q(y0,0)[0]}" cy="${q(y0,0)[1]}" rx="${phR(c*.16)}" ry="${phR(c*.06)}" fill="#0002"/><ellipse cx="${q(y1,0)[0]}" cy="${q(y1,0)[1]}" rx="${phR(c*.16)}" ry="${phR(c*.06)}" fill="#0002"/><line x1="${q(y0,0)[0]}" y1="${q(y0,0)[1]}" x2="${q(y0,H)[0]}" y2="${q(y0,H)[1]}" stroke="#555" stroke-width="1.6"/>`}
   const p=Pr(x,0);if(t=='cerceaux')return front?'':`<ellipse cx="${p[0]}" cy="${p[1]}" rx="${phR(c*.62)}" ry="${phR(c*.62*K)}" fill="none" stroke="#2fa84f" stroke-width="${phR(c*.09)}"/>`;
   if(t=='plots')return front?`<path d="M${phR(p[0]-c*.17)} ${p[1]}L${phR(p[0]-c*.03)} ${phR(p[1]-c*.38)}h${phR(c*.06)}L${phR(p[0]+c*.17)} ${p[1]}Z" fill="#d9a406" stroke="#9a7000" stroke-width=".6"/>`:`<ellipse cx="${p[0]}" cy="${p[1]}" rx="${phR(c*.2)}" ry="${phR(c*.07)}" fill="#0002"/>`;return''};
@@ -159,7 +166,7 @@ function renderPhys(m,o={}){if(!m)return'';let b;
  if(m.vue=='dessus')b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="#1b3a73"/>`+(m.incl&&!o.edit?`<path d="M2 70H298V197H2Z" fill="#d9ead0"/>`+dsIncline(m,o):dsDessus(m,o))+(o.edit?'':`<g font-size="8" font-family="sans-serif" font-weight="700"><g transform="translate(14 190) rotate(-90)">${dsPied(26,1,DS_G)}</g><text x="22" y="193" fill="${DS_G}">pied gauche</text><g transform="translate(84 190) rotate(-90)">${dsPied(26,0,DS_D)}</g><text x="92" y="193" fill="${DS_D}">pied droit</text></g>`);
  else b=`<rect x="1" y="1" width="298" height="198" rx="6" fill="#e6eefa" stroke="#1b3a73"/><rect x="2" y="${PH_SOL}" width="296" height="${197-PH_SOL}" fill="#cfe3c4"/><line x1="2" y1="${PH_SOL}" x2="298" y2="${PH_SOL}" stroke="#6f9a5b" stroke-width="1.4"/>`+phProfil(m,o);
  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"${o.id?` id="${o.id}" style="touch-action:none;user-select:none"`:''}>${b}${phInfo(m)}</svg>`}
-function phCompte(m){const c={};if(!m)return{joueurs:0,mat:c};if(m.vue=='dessus'){const d=PH_DISP[(m.disp||{}).t];if(d&&d.mat)c[d.mat]=d.mat=='echelle'?1:(m.disp.n||1)}else(m.decor||[]).forEach(d=>{if(d.t!='mur')c[d.t]=(c[d.t]||0)+1});return{joueurs:1,mat:c}}
+function phCompte(m){const c={};if(!m)return{joueurs:0,mat:c};if(m.vue=='dessus'){const d=PH_DISP[(m.disp||{}).t];if(d&&d.mat)c[d.mat]=d.q||(d.mat=='echelle'?1:(m.disp.n||1))}else(m.decor||[]).forEach(d=>{if(d.t!='mur')c[d.t]=(c[d.t]||0)+1});return{joueurs:1,mat:c}}
 // ---------- aides pour composer les poses ----------
 // Pose la jambe « side » au sol (cheville à la verticale de sa position actuelle), le reste du corps étant déjà posé.
 function phAppui(p,side,sg=1){const F=phFK(p),Lg=side=='f'?F.Lf:F.Ln,O=side=='f'?F.Ln:F.Lf,pts=[[F.H,7],[F.S,6],[F.Hd,PH_L.hr],[F.An.m,3.4],[F.Af.m,3.4],[O.k,5],[O.to,0],[O.he,0],[O.a,3.5]];
