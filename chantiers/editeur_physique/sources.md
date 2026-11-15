@@ -26,3 +26,9 @@ Demande de Bertrand : un éditeur sur le modèle de l'éditeur de terrain, avec 
 - Bertrand : « on prend tout et on filtre sur le site » → exercices avec charge légère (haltères, barre, bâton) repris aussi, matériel indiqué sur la fiche ; filtre « Muscle » (champ `muscle`) dans la colonne de gauche de la Base : abdominaux, adducteurs, biceps, cuisses, dos, épaules, fessiers, ischio-jambiers, mollets, pectoraux, triceps (rubriques du sommaire du PDF).
 - 26 fiches de plus (68 fiches physiques au total) : 16 avec schéma animé, 10 sans schéma (mouvements de face : inclinaisons, rotations avec bâton, élévations latérales, oiseau, abductions et adductions) car le joueur de profil ne les montre pas.
 - Non repris : épaulé-jeté, écarté couché aux haltères, enchaînements sur musique (combinaisons de gestes déjà couvertes par les fiches).
+
+## Reprise fidèle du répertoire Stoffer (15/11/2026)
+- Relecture page par page (p. 20 à 162) : une fiche par exercice ou enchaînement du livre, page indiquée dans la source. 106 fiches portent la source Stoffer (dont squat, fente, pompes, crunch, abduction complétées par des schémas et variantes).
+- Moteur : `site/physique_plus.js` ajoute la vue de face (debout, couché sur le côté), la vue de dessus (couché sur le dos, à quatre pattes) et les objets tenus (haltères, barre, bâton, bâton vertical qui change de main, élastique, ballon, lests).
+- Hors livre, gardées en attente de validation : canif, descente de jambes tendues (le livre ne les propose pas).
+- Gainage facial (p. 44), pont (p. 118 hors variantes) et bird dog : déjà dans les fiches de Nico ; seules les formes propres au livre ont une fiche (pont jambe croisée ou tendue, bras et jambe opposés avec haltère).

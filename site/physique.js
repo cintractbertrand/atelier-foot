@@ -79,7 +79,7 @@ function phProfil(m,o={}){const P=m.poses||[];if(!P.length)return'';let fr,T=0,a
  fr.forEach(f=>f.anc=m.anc);
  const op=an&&fr.some(f=>f.op===0)?`<animate attributeName="opacity" values="${fr.map(f=>f.op??1).join(';')}" ${an}/>`:'';
  let b=(m.decor||[]).filter(d=>PH_DECOR[d.t]&&d.t!='ballon').map(d=>PH_DECOR[d.t].s(d.x)).join('');
- b+=`<g>${op}${phCorps(fr,an)}</g>`+(m.decor||[]).filter(d=>d.t=='ballon').map(d=>PH_DECOR.ballon.s(d.x)).join('');
+ b+=(window.phObjets?phObjets(m,fr,an,0):'')+`<g>${op}${phCorps(fr,an)}</g>`+(window.phObjets?phObjets(m,fr,an,1):'')+(m.decor||[]).filter(d=>d.t=='ballon').map(d=>PH_DECOR.ballon.s(d.x)).join('');
  const C=o.cam||phCam(m);b=`<g transform="translate(${C.tx} ${C.ty}) scale(${C.s})">${b}</g>`;
  return m.miroir?`<g transform="translate(300 0) scale(-1 1)">${b}</g>`:b}
 // Cadrage : le mouvement (toutes les poses) remplit le dessin, le sol reste en bas. Agrandi au plus × 1,5.
