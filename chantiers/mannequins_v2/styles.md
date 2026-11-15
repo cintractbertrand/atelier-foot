@@ -66,3 +66,11 @@ Le code de la démo est la référence : toutes les formes y sont déjà écrite
 - Tête : sphère `e_hd` avec visière bleu nuit.
 - Muscle travaillé en surbrillance (dégradé orange `e_hot`) : objet `HOT`, par segment `[a, b, y0, y1]` = bande en largeur et portion en longueur. Exemples de la démo : squat = avant de la cuisse et fessier, haie = mollet et cuisse, échelle = mollet.
   Pour le site, il faudrait une table muscle vers segments reliée au champ `muscle` des fiches ; sans elle, le style marche sans surbrillance.
+
+## Retouches du 15/11/2026 (2e passe, demandée par Bertrand)
+
+- Main dessinée (table `handP` : paume et pouce, deux traits de doigts) pour A, C et E ; poing rond pour D, hexagone pour B.
+- Genou d'une seule teinte : pas d'ombre sur la partie peau du tibia (option `sh:0`).
+- Short de face raccourci (`pelvis`) pour ne plus dépasser des cuisses quand les jambes s'écartent.
+- Buste de face : épaules en pente et haut plat (`f1`), col en V posé sur l'encolure ; écusson or sur la poitrine (A, C).
+- Plis du maillot à la taille de profil (A, C), ligne de quadriceps (C), reflet dans l'œil (A).
