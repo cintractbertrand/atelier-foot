@@ -25,6 +25,7 @@ Petit site web pour préparer des séances d'entraînement de foot à partir d'u
 - Publié sur GitHub (dépôt public `cintractbertrand/atelier-foot`) avec GitHub Pages, à la demande de Bertrand (11/11/2026). Garder le code statique et simple.
 - Fiches partagées entre éducateurs : base Supabase (choix de Bertrand, 11/11/2026). Lecture libre, écriture avec un code club stocké chiffré ; « Retirer » masque sans effacer. Config dans `site/club.js`, script dans `chantiers/base_partagee/supabase.sql`. Sans config, le site reste 100 % local.
 - Lisible sur téléphone au bord du terrain, imprimable sur une page A4.
+- Deux espaces (décision de Bertrand, 15/11/2026) : **Base** (ballon : technique, tactique, jeu réduit, échauffement, physique…) et **Physique** (thèmes renfo, proprio, étirement, motricité ; filtre Muscle ; éditeur physique dédié, ouvert depuis le menu Physique). Éditeur terrain = menu Éditeur.
 - Deux écrans :
   1. **Base d'exercices** : recherche et filtres (catégorie, thème, durée, matériel, nombre de joueurs).
   2. **Séance** : exercices empilés, ordre modifiable, durée et variante modifiables par exercice ; total du temps et liste du matériel calculés automatiquement.
