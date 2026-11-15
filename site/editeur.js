@@ -379,13 +379,13 @@ function enregistrerV(ev){ev.preventDefault();const f=E.find(x=>x.id==varEdit.pi
  if(varEdit.idx!=null)o.variantes[varEdit.idx]=v;else{o.variantes.push(v);varEdit.idx=o.variantes.length-1}
  const a=chargePerso().filter(x=>x.id!=o.id);a.push(o);savePerso(a);$e('dlgv').close();majE();show('b');if((typeof clubAuto=='function'&&clubAuto()))partager(o.id,true);
  setTimeout(()=>alert('Variante « '+v.nom+' » enregistrée : elle s\'affiche à côté de « '+o.titre+' ».'+(window.boutonsClub?' Pour la partager, utilise « Partager au club » sur la fiche.':'')),50)}
-const aOrig=id=>window.EXERCICES.some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
+const aOrig=id=>window.EXERCICES.concat(window.EXERCICES_PHY||[]).some(x=>x.id==id)||(window.CLUBF||[]).some(x=>x.id==id);
 const MKSTOP=new Set('de du des la le les un une et en au aux avec sans par pour sur sous dans contre ou son ses cette qui que vers entre puis apres après face'.split(' '));
 function motsCles(f){const t=(f.titre||'').toLowerCase(),o=[];(t.match(/\d+\s*(?:c|contre)\s*\d+/g)||[]).forEach(m=>{const n=m.match(/\d+/g);o.push(n[0]+' contre '+n[1])});(t.match(/[a-zàâäçéèêëîïôöùûüœ-]+/g)||[]).forEach(w=>{if(w.length>3&&!MKSTOP.has(w))o.push(w)});o.push(f.theme);return[...new Set(o)].slice(0,10)}
 function nomAut(a){a=(a||'').trim();if(/^coach\s+bc$/i.test(a))return'bc';if(/^nico$/i.test(a)||/^nicolas\s+rou/i.test(a))return'Nicolas Rouseau';return a}
 function nettoie(f){f.auteur=nomAut(f.auteur);if(!f.mots_cles||!f.mots_cles.length)f.mots_cles=motsCles(f);if(f.auteur=='ESGA')f.auteur='Commun';if(f.theme=='passe'||f.theme=='tir')f.theme='technique';const num=+((f.id||'').match(/-(\d+)$/)||[])[1];if(f.theme=='match'||(/^match/i.test(f.titre||'')&&num<100)){if(Array.isArray(f.mots_cles))f.mots_cles=f.mots_cles.map(m=>m==f.theme?'jeu réduit':m);f.theme='jeu réduit'}if(Array.isArray(f.categories))f.categories=[...new Set(f.categories.map(c=>/^seniors?$/i.test(c)?'Seniors':/^U[79]$/.test(c)?'U7-U9':c))];return f}
 function majE(){const p=chargePerso(),ids=new Set(p.map(x=>x.id)),c=(window.CLUBF||[]).filter(x=>!ids.has(x.id)),cid=new Set(c.map(x=>x.id));
- E=window.EXERCICES.filter(x=>!ids.has(x.id)&&!cid.has(x.id)).map(hyd).concat(c.map(hyd),p.map(hyd)).map(nettoie);majFiltres();base();if(typeof seance=='function')seance()}
+ const lib=x=>!ids.has(x.id)&&!cid.has(x.id);E=window.EXERCICES.filter(lib).map(hyd).concat(c.map(hyd),p.map(hyd),(window.EXERCICES_PHY||[]).filter(lib).map(hyd)).map(nettoie);majFiltres();base();if(typeof seance=='function')seance()}
 let texteSeul=false;
 function modifierTexte(id){const f=E.find(x=>x.id==id);if(!f)return;editingId=id;varEdit=null;copieDe=null;texteSeul=true;if(f.schema_modele)M=norm(f.schema_modele);ouvrirDlg();$e('dlg').addEventListener('close',()=>{texteSeul=false},{once:true})}
 function modifierSchema(id){if(typeof phMode=='function')phMode(false);const f=E.find(x=>x.id==id);if(!f||!f.schema_modele)return;editingId=id;varEdit=null;M=norm(f.schema_modele);$e('dw').value=M.w;$e('dh').value=M.h;sel=null;hist=[];redo=[];cur=0;show('e');setMode('d')}
