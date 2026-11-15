@@ -118,4 +118,14 @@
   return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"${o.id?` id="${o.id}" style="touch-action:none;user-select:none"`:''}>${fond}${dessinFace(m,o)}${phInfo(m)}</svg>`};
  // Les schémas de face ne se modifient pas encore dans l'éditeur
  if(typeof phModifier=='function'){const mod=phModifier;phModifier=function(id){const f=(window.E||[]).find(x=>x.id==id);if(f&&f.schema_physique&&f.schema_physique.vue=='face'){alert('Ce schéma vu de face n’est pas encore modifiable dans l’éditeur.');return}return mod(id)}}
+ // Joueur de face articulé posé sur des appuis (vue inclinée) : le même joueur que les schémas de face, jambes calculées pour atteindre les pieds
+ window.phFaceCore={body,fk,place};
+ window.phJoueurIncl=function(I,an,legpx){
+  const s=Math.max(.4,Math.min(1.1,legpx/(L.th+L.sh+5.3))),KS=-1,fr=[];
+  I.forEach(i=>{const rel=F=>[(F[0]-i.H[0])/s,(F[1]-i.H[1])/s-5.3],rg=rel(i.fg),rd=rel(i.fd),gd=rg[0]>=rd[0],Lr=gd?rg:rd,Ll=gd?rd:rg;
+   const a=phIK([HW,0],Lr,L.th,L.sh,KS),b=phIK([-HW,0],Ll,L.th,L.sh,-KS);
+   fr.push({p:phF({x:0,lt:a[0],ls:a[1],rt:b[0],rs:b[1],la:6,le:4,ra:-6,re:-4})})});
+  const tv=v=>an&&v.some(x=>x!=v[0])?`<animateTransform attributeName="transform" type="translate" values="${v.join(';')}" ${an}/>`:'';
+  const hs=I.map(i=>phR(i.H[0])+' '+phR(i.H[1])),os=fr.map(f=>{const o=place(f.p,false);return phR(-o[0])+' '+phR(-o[1])});
+  return`<g transform="translate(${hs[0]})">${tv(hs)}<g transform="scale(${phR(s*100)/100})"><g transform="translate(${os[0]})">${tv(os)}${body(fr,an,false)}</g></g></g>`};
 })();
