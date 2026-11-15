@@ -104,14 +104,14 @@ const R_ATH={profil:{
   thigh:[[0,-6.7,6.4],[9,-6.9,7.7],[20,-5.6,6.5],[28,-4.6,5],[33,-4.2,4.4]],
   shin:[[0,-4.3,4.3],[7,-5.8,4.1],[15,-4.9,3.5],[24,-3.1,2.9],[32,-2.7,2.7]],
   torso:[[1,7.3,-6.3],[8,6.7,-6.4],[16,6.3,-6.7],[24,7.3,-7.9],[31,7.9,-8.9],[36,7.1,-7.6],[39.5,5.2,-4.8]],
-  neck:[[36,3.2,-2.4],[47,3.4,-2.6]],hip:7.9,hand:[0,24.3,2.7,3.8],
+  neck:[[36,3.2,-2.4],[47,3.4,-2.6]],hip:7.9,hand:[0,24.3,2.7,3.8],handP:[[-2.3,20.6],[-2.9,23.8],[-2.5,27],[-1,28.6],[.8,28.2],[1.9,26.2],[2.2,24.6],[3.5,24.2],[3.7,22.6],[2.4,20.8]],
   boot:[[-5.3,-3.8],[-5.5,3],[-5.5,11.5],[-4.9,14.6],[-3.2,15.4],[-1.2,13.6],[.2,9.5],[1.6,5],[3.4,2.6],[3.6,-1.2],[1.6,-4.2],[-2,-4.8]]},
  face:{
   uarm:sym([[0,4.5],[7,4.4],[15,3.5],[22,3.1]]),farm:sym([[0,3.2],[6,3.5],[14,2.7],[21,2.1]]),
   thigh:sym([[0,6.2],[8,7],[19,6],[28,4.8],[33,4.3]]),shin:sym([[0,4.3],[8,5.1],[16,4.3],[25,3.1],[32,2.8]]),
-  torso:sym([[1,8.3],[6,8.6],[14,7.7],[24,9.6],[32,11],[36.5,11.8],[39.5,7.5]]),
-  neck:sym([[36,2.9],[47,3]]),hand:[0,24.3,2.9,3.8],
-  pelvis:[[-9.2,7],[9.2,7],[10.6,-10],[1.4,-10],[0,-5.4],[-1.4,-10],[-10.6,-10]],
+  torso:sym([[1,8.3],[6,8.6],[14,7.9],[24,9.6],[32,11],[36.5,11.8],[39,9],[40.5,4.8]]),
+  neck:sym([[36,2.9],[47,3]]),hand:[0,24.3,2.9,3.8],handP:[[-2.4,20.6],[-3,23.8],[-2.6,27],[-1,28.6],[1,28.6],[2.6,27],[3,23.8],[2.4,20.6]],
+  pelvis:[[-9.2,7],[9.2,7],[9.6,-3],[5,-7.5],[0,-5],[-5,-7.5],[-9.6,-3]],
   boot:[[-3.2,-3],[-3.9,3],[-4.4,7.5],[-3.4,10.2],[0,11],[3.4,10.2],[4.4,7.5],[3.9,3],[3.2,-3],[0,-4]]}};
 const R_TOON={profil:{
   uarm:[[0,-4.8,4.8],[22,-4.2,4.2]],farm:[[0,-4.2,4.2],[21,-3.8,3.8]],
@@ -121,8 +121,8 @@ const R_TOON={profil:{
   boot:[[-5.6,-5],[-5.8,3],[-5.8,13],[-5,17.4],[-2.4,18.6],[.6,16.6],[2.2,11],[3,5.5],[4.6,2.6],[4.6,-2.2],[2,-5.4],[-2.4,-6]]},
  face:{
   uarm:sym([[0,4.8],[22,4.2]]),farm:sym([[0,4.2],[21,3.8]]),thigh:sym([[0,6.4],[12,7.2],[26,6],[33,5.6]]),shin:sym([[0,5.6],[10,5.8],[24,4.8],[32,4.7]]),
-  torso:sym([[1,9],[10,9.4],[24,10.4],[34,11.6],[39.5,8]]),neck:sym([[36,3.1],[44,3.1]]),hand:[0,25,4.5,4.5],
-  pelvis:[[-9.8,7],[9.8,7],[11,-10],[1.4,-10],[0,-5.4],[-1.4,-10],[-11,-10]],
+  torso:sym([[1,9],[10,9.4],[24,10.4],[34,11.6],[38.5,9.6],[40.5,5.4]]),neck:sym([[36,3.1],[44,3.1]]),hand:[0,25,4.5,4.5],
+  pelvis:[[-9.8,7],[9.8,7],[10.2,-3],[5.4,-7.5],[0,-5],[-5.4,-7.5],[-10.2,-3]],
   boot:[[-3.8,-3.6],[-4.8,3],[-5.6,8.5],[-4.4,12],[0,13],[4.4,12],[5.6,8.5],[4.8,3],[3.8,-3.6],[0,-4.6]]}};
 
 /* ---------- palettes (club ESGA : bleu et or) ---------- */
@@ -147,8 +147,8 @@ Object.keys(PAL).forEach(k=>PAL[k]=[PAL[k],FAR(PAL[k],k=='D'?.2:.26)]);
 const ST={};
 
 /* ---------- A · ARCADE : cel-shading, contour épais, ombre nette en deux tons ---------- */
-ST.A={k:'A',nom:'Arcade',sous:'cel-shading',R:R_ATH,ol:{c:PAL.A[0].ol,w:2.3,op:1},kit:{sl:11,cuff:1.8,stripe:1,sock:8,band:1},
- paint(P,key,far,o={}){const c=PAL.A[far][key];return base(sd(P,o),c)+pa(sd(P,{...o,a:0,b:.36}),tone(c,-.26))+(o.hl===0?'':pa(sd(cut(P,P[0][0]+2,P[P.length-1][0]-3),{a:.74,b:.88}),'#fff','opacity=".32"'))},
+ST.A={k:'A',nom:'Arcade',sous:'cel-shading',R:R_ATH,shape(d,key,far){return base(d,PAL.A[far][key])},ol:{c:PAL.A[0].ol,w:2.3,op:1},kit:{sl:11,cuff:1.8,stripe:1,sock:8,band:1},
+ paint(P,key,far,o={}){const c=PAL.A[far][key];return base(sd(P,o),c)+(o.sh===0?'':pa(sd(P,{...o,a:0,b:.36}),tone(c,-.26)))+(o.hl===0?'':pa(sd(cut(P,P[0][0]+2,P[P.length-1][0]-3),{a:.74,b:.88}),'#fff','opacity=".32"'))},
  dot(cx,cy,rx,ry,key,far){const c=PAL.A[far][key];return base(ell(cx,cy,rx,ry),c)+pa(ell(cx+rx*.3,cy-ry*.1,rx*.62,ry*.8),tone(c,-.24),'opacity=".0"')},
  ombre:(x,y,k)=>`<ellipse cx="${r(x)}" cy="${y}" rx="${r(27*k)}" ry="${r(4.4*k)}" fill="#0b1933" opacity="${r(.3*k)}"/>`,
  boot(v,far){const c=PAL.A[far],R=this.R[v];if(v=='face')return base(blob(R.boot),c.bo)+pa(blob(R.boot.map(q=>[q[0]*.5+2,q[1]])),tone(c.bo,-.2))+pa(`M-4.4 7.2Q0 5.4 4.4 7.2L3.4 10.2Q0 11.4 -3.4 10.2Z`,c.se);
@@ -158,12 +158,12 @@ ST.A={k:'A',nom:'Arcade',sous:'cel-shading',R:R_ATH,ol:{c:PAL.A[0].ol,w:2.3,op:1
    const ha=[[-8.4,15.2],[-8.8,20.6],[-6.2,24.2],[-3.8,23.4],[-2.4,26.2],[-.2,24],[2,26.6],[3.8,23.6],[6.4,24.6],[8.8,20.6],[8.4,15.2],[6.8,18.8],[3,20],[-1,19],[-4,20.2],[-6.8,18.6]];
    return base(ell(-8.3,13.4,1.6,2.3),c.sk)+base(ell(8.3,13.4,1.6,2.3),sS)+base(blob(sk),c.sk)+pa(blob([[0,5],[4.6,6.6],[7.2,10.5],[7.9,15.5],[6.8,20],[4.4,17],[3.6,11],[1.6,7]]),sS)
     +base(poly(ha),c.ha,`stroke="${c.ha}" stroke-width="1" stroke-linejoin="round"`)+pa(poly([[-6.6,21],[-4,22.4],[-2.6,24.6],[-2.8,21.4],[-5,20.6]]),tone(c.ha,.22))
-    +pa(ell(-3.1,13.6,1.05,1.6),c.ol)+pa(ell(3.1,13.6,1.05,1.6),c.ol)+li('M-5 16.4L-1.6 16M5 16.4L1.6 16',c.ol,1.1)+li('M-2.2 9.4Q0 8 2.2 9.4',c.ol,1)}
+    +pa(ell(-3.1,13.6,1.05,1.6),c.ol)+pa(ell(3.1,13.6,1.05,1.6),c.ol)+pa(ell(-3.4,14.2,.35,.45),'#fff')+pa(ell(2.8,14.2,.35,.45),'#fff')+li('M-5 16.4L-1.6 16M5 16.4L1.6 16',c.ol,1.1)+li('M-2.2 9.4Q0 8 2.2 9.4',c.ol,1)}
   const sk=[[-4.2,5.6],[-7.2,8],[-8.2,10.2],[-9.9,12.2],[-8.3,14.4],[-8.5,16.6],[-7.4,19.6],[-2,22.7],[4.5,21.7],[8.6,16.5],[7.8,10.5],[4.5,6.5],[0,5.2]];
   const ha=[[-7.6,18.2],[-10.8,21.4],[-7,21.6],[-9,25],[-4.2,23.6],[-3.6,26.4],[.6,24.4],[2.6,26],[6.6,22.8],[9.8,17.6],[9,11.4],[6,9.2],[5.4,13.6],[2.6,13.2],[2.2,16.8],[-1.4,17.8],[-4.8,16.9]];
   return base(blob(sk),c.sk)+pa(blob([[4.5,6.5],[7.8,10.5],[5.4,12.4],[1,9.4],[-3,6.6],[0,5.2]]),sS)
    +base(poly(ha),c.ha,`stroke="${c.ha}" stroke-width="1" stroke-linejoin="round"`)+pa(poly([[-6.4,20.6],[-8,23.8],[-4.6,22.6],[-3.8,24.8],[-1,22.6],[-4,20.6]]),tone(c.ha,.22))
-   +pa(ell(3.3,12.5,1.7,2.3),sS)+pa(ell(-5.6,14.1,1,1.6),c.ol)+li('M-8.2 16.3L-4.6 16.9',c.ol,1.2)+li('M-7.8 9.5L-5.6 9.1',c.ol,1)}};
+   +pa(ell(3.3,12.5,1.7,2.3),sS)+pa(ell(-5.6,14.1,1,1.6),c.ol)+pa(ell(-5.9,14.7,.35,.45),'#fff')+li('M-8.2 16.3L-4.6 16.9',c.ol,1.2)+li('M-7.8 9.5L-5.6 9.1',c.ol,1)}};
 
 /* ---------- B · FACETTES : low-poly, triangles à plat, aucune courbe ---------- */
 const tri=(a,b,c,col)=>`<path d="M${r(a[0])} ${r(a[1])}L${r(b[0])} ${r(b[1])}L${r(c[0])} ${r(c[1])}Z" fill="${col}" stroke="${col}" stroke-width=".5" stroke-linejoin="round"/>`;
@@ -197,7 +197,7 @@ ST.B={k:'B',nom:'Facettes',sous:'low-poly',R:R_ATH,ol:null,kit:{sl:11,cuff:0,str
    +pa(poly([[-7.2,14.8],[-4.8,14.4],[-5.8,13]]),'#0d1730')}};
 
 /* ---------- C · PRO : volumes lisses en dégradé, tenue moderne, visage détaillé ---------- */
-ST.C={k:'C',nom:'Pro',sous:'rendu lisse',R:R_ATH,ol:{c:'#071330',w:1.2,op:.5},kit:{sl:11.5,cuff:1.4,stripe:1,sock:9,band:1,lines:1},
+ST.C={k:'C',nom:'Pro',sous:'rendu lisse',R:R_ATH,shape(d,key,far){return base(d,`url(#c_${key}${far?'f':''})`)},ol:{c:'#071330',w:1.2,op:.5},kit:{sl:11.5,cuff:1.4,stripe:1,sock:9,band:1,lines:1},
  paint(P,key,far,o={}){const g=o.grad||`url(#c_${key}${far?'f':''})`;return base(sd(P,o),g)+(o.hl===0?'':pa(sd(cut(P,P[0][0]+1,P[P.length-1][0]-2),{a:.84,b:.96}),'#fff','opacity=".3"'))},
  dot(cx,cy,rx,ry,key,far){return base(ell(cx,cy,rx,ry),`url(#c_${key}${far?'f':''})`)},
  ombre:(x,y,k)=>`<ellipse cx="${r(x)}" cy="${y+1}" rx="${r(34*k)}" ry="${r(6*k)}" fill="url(#c_om)"/>`,
@@ -217,7 +217,7 @@ ST.C={k:'C',nom:'Pro',sous:'rendu lisse',R:R_ATH,ol:{c:'#071330',w:1.2,op:.5},ki
 
 /* ---------- D · MINI-STAR : cartoon, grosse tête, formes rondes, contour doux ---------- */
 ST.D={k:'D',nom:'Mini-star',sous:'cartoon',R:R_TOON,ol:{c:PAL.D[0].ol,w:2.6,op:1},kit:{sl:12,cuff:2.4,stripe:0,sock:6,band:2,star:1},
- paint(P,key,far,o={}){const c=PAL.D[far][key];return base(sd(P,o),c)+pa(sd(P,{...o,a:0,b:.3}),tone(c,-.16))+(o.hl===0?'':li(sd(cut(P,P[0][0]+3,P[P.length-1][0]-5),{a:.76,b:.77}).split('C')[0]+side(cut(P,P[0][0]+3,P[P.length-1][0]-5).map(q=>[q[1]+(q[2]-q[1])*.76,q[0]])),'#fff',1.6,'opacity=".5"'))},
+ paint(P,key,far,o={}){const c=PAL.D[far][key];return base(sd(P,o),c)+(o.sh===0?'':pa(sd(P,{...o,a:0,b:.3}),tone(c,-.16)))+(o.hl===0?'':li(sd(cut(P,P[0][0]+3,P[P.length-1][0]-5),{a:.76,b:.77}).split('C')[0]+side(cut(P,P[0][0]+3,P[P.length-1][0]-5).map(q=>[q[1]+(q[2]-q[1])*.76,q[0]])),'#fff',1.6,'opacity=".5"'))},
  dot(cx,cy,rx,ry,key,far){return base(ell(cx,cy,rx,ry),PAL.D[far][key])},
  ombre:(x,y,k)=>`<ellipse cx="${r(x)}" cy="${y}" rx="${r(30*k)}" ry="${r(5*k)}" fill="#1b3a8a" opacity="${r(.22*k)}"/>`,
  boot(v,far){const c=PAL.D[far],R=this.R[v];if(v=='face')return base(blob(R.boot),c.bo)+pa(`M-5.6 8.6Q0 6.4 5.6 8.6L4.4 12Q0 13.4 -4.4 12Z`,c.se)+pa(ell(-1.6,2.5,1.5,2.4),'#fff','opacity=".35"');
@@ -235,7 +235,7 @@ ST.D={k:'D',nom:'Mini-star',sous:'cartoon',R:R_TOON,ol:{c:PAL.D[0].ol,w:2.6,op:1
 
 /* ---------- E · HOLOGRAMME : corps en verre bleu, articulations or, muscle travaillé en surbrillance ---------- */
 let HOT={};
-ST.E={k:'E',nom:'Hologramme',sous:'verre et muscles',R:R_ATH,ol:null,kit:{sl:0,cuff:0,stripe:0,sock:0,band:0,bare:1},
+ST.E={k:'E',nom:'Hologramme',sous:'verre et muscles',R:R_ATH,shape(d,key,far){return`<g opacity="${far?.5:1}">`+base(d,'url(#e_gl)','stroke="#16327a" stroke-width="1.3" stroke-linejoin="round"')+'</g>'},ol:null,kit:{sl:0,cuff:0,stripe:0,sock:0,band:0,bare:1},
  paint(P,key,far,o={}){const n=P[P.length-1][0];return`<g opacity="${far?.5:1}">`+base(sd(P,o),'url(#e_gl)','stroke="#16327a" stroke-width="1.3" stroke-linejoin="round"')+pa(sd(cut(P,P[0][0]+1,n-2),{a:.72,b:.9}),'#fff','opacity=".5"')
   +(o.hot?pa(sd(cut(P,P[0][0]+o.hot[2]*(n-P[0][0]),P[0][0]+o.hot[3]*(n-P[0][0])),{a:o.hot[0],b:o.hot[1]}),'url(#e_hot)','opacity=".92" stroke="#b85a00" stroke-width=".6"'):'')+this.ring(0,P[0][0]<1?P[0][0]>0?-99:0:-99)+'</g>'},
  ring:(x,y,rr=2.7)=>y<-50?'':`<circle cx="${x}" cy="${y}" r="${rr}" fill="#fff" stroke="#e8a800" stroke-width="1.7"/>`,
@@ -249,22 +249,22 @@ ST.E={k:'E',nom:'Hologramme',sous:'verre et muscles',R:R_ATH,ol:null,kit:{sl:0,c
 function part(st,v,name,far){const R=st.R[v],K=st.kit,c=PAL[st.k][far],P=(t,k,o)=>st.paint(t,k,far,o),band=(t,y0,y1,g,col)=>pa(sd(cut(t,y0,y1,g),{f0:1,f1:1}),col),H=HOT;
  switch(name){
  case'uarm':return P(R.uarm,'sk',{hl:K.sl?0:1,hot:H.uarm})+(K.sl?P(cut(R.uarm,-99,K.sl,.8),'je',{f1:1})+(K.cuff?band(R.uarm,K.sl-K.cuff,K.sl,.9,c.cu):''):'');
- case'farm':{const h=R.hand;return st.dot(h[0],h[1],h[2],h[3],'sk',far)+P(R.farm,'sk',{hot:H.farm})}
- case'thigh':return P(R.thigh,'sk',{hl:0,hot:H.thigh})+(K.bare?'':P(cut(R.thigh,-99,17,1),'sh',{f1:1})+(K.stripe&&v=='profil'?li(`M.6 1L.9 16.4`,c.st,1.7):'')+(K.lines?band(R.thigh,15.8,17,1.05,c.st):''));
- case'shin':return P(R.shin,'sk',{hl:K.bare?1:0,hot:H.shin})+(K.bare?'':P(cut(R.shin,K.sock,99,.5),'so',{f0:1})+(K.band==1?band(R.shin,K.sock+1.4,K.sock+3,.55,c.sb)+band(R.shin,K.sock+4.2,K.sock+5.2,.55,c.sb):K.band==2?band(R.shin,K.sock,K.sock+3.4,.6,c.sb):''));
+ case'farm':{const h=R.hand;return(R.handP&&st.shape?st.shape(blob(R.handP),'sk',far)+(st.k=='E'?'':li(v=='face'?'M-.9 25.4L-1 28M.9 25.4L1 28':'M-.5 25.2L-.8 28.2M2 24.4L1.2 25.6',tone(c.sk,-.4),.6,'opacity=".7"')):st.dot(h[0],h[1],h[2],h[3],'sk',far))+P(R.farm,'sk',{hot:H.farm})}
+ case'thigh':return P(R.thigh,'sk',{hl:0,hot:H.thigh})+(K.bare?'':P(cut(R.thigh,-99,17,1),'sh',{f1:1})+(K.stripe&&v=='profil'?li(`M.6 1L.9 15.4`,c.st,1.7):'')+(K.lines?band(R.thigh,15.8,17,1.05,c.st)+(v=='profil'?li('M2.4 19Q3.6 26 1.8 31',tone(c.sk,-.5),.7,'opacity=".3"'):''):''));
+ case'shin':return P(R.shin,'sk',{hl:K.bare?1:0,sh:K.bare?1:0,hot:H.shin})+(K.bare?'':P(cut(R.shin,K.sock,99,.5),'so',{f0:1})+(K.band==1?band(R.shin,K.sock+1.4,K.sock+3,.55,c.sb)+band(R.shin,K.sock+4.2,K.sock+5.2,.55,c.sb):K.band==2?band(R.shin,K.sock,K.sock+3.4,.6,c.sb):''));
  case'foot':return st.boot(v,far);
  case'head':return st.head(v,far);
  case'pelvis':{const d=poly(R.pelvis),col=c.sh;if(st.k=='B'){SIL.push(d);const q=R.pelvis;return tri(q[0],q[1],q[4],tone(col,.1))+tri(q[0],q[4],q[6],tone(col,-.06))+tri(q[4],q[5],q[6],tone(col,-.16))+tri(q[1],q[2],q[4],tone(col,-.24))+tri(q[2],q[3],q[4],tone(col,-.34))}
   if(st.k=='E')return base(d,'url(#e_gl)','stroke="#16327a" stroke-width="1.3" stroke-linejoin="round"')+st.ring(-4.5,0,2.8)+st.ring(4.5,0,2.8);
-  return base(d,st.k=='C'?'url(#c_sh)':col,`stroke-linejoin="round"`)+li(`M-9 7L9 7`,c.st,1.3)}
+  return base(d,st.k=='C'?'#152c62':col,`stroke-linejoin="round"`)+li(`M-9 7L9 7`,c.st,1.3)}
  case'torso':{const T=R.torso,top=T[T.length-1][0];let s=K.bare?'':P(R.neck,'sk',{f0:1,f1:1,hl:0});
   if(v=='profil')s=st.dot(0,0,R.hip,R.hip,'sh',far)+s;
-  s+=P(T,'je',{f0:1,hot:H.torso,grad:st.k=='C'?(v=='face'?'url(#c_jeF)':'url(#c_jeT)'):null});
+  s+=P(T,'je',{f0:1,f1:v=='face',hot:H.torso,grad:st.k=='C'?(v=='face'?'url(#c_jeF)':'url(#c_jeT)'):null});
   if(K.bare)return s+(v=='face'?li('M0 4L0 37','#fff',1.1,'opacity=".6"')+st.ring(0,22,3.4):li('M2.6 4Q4.4 20 2.6 36','#fff',1.1,'opacity=".6"'))+st.ring(0,top+.5,2.6);
   const col=at(T,top-1.2);
   if(v=='face'){s+=pa(`M-4.2 ${top+.4}L0 ${top-4.4}L4.2 ${top+.4}L2.6 ${top+.8}L0 ${top-2}L-2.6 ${top+.8}Z`,c.cu)+pa(`M-2.6 ${top+.8}L0 ${top-2}L2.6 ${top+.8}Z`,c.sk);
-   if(K.star)s+=pa(star(0,25,5.4),c.se);else if(st.k!='B')s+=pa(ell(-5.4,30.6,1.7,1.7),c.se)+(st.k=='C'?li('M-11 36.4L-8.6 4M11 36.4L8.6 4',c.se,.9,'opacity=".9"'):'')}
-  else{s+=pa(sd(cut(T,top-2.2,top,.3),{f0:1,f1:1}),c.cu);if(K.star)s+=pa(star(-2.2,24,4.4),c.se);if(st.k=='C')s+=li('M2.4 3Q3.6 20 2 37',c.se,.9,'opacity=".9"')}
+   if(K.star)s+=pa(star(0,25,5.4),c.se);else if(st.k!='B')s+=pa('M-7.2 32.6h3.6v-2.6l-1.8 -1.7l-1.8 1.7z',c.se)+(st.k=='C'?li('M-11 36.4L-8.6 4M11 36.4L8.6 4',c.se,.9,'opacity=".9"'):'')}
+  else{s+=pa(sd(cut(T,top-2.2,top,.3),{f0:1,f1:1}),c.cu);if(K.star)s+=pa(star(-2.2,24,4.4),c.se);if(st.k=='C')s+=li('M2.4 3Q3.6 20 2 37',c.se,.9,'opacity=".9"');if(st.k=='A'||st.k=='C')s+=li('M-4 6.4Q0 9 4.6 6.8M-3 11.4Q.6 13.4 4.8 11.6',tone(c.je,-.45),.8,'opacity=".55"')}
   return s}}}
 const star=(cx,cy,R)=>poly([...Array(10)].map((_,i)=>{const a=i*Math.PI/5,q=i%2?R*.45:R;return[cx+q*Math.sin(a),cy+q*Math.cos(a)]}));
 
