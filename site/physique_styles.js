@@ -47,7 +47,7 @@ function drawC(j,p){const CL='#d7dbe3',CLD='#aab1bf';
  const th=headRot(j),c=lp(j.H,j.S,.42);
  return ombre(j,p,'#556',.4)+arm(j.af,1)+leg(j.lf,1)
   +vol(j.H,c,13.5,14.2,14,.5,'#14305f',.3,.2)+vol(c,j.S,15,17.5,15,.5,'#274b8f',.45,.2)
-  +`<path d="${shape(lp(c,j.S,.55),lp(c,j.S,.66),17,17,17)}" fill="${GO}" opacity=".9"/>`
+  
   +circ(c,4.4,'url(#jb)')+circ(j.H,6.6,'url(#jb)')+circ(j.S,5,'url(#jb)')
   +vol(j.N,lp(j.N,j.Hd,.5),4.8,4.6,4.6,.5,CL,.55,.15)
   +`<g transform="translate(${f2(j.Hd)})"><g transform="rotate(${r(th)})"><ellipse rx="7.6" ry="9.4" fill="url(#jb)"/><ellipse cx="7.8" cy="1.8" rx="1.8" ry="2.4" fill="#c4c9d4"/></g></g>`
