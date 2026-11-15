@@ -117,6 +117,7 @@ function prochHtml(){const auj=aujIso(),moi=nomAut(lsG('nomeduc')),L=SEANCES.fil
 function prochaineSeance(){if(typeof themesEnCours=='function')themesEnCours()}
 function cloner(id){ouvrirSeance(id,0,1)}
 function ouvrirSeance(id,terrain,clone){const x=SEANCES.find(s=>s.id==id);if(!x)return;
+ if(S.length&&lsG('seanceid')!=x.id&&!confirm('Ouvrir cette séance remplace la séance en préparation. Continuer ?'))return;
  S=(x.exercices||[]).map(e=>({...e}));nom.value=x.nom||'';dat.value=x.date||'';lsS('nomseance',nom.value);lsS('dateseance',dat.value);lsS('seanceid',clone?'':x.id);lsS('bilanseance',clone?'':x.bilan||'');if(clone){nom.value='Copie de '+(x.nom||'séance').replace(/^Copie de /,'');dat.value='';lsS('nomseance',nom.value);lsS('dateseance','')}TERRAIN=!!terrain;TM={};save();show('s')}
 async function enregistrerSeance(){if(!S.length){alert('La séance est vide.');return}if(!nom.value.trim()){alert('Donne un nom à la séance.');nom.focus();return}
  if(!dat.value){alert('Choisis la date de la séance.');dat.focus();return}
