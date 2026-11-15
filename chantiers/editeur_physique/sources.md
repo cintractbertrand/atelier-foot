@@ -18,6 +18,6 @@ Demande de Bertrand : un éditeur sur le modèle de l'éditeur de terrain, avec 
 
 ## Import du répertoire « Fitness et renforcement musculaire » (15/11/2026)
 - PDF de 175 pages (O. Stoffer), scanné : lu par OCR puis relu à l'œil. Exercices aux haltères, barre, step lesté et élastiques écartés ; seuls ceux au poids du corps utiles au football sont repris.
-- 8 nouvelles fiches (`site/fiches_repertoire.js`) : relevé de bassin, canif, bateau, adducteurs couché, fessiers et ischios en quadrupédie, lombaires (superman), montées sur pointes.
-- Variantes ajoutées aux fiches existantes (squat ouvert/serré/+fente, pompes sur genoux/coudes serrés, crunch, abduction), pour éviter les doublons.
+- 13 nouvelles fiches (`site/fiches_repertoire.js`, 2 lots) : relevé de bassin, canif, bateau, adducteurs couché, fessiers et ischios en quadrupédie, lombaires (superman), montées sur pointes.
+- Variantes ajoutées aux fiches existantes (squat ouvert/serré, pompes sur genoux/coudes serrés, crunch, abduction), pour éviter les doublons.
 - Écartés : dips (pose du joueur peu lisible), oiseau, pectoraux au ballon, enchaînements sur musique (pas de valeur pour le foot).
