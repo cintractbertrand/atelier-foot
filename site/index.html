@@ -129,7 +129,7 @@ nav #nf{background:var(--or);color:#1b3a73;font-weight:700}.voir{display:none}
 <dialog id="dlg"><form id="fdlg" method="dialog" class="form">
  <h3>Fiche d'exercice</h3>
  <label>Titre (40 car.) <input id="f_titre" maxlength="40" required></label>
- <label>Thème <select id="f_theme"><option>échauffement</option><option>technique</option><option>conduite</option><option>passe</option><option>tir</option><option>jeu réduit</option><option>tactique</option><option>physique</option><option>gardien</option><option>retour au calme</option><option>renfo</option><option>proprio</option><option>étirement</option><option>motricité</option></select></label>
+ <label>Thème <select id="f_theme"><option>échauffement</option><option>technique</option><option>conduite</option><option>passe</option><option>tir</option><option>jeu réduit</option><option>tactique</option><option>physique</option><option>gardien</option><option>retour au calme</option><option>renfo</option><option>circuit</option><option>proprio</option><option>étirement</option><option>motricité</option></select></label>
  <label>Catégories <span id="f_cats" class="chips"></span></label>
  <label>Niveau <select id="f_niveau"><option>débutant</option><option>confirmé</option></select></label>
  <label>Durée (min) <input id="f_duree" type="number" min="1"></label>
@@ -161,10 +161,10 @@ const txtMat=l=>l.length?l.map(m=>m.quantite+' '+esc(m.nom)).join(', '):'aucun';
 let E=window.EXERCICES;const $=s=>document.querySelector(s);
 let S=[];try{S=JSON.parse(localStorage.getItem('seance')||'[]')}catch(e){}
 const save=()=>{try{localStorage.setItem('seance',JSON.stringify(S))}catch(e){}$('#cnt').textContent=S.length};
-const ordreTheme=a=>{const o=['échauffement','physique','motricité','renfo','proprio','technique','tactique','jeu réduit','étirement'],r=x=>o.indexOf(x)<0?99:o.indexOf(x);return a.sort((x,y)=>r(x)-r(y))};
+const ordreTheme=a=>{const o=['échauffement','physique','motricité','renfo','circuit','proprio','technique','tactique','jeu réduit','étirement'],r=x=>o.indexOf(x)<0?99:o.indexOf(x);return a.sort((x,y)=>r(x)-r(y))};
 const OPENS={},dB=e=>[10,15,20,30].reduce((a,b)=>Math.abs(b-e.duree_min)<Math.abs(a-e.duree_min)?b:a);
 const uniq=a=>[...new Set(a)].sort();
-const PHT=new Set(['renfo','proprio','étirement','motricité']);let ZONE='f';const inZone=e=>PHT.has(e.theme)==(ZONE=='p');
+const PHT=new Set(['renfo','proprio','étirement','motricité','circuit']);let ZONE='f';const inZone=e=>PHT.has(e.theme)==(ZONE=='p');
 let F={theme:'',cat:'',duree:'',niveau:'',auteur:'',muscle:'',source:'',liste:'',joueurs:'',sans:[]};
 const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch(e){return d}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let FAV=new Set(lsGet('favoris',[])),REC=lsGet('recents',[]);
@@ -366,4 +366,4 @@ function proposerSeance(){let d=document.getElementById('psd');if(d)d.remove();d
  d.showModal()}
 majFiltres();base();save();lienOuvrir();
 </script>
-<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="physique.js?v=9"></script><script src="physique_plus.js?v=1"></script><script src="fiches_physique.js?v=2"></script><script src="fiches_repertoire.js?v=3"></script><script src="editeur.js?v=51"></script><script src="club.js?v=27"></script><script src="saison.js?v=17"></script></body></html>
+<script>try{if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')}catch(e){}</script><script src="physique.js?v=9"></script><script src="physique_plus.js?v=1"></script><script src="fiches_physique.js?v=2"></script><script src="fiches_repertoire.js?v=3"></script><script src="editeur.js?v=51"></script><script src="circuit.js?v=1"></script><script src="club.js?v=27"></script><script src="saison.js?v=17"></script></body></html>

@@ -38,7 +38,7 @@ async function partager(id,auto){const f=E.find(x=>x.id==id);if(!f)return;const 
  savePerso(chargePerso().filter(x=>x.id!=id));await clubCharger();if(!auto)alert('Fiche partagée : tous les éducateurs la voient maintenant.')}
 async function retirer(id){if(!confirm('Retirer cette fiche du club ? Elle est seulement masquée et reste récupérable.'))return;const code=clubCode();if(!code)return;
  if(!await clubRpc('retirer_fiche',{code,fid:id}))return;lsS('codeclub',code);await clubCharger()}
-const THEMES=['échauffement','physique','technique','tactique','jeu réduit','tir','gardien','retour au calme','renfo','proprio','étirement','motricité'];
+const THEMES=['échauffement','physique','technique','tactique','jeu réduit','tir','gardien','retour au calme','renfo','circuit','proprio','étirement','motricité'];
 function deplacer(id){const f=E.find(x=>x.id==id);if(!f)return;let d=document.getElementById('dpd');if(d)d.remove();d=document.createElement('dialog');d.id='dpd';d.style.cssText='max-width:420px;width:92vw;border:0;border-radius:10px;padding:16px';
  const th=[...new Set(THEMES.concat(E.map(e=>e.theme)))];
  d.innerHTML='<h3 style="margin:0 0 8px">Déplacer la fiche</h3><p style="margin:0 0 8px"><b>'+esc(f.titre)+'</b><br><small>Thème actuel : '+esc(f.theme)+'</small></p><select id="dps" style="width:100%;padding:8px">'+th.map(t=>'<option'+(t==f.theme?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select><div style="margin-top:12px;text-align:right"><button id="dpx">Annuler</button> <button class="add" id="dpo">Déplacer</button></div>';
