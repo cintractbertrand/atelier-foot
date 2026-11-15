@@ -28,7 +28,7 @@ function botte(l,fill,sole){const s=unit(lp(l.he,l.to,.2),l.a),u=unit(l.he,l.to)
  const pts=[l.he,l.to,tu,ins,af,ab].map(f2).join('L');return`<path d="M${pts}Z" fill="${fill}" stroke="${fill}" stroke-width="1.8" stroke-linejoin="round"/><line x1="${r(l.he[0])}" y1="${r(l.he[1])}" x2="${r(l.to[0])}" y2="${r(l.to[1])}" stroke="${sole}" stroke-width="1.7" stroke-linecap="round"/>`}
 function ombre(j,p,fill,op){const x=(j.ln.a[0]+j.lf.a[0])/2,k=1-(p.air||0)/160;return`<ellipse cx="${r(x)}" cy="${PH_SOL+1}" rx="${r(26*k)}" ry="3.2" fill="${fill}" opacity="${op*k}" filter="url(#blur)"/>`}
 
-const DEFS='<defs><radialGradient id="jb" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#d7dbe3"/><stop offset="1" stop-color="#8d95a6"/></radialGradient><radialGradient id="jbd" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e3e6ec"/><stop offset=".5" stop-color="#aab1bf"/><stop offset="1" stop-color="#6b7384"/></radialGradient><filter id="blur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="2.2"/></filter><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+const DEFS='<defs><radialGradient id="jb" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#d7dbe3"/><stop offset="1" stop-color="#8d95a6"/></radialGradient><radialGradient id="jbd" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e3e6ec"/><stop offset=".5" stop-color="#aab1bf"/><stop offset="1" stop-color="#6b7384"/></radialGradient><radialGradient id="jn" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6c92d8"/><stop offset=".5" stop-color="#274b8f"/><stop offset="1" stop-color="#0d2349"/></radialGradient><filter id="blur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="2.2"/></filter><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
 /* ---------- B · Réaliste : peau, maillot, short, chaussettes, crampons, volumes ---------- */
 function drawB(j,p){const sk='#eab58c',skD='#c98f68',je=NV,jeD=ND,so=GO,soD=GOD;
  const arm=(A,ff)=>{const s=ff?skD:sk,m=ff?jeD:je;return vol(j.S,A.e,7.4,7.8,5.8,.35,s)+vol(j.S,lp(j.S,A.e,.42),10,10,9,.5,m,ff?0:.2)+vol(A.e,A.w,5.8,6.6,4,.3,s)+`<ellipse cx="${r(lp(A.w,A.m,.55)[0])}" cy="${r(lp(A.w,A.m,.55)[1])}" rx="3" ry="3.8" fill="${s}"/>`};
@@ -61,7 +61,7 @@ function drawD(j,p){const CY='#6ee7ff',CYD='#2a8fb0',GL='#ffd76a';
  const leg=(L,c,w)=>ln(j.H,L.k,c,w)+ln(L.k,L.a,c,w)+ln(L.a,L.to,c,w)+ln(L.a,L.he,c,w)+jt(L.k,c)+jt(L.a,c);
  const k=j.ln.k,v1=unit(k,j.H),v2=unit(k,j.ln.a),R=11,p1=[k[0]+v1[0]*R,k[1]+v1[1]*R],p2=[k[0]+v2[0]*R,k[1]+v2[1]*R],sw=(v1[0]*v2[1]-v1[1]*v2[0])>0?1:0,ang=Math.round(180-Math.abs(phW(p.sn-p.tn))),lab=[k[0]+14,k[1]-5];
  return `<g filter="url(#glow)">`+arm(j.af,CYD,2.4)+leg(j.lf,CYD,2.6)
-  +`<path d="${shape(j.H,j.N,15,15,17,.5)}" fill="${GO}" opacity=".16"/>`+ln(j.H,j.S,GL,3.2)+ln(j.N,lp(j.N,j.Hd,.4),GL,2.4)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+jt(j.H,GL)+jt(j.S,GL)
+  +`<path d="${shape(j.H,j.N,15,15,17,.5)}" fill="${GO}" opacity=".3"/>`+ln(j.H,j.S,GL,4.2)+ln(j.N,lp(j.N,j.Hd,.4),GL,2.4)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+jt(j.H,GL)+jt(j.S,GL)
   +leg(j.ln,CY,3.2)+arm(j.an,CY,3)+`</g>`
   +`<path d="M${f2(k)}L${f2(p1)}A${R} ${R} 0 0 ${sw} ${f2(p2)}Z" fill="${GL}" opacity=".3"/><text x="${r(lab[0])}" y="${r(lab[1])}" font-size="8.5" font-weight="700" fill="${GL}" font-family="system-ui,sans-serif">${ang}°</text>`}
 
@@ -93,18 +93,70 @@ function animer(list,an,op){
   const anim=animsDe(col),tag=col[0];
   out+=tag.endsWith('/>')?tag.slice(0,-2)+'>'+anim+'</'+nom+'>':tag+anim}
  return out}
+// ---------- vue de face : mêmes rendus à partir des articulations de face ----------
+function faceJ(F,o){const T=q=>[q[0]+o[0],q[1]+o[1]],A=a=>({S:T(a.S),e:T(a.e),w:T(a.w),m:T(a.m)}),L=l=>({P:T(l.P),k:T(l.k),a:T(l.a),b:T(l.b)});
+ return{H:T(F.H),N:T(F.N),Hd:T(F.Hd),Ag:A(F.Ag),Ad:A(F.Ad),Lg:L(F.Lg),Ld:L(F.Ld)}}
+function tronc(j){const u=unit(j.H,j.N),n=[-u[1],u[0]],sg=((j.Ag.S[0]-j.Ad.S[0])*n[0]+(j.Ag.S[1]-j.Ad.S[1])*n[1])>0?1:-1,w=8.8,wg=[j.H[0]+n[0]*sg*w,j.H[1]+n[1]*sg*w],wd=[j.H[0]-n[0]*sg*w,j.H[1]-n[1]*sg*w];return{u,n,sg,wg,wd,poly:`M${f2(j.Ag.S)}L${f2(j.Ad.S)}L${f2(wd)}L${f2(wg)}Z`}}
+function teteFace(j,fond,peau,chev,traits){const th=headRot(j);return`<g transform="translate(${f2(j.Hd)})"><g transform="rotate(${r(th)})">`+(chev?`<circle r="9.9" fill="${chev}"/>`:'')+`<ellipse cy="${chev?1.2:0}" rx="8.4" ry="9.4" fill="${fond}"/>`+(traits?`<ellipse cx="-9" cy="1" rx="1.8" ry="2.6" fill="${peau}"/><ellipse cx="9" cy="1" rx="1.8" ry="2.6" fill="${peau}"/><circle cx="-3.3" cy="0" r="1.1" fill="#1a1410"/><circle cx="3.3" cy="0" r="1.1" fill="#1a1410"/><path d="M-5.6 -2.6Q-3.3 -4 -1.4 -2.8M1.4 -2.8Q3.3 -4 5.6 -2.6" stroke="#1a1410" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M0 1.5L-1.2 4.6L1.2 4.6" stroke="#a0654a" stroke-width=".9" fill="none"/><path d="M-3 6.8Q0 8.4 3 6.8" stroke="#7a3a2a" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M-9.4 -1C-9.6 -9.4 9.6 -9.4 9.4 -1C6 -5.4 -6 -5.4 -9.4 -1Z" fill="${chev}"/>`:'')+`</g></g>`}
+function faceB(j){const sk='#eab58c',skD='#c98f68',T=tronc(j);
+ const leg=L=>vol(L.P,L.k,13.6,13.2,9.4,.3,sk)+vol(L.P,lp(L.P,L.k,.7),16.4,15.6,14.4,.5,ND,.18)+vol(L.k,L.a,9,10.2,6.4,.3,sk)+vol(lp(L.k,L.a,.42),L.a,8.6,8.4,6.8,.5,GO,.2)+cap(L.a,L.b,10,8.4,'#161616')+`<path d="${shape(lp(L.a,L.b,.1),lp(L.a,L.b,.9),3,3,3,.5,-2)}" fill="#fff" opacity=".5"/>`;
+ const arm=(A)=>vol(A.S,A.e,9.4,9.8,7,.3,sk)+vol(A.S,lp(A.S,A.e,.45),12,11.8,10.8,.5,NV,.25)+`<path d="${shape(lp(A.S,A.e,.42),lp(A.S,A.e,.48),11.6,11.6,11)}" fill="${GO}"/>`+vol(A.e,A.w,7,7.8,4.6,.28,sk)+cap(A.w,A.m,6.4,5,sk);
+ return leg(j.Ld)+leg(j.Lg)+`<path d="${T.poly}" fill="${NV}" stroke="${NV}" stroke-width="5" stroke-linejoin="round"/><path d="M${f2(lp(j.Ag.S,j.Ad.S,.2))}L${f2(lp(j.Ag.S,j.Ad.S,.5))}L${f2(lp(T.wd,T.wg,.5))}L${f2(lp(T.wd,T.wg,.15))}Z" fill="#fff" opacity=".12"/>`
+  +circ(j.H,9.6,ND)+`<path d="M${f2(lp(j.N,j.H,.04))}L${f2(lp(j.N,j.H,.04))}" stroke="none"/><path d="M${f2([j.N[0]-T.n[0]*3.6,j.N[1]-T.n[1]*3.6])}L${f2(lp(j.N,j.H,.16))}L${f2([j.N[0]+T.n[0]*3.6,j.N[1]+T.n[1]*3.6])}" stroke="${GO}" stroke-width="1.8" fill="none" stroke-linejoin="round"/>`
+  +cap(j.N,lp(j.N,j.Hd,.55),6,5.6,sk)+arm(j.Ad)+arm(j.Ag)+teteFace(j,sk,skD,'#3a2a1d',1)}
+function faceC(j){const CL='#d7dbe3',T=tronc(j);
+ const leg=L=>vol(L.P,L.k,11,11,7.6,.3,CL,.55,.18)+circ(L.k,4.8,'url(#jb)')+vol(L.k,L.a,7.6,8.2,5,.3,CL,.55,.18)+circ(L.a,3.4,'url(#jb)')+cap(L.a,L.b,8,6.6,CL)+circ(L.P,5.6,'url(#jb)');
+ const arm=A=>vol(A.S,A.e,6.4,6.6,5,.4,CL,.55,.16)+circ(A.e,3.6,'url(#jb)')+vol(A.e,A.w,5,5.4,3.6,.35,CL,.55,.16)+circ(A.w,2.8,'url(#jb)')+cap(A.w,A.m,5.4,4.4,CL)+circ(A.S,5.2,'url(#jb)');
+ return leg(j.Ld)+leg(j.Lg)+`<path d="${T.poly}" fill="#274b8f" stroke="#274b8f" stroke-width="5" stroke-linejoin="round"/><path d="M${f2(lp(j.Ag.S,j.Ad.S,.15))}L${f2(lp(j.Ag.S,j.Ad.S,.5))}L${f2(lp(T.wd,T.wg,.5))}L${f2(lp(T.wd,T.wg,.1))}Z" fill="#fff" opacity=".18"/>`
+  +circ(j.H,8.8,'url(#jn)')+vol(j.N,lp(j.N,j.Hd,.5),4.8,4.6,4.6,.5,CL,.55,.15)+arm(j.Ad)+arm(j.Ag)
+  +`<g transform="translate(${f2(j.Hd)})"><g transform="rotate(${r(headRot(j))})"><ellipse rx="7.6" ry="9.4" fill="url(#jb)"/></g></g>`}
+function faceD(j){const CY='#6ee7ff',GL='#ffd76a',T=tronc(j);
+ const ln=(a,b,c,w)=>`<line x1="${r(a[0])}" y1="${r(a[1])}" x2="${r(b[0])}" y2="${r(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,jt=(q,c)=>circ(q,2.6,'#0a1631',`stroke="${c}" stroke-width="1.6"`);
+ const leg=L=>ln(L.P,L.k,CY,3)+ln(L.k,L.a,CY,3)+ln(L.a,L.b,CY,3)+jt(L.k,CY)+jt(L.a,CY),arm=A=>ln(A.S,A.e,CY,2.8)+ln(A.e,A.w,CY,2.8)+jt(A.e,CY)+jt(A.w,CY);
+ return`<g filter="url(#glow)"><path d="${T.poly}" fill="${GO}" opacity=".3"/>`+leg(j.Ld)+leg(j.Lg)+ln(j.Ag.S,j.Ad.S,GL,3)+ln(j.H,j.N,GL,3.2)+ln(j.Lg.P,j.Ld.P,GL,3)+arm(j.Ad)+arm(j.Ag)+jt(j.H,GL)+jt(j.Ag.S,GL)+jt(j.Ad.S,GL)+circ(j.Hd,9.2,'none',`stroke="${GL}" stroke-width="2"`)+`</g>`}
+const FACE={realiste:faceB,mannequin:faceC,analyse:faceD};
+
+// ---------- appuis (dessus et inclinée) : chaussures de dessus selon le rendu, palette du joueur ----------
+const PAL_ST={mannequin:{peau:'#d7dbe3',peau2:'#aab1bf',chev:'#aab1bf'},analyse:{peau:'#6ee7ff',peau2:'#2a8fb0',chev:'#ffd76a'}};
+const PIED={
+ realiste:(c,g)=>{const k=g?-1:1,col=g?'#161616':'#2b2b2b';return`<g transform="scale(${r(c/44)})"><path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="${col}" stroke="#f2f2f2" stroke-width="1"/><path d="M-3 ${-2*k}L2 ${2*k}M0 ${-3*k}L5 ${.6*k}" stroke="${g?GO:'#888'}" stroke-width=".9"/><circle cx="-6" cy="${-2*k}" r="1" fill="#ddd"/><circle cx="-6" cy="${2*k}" r="1" fill="#ddd"/><circle cx="6" cy="${-2*k}" r="1" fill="#ddd"/><circle cx="6.4" cy="${1.8*k}" r="1" fill="#ddd"/></g>`},
+ mannequin:(c,g)=>`<g transform="scale(${r(c/44)})">${PIED0_shape(g,'#d7dbe3','#8d95a6')}</g><circle r="${r(c*.06)}" fill="${g?NV:GO}" stroke="#fff" stroke-width=".8"/>`,
+ analyse:(c,g)=>`<g filter="url(#glow)"><g transform="scale(${r(c/44)})">${PIED0_shape(g,g?'#6ee7ff44':'#ff9d3a44',g?'#6ee7ff':'#ff9d3a')}</g></g>`};
+function PIED0_shape(g,fill,stroke){const k=g?-1:1;return`<path d="M-10 ${-3.4*k}Q-11.5 0 -10 ${3.4*k}L-2 ${4.6*k}Q6 ${5*k} 11 ${2.2*k}Q13.2 0 11 ${-2.2*k}Q6 ${-4.6*k} -2 ${-4.6*k}Z" fill="${fill}" stroke="${stroke}" stroke-width="1.1"/>`}
+
+
 // ---------- registre des rendus ----------
 window.PH_STYLES={classique:{n:'Classique'},realiste:{n:'Réaliste',draw:drawB},mannequin:{n:'Mannequin 3D',draw:drawC},analyse:{n:'Analyse',draw:drawD}};
 window.PH_STYLE='realiste';try{const s=localStorage.getItem('rendu_joueur');if(s&&PH_STYLES[s])PH_STYLE=s}catch(e){}
 window.phSetStyle=s=>{if(!PH_STYLES[s])return;try{localStorage.setItem('rendu_joueur',s)}catch(e){}location.reload()};
+if(typeof PH_C!='undefined'&&PAL_ST[PH_STYLE])Object.assign(PH_C,PAL_ST[PH_STYLE]);
+if(typeof dsPied!='undefined'&&PIED[PH_STYLE]){const p0=dsPied;dsPied=function(c,g,col,trait){return PIED[PH_STYLE](c,g)}}
+
+// Analyse : fond sombre (le jaune et le cyan ne se voient pas sur le fond clair du site)
+if(typeof renderPhys!='undefined'&&PH_STYLE=='analyse'){const rp=renderPhys;
+ renderPhys=function(m,o){return rp(m,o).replace('fill="#e6eefa" stroke="#1b3a73"','fill="#0a1631" stroke="#2a8fb0"').replace('fill="#cfe3c4"','fill="#0f2a55"').replace('stroke="#6f9a5b"','stroke="#6ee7ff"').replace('fill="#d9ead0"','fill="#0f2a55"').replace(/fill="#1b3a73">pied gauche/g,'fill="#6ee7ff">pied gauche').replace(/fill="#d63a2a">pied droit/g,'fill="#ff9d3a">pied droit')}}
+
+// ---------- chargement à la demande : la fiche est dessinée fixe, l'animation n'est fabriquée que pour les schémas visibles ----------
+const REG=new Map();let SEQ=0;
+const IO=typeof IntersectionObserver!='undefined'?new IntersectionObserver(es=>es.forEach(e=>e.target.querySelectorAll('g[data-phs]').forEach(g=>{const q=REG.get(g.dataset.phs);if(!q)return;
+ if(e.isIntersecting&&!g.dataset.live){g.innerHTML=animer(q.frames.map(q.fn),q.an);g.dataset.live='1'}else if(!e.isIntersecting&&g.dataset.live){g.innerHTML=q.stat;delete g.dataset.live}})),{rootMargin:'250px'}):null;
+function scan(n){const L=n.tagName=='svg'?[n]:(n.querySelectorAll?[...n.querySelectorAll('svg')]:[]);L.forEach(s=>{if(!s.__ph&&s.querySelector('g[data-phs]')){s.__ph=1;IO.observe(s)}})}
+if(IO)new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType==1)scan(n)}))).observe(document.documentElement,{childList:true,subtree:true});
+function decime(frames,an){
+ if(!an||frames.length<=2)return[frames,an];
+ const kt=/keyTimes="([^"]*)"/.exec(an)[1].split(';').map(Number),dur=parseFloat(/dur="([\d.]+)s"/.exec(an)[1]);let last=0;const idx=[0];
+ for(let i=1;i<frames.length-1;i++)if((kt[i]-kt[last])*dur>=.16){idx.push(i);last=i}
+ idx.push(frames.length-1);
+ return[idx.map(i=>frames[i]),an.replace(/keyTimes="[^"]*"/,'keyTimes="'+idx.map(i=>kt[i].toFixed(3)).join(';')+'"')]}
+function rendre(frames,an,fn){
+ const [fr,an2]=decime(frames,an),stat=fn(fr[0]);
+ if(!an2||fr.length<2)return DEFS+stat;
+ if(!IO)return DEFS+animer(fr.map(fn),an2);
+ const id='phs'+(++SEQ);REG.set(id,{frames:fr,an:an2,fn,stat});if(REG.size>600)REG.delete(REG.keys().next().value);
+ return DEFS+`<g data-phs="${id}">${stat}</g>`}
 const corps0=phCorps;
 phCorps=function(frames,an){const S=PH_STYLES[window.PH_STYLE];if(!S||!S.draw)return corps0(frames,an);
- let idx=frames.map((f,i)=>i);
- if(an&&frames.length>2){ // on garde une image toutes les 0,1 s environ : le dessin reste fluide et la fiche légère
-  const kt=/keyTimes="([^"]*)"/.exec(an)[1].split(';').map(Number),dur=parseFloat(/dur="([\d.]+)s"/.exec(an)[1]);let last=0;idx=[0];
-  for(let i=1;i<frames.length-1;i++)if((kt[i]-kt[last])*dur>=.16){idx.push(i);last=i}
-  idx.push(frames.length-1);frames=idx.map(i=>frames[i]);an=an.replace(/keyTimes="[^"]*"/,'keyTimes="'+idx.map(i=>kt[i].toFixed(4)).join(';')+'"')}
- const list=frames.map(f=>{const {F,o}=phPlace(f.p,f.anc);return S.draw(joints(F,o),f.p)});
- const body=an&&list.length>1?animer(list,an):list[0];
- return DEFS+body};
+ return rendre(frames,an,f=>{const {F,o}=phPlace(f.p,f.anc);return S.draw(joints(F,o),f.p)})};
+window.phCorpsFace=function(frames,an,plan,E){const dr=FACE[window.PH_STYLE];if(!dr)return null;
+ return rendre(frames,an,f=>dr(faceJ(E.fk(f.p),E.place(f.p,plan))))};
 })();
