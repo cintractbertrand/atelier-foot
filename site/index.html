@@ -69,7 +69,7 @@ nav #nf{background:var(--or);color:#1b3a73;font-weight:700}.voir{display:none}
 #edtype{display:none}#bascule{display:inline-flex;background:#0003;border:2px solid #fff;border-radius:999px;padding:3px;gap:2px;margin:0 auto 0 14px;flex:none}#bascule button{background:transparent;color:#fff;border:0;border-radius:999px;padding:7px 16px;font-size:15px;font-weight:700;cursor:pointer}#bascule button.on{background:#2fa84f;color:#fff;box-shadow:0 1px 4px #0006}
 @media screen and (max-width:700px){#bascule{order:1;margin:2px 0;width:100%;display:flex}#bascule button{flex:1;padding:6px 4px;font-size:14px;min-height:36px}}
 </style></head><body>
-<header><h1>⚽ Atelier Foot</h1><div id="bascule" role="group" aria-label="Espace"><button id="nph" title="Renfo, motricité, proprio, étirement : exercices sans ballon">🤸 Physique</button><button id="nb" class="on" title="Exercices avec ballon : technique, tactique, jeu réduit…">⚽ Jeu</button></div><div id="thencours" class="noprint"></div>
+<header><h1>⚽ Atelier Foot</h1><div id="bascule" role="group" aria-label="Espace"><button id="nph" class="on" title="Renfo, motricité, proprio, étirement : exercices sans ballon">🤸 Physique</button><button id="nb" title="Exercices avec ballon : technique, tactique, jeu réduit…">⚽ Jeu</button></div><div id="thencours" class="noprint"></div>
 <nav><button id="nf">Faire une séance</button><button id="nl" title="Séances enregistrées par les entraîneurs du club">Séances club</button><button id="nsa">Saison</button><button id="ns" title="La séance que tu prépares">Ma séance (<span id="cnt">0</span>)</button><button id="ne">Éditeur</button></nav></header>
 <main>
 <section id="base">
@@ -164,7 +164,7 @@ const save=()=>{try{localStorage.setItem('seance',JSON.stringify(S))}catch(e){}$
 const ordreTheme=a=>{const o=['échauffement','physique','motricité','renfo','circuit','proprio','technique','tactique','jeu réduit','étirement'],r=x=>o.indexOf(x)<0?99:o.indexOf(x);return a.sort((x,y)=>r(x)-r(y))};
 const OPENS={},dB=e=>[10,15,20,30].reduce((a,b)=>Math.abs(b-e.duree_min)<Math.abs(a-e.duree_min)?b:a);
 const uniq=a=>[...new Set(a)].sort();
-const PHT=new Set(['renfo','proprio','étirement','motricité','circuit']);let ZONE='f';const inZone=e=>PHT.has(e.theme)==(ZONE=='p');
+const PHT=new Set(['renfo','proprio','étirement','motricité','circuit']);let ZONE='p';const inZone=e=>PHT.has(e.theme)==(ZONE=='p');
 let F={theme:'',cat:'',duree:'',niveau:'',auteur:'',muscle:'',source:'',liste:'',joueurs:'',sans:[]};
 const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||d}catch(e){return d}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let FAV=new Set(lsGet('favoris',[])),REC=lsGet('recents',[]);
