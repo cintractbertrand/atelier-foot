@@ -100,6 +100,9 @@
    materiel:mx?mx.map(([nom,quantite])=>({nom,quantite})):Object.entries(k.mat).map(([n,q])=>({nom:typeof nomMat=='function'?nomMat(n,q):n,quantite:q})),auteur:'Commun',source:SRC,
    objectif:obj,organisation:org,deroulement:der,consignes:cons,variantes:vars.map(([nom,change,difficulte])=>({nom,change,difficulte})),schema_physique:p.m})});
  X.forEach(([id,titre,muscle,cats,niv,dur,obj,org,der,cons,vars,mat])=>window.EXERCICES_PHY.push({id:'phy-'+id,titre:titre.slice(0,40),theme:'renfo',muscle,categories:cats,public:['filles','garçons'],niveau:niv,duree_min:dur,joueurs:{min:1,max:20},surface:'2 x 2 m par joueur',materiel:mat.map(([nom,quantite])=>({nom,quantite})),auteur:'Commun',source:SRC,objectif:obj,organisation:org,deroulement:der,consignes:cons,variantes:vars.map(([nom,change,difficulte])=>({nom,change,difficulte}))}));
+ // Mots-clés supplémentaires (recherche)
+ const MK={grimpe_corde:['monté de corde','monter de corde','grimpé de corde','grimper à la corde','corde']};
+ Object.entries(MK).forEach(([i,m])=>{const f=window.EXERCICES_PHY.find(x=>x.id=='phy-'+i);if(f)f.mots_cles=m});
  // Sous-catégorie Muscle (filtre du site)
  const MUS={abdominaux:'crunch releve_bassin canif bateau velo descente_jambes grimpe_corde rotation_buste genoux_buste',adducteurs:'adduction_cote',cuisses:'squat fente squat_saut squat_1p squat_fente squat_developpe',biceps:'curl_halteres curl_fente',dos:'superman tirage_halteres retropulsion',épaules:'developpe_epaules elevation_frontale',fessiers:'abduction extension_4p ext_debout','ischio-jambiers':'nordique ischios_4p pont_sureleve flexion_jambe',mollets:'pointes mollets_squat',pectoraux:'pompes developpe_couche compression_ballon',triceps:'triceps_couche kickback'};
  Object.entries(MUS).forEach(([m,l])=>l.split(' ').forEach(i=>{const f=window.EXERCICES_PHY.find(x=>x.id=='phy-'+i);if(f)f.muscle=m}));
