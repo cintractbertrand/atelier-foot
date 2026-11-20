@@ -9,7 +9,7 @@ const clubSrc=new URL('/veille-esga-/commun/club.js',location.origin).href;
 const lg=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}},ls=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 let charge=null;
 function club(){if(window.CLUB)return CLUB.pret;if(charge)return charge;
- charge=new Promise((ok,ko)=>{const s=document.createElement('script');s.src=clubSrc+'?v=2026-11-20i';s.onload=()=>window.CLUB?CLUB.pret.then(ok):ko();s.onerror=ko;document.head.appendChild(s)});return charge}
+ charge=new Promise((ok,ko)=>{const s=document.createElement('script');s.src=clubSrc+'?v=2026-11-20m';s.onload=()=>window.CLUB?CLUB.pret.then(ok):ko();s.onerror=ko;document.head.appendChild(s)});return charge}
 const fmt=d=>new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 const hh=h=>(h||'').replace(':','h');
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
