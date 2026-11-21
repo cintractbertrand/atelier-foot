@@ -9,7 +9,7 @@ const clubSrc=new URL('/veille-esga-/commun/club.js',location.origin).href;
 const lg=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}},ls=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 let charge=null;
 function club(){if(window.CLUB)return CLUB.pret;if(charge)return charge;
- charge=new Promise((ok,ko)=>{const s=document.createElement('script');s.src=clubSrc+'?v=2026-11-20m';s.onload=()=>window.CLUB?CLUB.pret.then(ok):ko();s.onerror=ko;document.head.appendChild(s)});return charge}
+ charge=new Promise((ok,ko)=>{const s=document.createElement('script');s.src=clubSrc+'?v=2026-11-21a';s.onload=()=>window.CLUB?CLUB.pret.then(ok):ko();s.onerror=ko;document.head.appendChild(s)});return charge}
 const fmt=d=>new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 const hh=h=>(h||'').replace(':','h');
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -73,7 +73,11 @@ nom.addEventListener('change',()=>{if(lie()&&window.CLUB&&S.length)CLUB.setSeanc
 ['raz','cln'].forEach(k=>{const b=document.getElementById(k);if(b)b.addEventListener('click',()=>setTimeout(()=>{if(!S.length||k=='cln'){ls('seance_evt','');majBadge()}},50))});
 // Arrivée depuis la console (« Préparer la séance ») : la séance sera placée sur cet entraînement
 if(POUR)club().then(C=>{const e=C.evenement(POUR);if(!e)return;if(lie()!=POUR){ls('seance_evt',POUR);ls('esga_equipe_seance',e.equipe);dat.value=e.date;ls("dateseance",e.date)}majBadge();MOIS=e.date.slice(0,7);
- const n=document.createElement('p');n.className='noprint';n.style.cssText='margin:0 0 8px;padding:8px 10px;background:#fff7d6;border-left:4px solid #e8b923;border-radius:6px';
- n.innerHTML='📅 Séance pour <b>'+esc(C.nomEquipe(e.equipe))+'</b>, entraînement du <b>'+fmt(e.date)+'</b> à '+hh(e.heure)+'. Compose-la : elle est mise à jour dans la console à chaque modification.';const a=document.querySelector('#seance .actions');if(a)a.before(n)}).catch(()=>{});
+ // Bandeau en haut de page, visible quel que soit l'écran (base d'exercices ou séance), avec le retour à la console
+ const retour=C.BASE+'#calendrier?evt='+encodeURIComponent(POUR);
+ const n=document.createElement('div');n.id='pourClub';n.className='noprint';n.setAttribute('role','status');
+ n.style.cssText='display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:8px 12px;padding:8px 12px;background:#fff7d6;border-left:4px solid #e8b923;border-radius:8px;color:#121826;font-size:.92rem';
+ n.innerHTML='<span style="flex:1 1 260px">📅 Séance pour <b>'+esc(C.nomEquipe(e.equipe))+'</b>, entraînement du <b>'+fmt(e.date)+'</b> à '+hh(e.heure)+'. Ajoute tes exercices : la séance est mise à jour dans la console à chaque modification.</span><a href="'+retour+'" style="font-weight:700;color:#0b2a6f;white-space:nowrap">← Retour à la console</a>';
+ const m=document.querySelector('main');if(m)m.before(n)}).catch(()=>{});
 window.prevoirEntrainement=calendrier;
 })();
